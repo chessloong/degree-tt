@@ -1,29 +1,109 @@
-.intro {
-  margin: 30px;
-  text-align: center;
-}
-
-.icon-wrapper {
-  display: flex;
-  justify-content: center;
-  padding: 40px 0 0px;
-}
-
-.icon-image {
-  width: 80px;
+/* 顶部横幅 */
+.header-banner {
+  width: 100%;
   height: 80px;
-  border-radius: 20px;
-}
-
-.nav-btn {
-  margin: 40rpx 60rpx;
-  padding: 24rpx;
   background-color: #0081ff;
-  border-radius: 12rpx;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.nav-btn-text {
+.banner-text {
+  color: #ffffff;
+  font-size: 40rpx;
+  font-weight: bold;
+}
+
+/* 横向滚动容器 */
+.scroll-blocks {
+  width: 100%;
+  height: 80px;
+  white-space: nowrap;
+  margin-top: 0;
+}
+
+/* 色块 */
+.block-item {
+  display: inline-block;
+  width: 200rpx;
+  height: 80px;
+  margin-right: 16rpx;
+  border-radius: 12rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.block-text {
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: bold;
+}
+
+/* 双列色块容器 */
+.double-blocks {
+  width: 100%;
+  height: 104px;
+  display: flex;
+  flex-direction: row;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+/* 双列色块 */
+.double-item {
+  flex: 1;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.double-text {
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+/* 1:2 比例的色块 */
+.double-item-ratio-1 {
+  flex: 1;
+  height: 104px;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.double-item-ratio-2 {
+  flex: 2;
+  height: 104px;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 三列色块容器 */
+.triple-blocks {
+  width: 100%;
+  height: 104px;
+  display: flex;
+  flex-direction: row;
+  gap: 16rpx;
+}
+
+/* 三列色块 */
+.triple-item {
+  flex: 1;
+  height: 104px;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.triple-text {
   color: #ffffff;
   font-size: 32rpx;
   font-weight: bold;

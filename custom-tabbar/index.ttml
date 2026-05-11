@@ -1,0 +1,24 @@
+<!-- 自定义 TabBar -->
+<view class="tabbar-container">
+  <!-- 首页按钮 -->
+  <view class="tab-item {{currentIndex === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0" data-url="/pages/index/index">
+    <image class="tab-icon" src="{{currentIndex === 0 ? selectedIconPath[0] : iconPath[0]}}" />
+    <text class="tab-text">首页</text>
+  </view>
+  
+  <!-- 中间圆形按钮 -->
+  <view class="tab-item-center {{currentIndex === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1" data-url="/pages/planner/planner">
+    <view class="tab-circle">
+      <view class="tab-circle-text">
+        <text>志愿</text>
+        <text>规划</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 设置按钮 -->
+  <view class="tab-item {{currentIndex === 2 ? 'active' : ''}}" bindtap="switchTab" data-index="2" data-url="/pages/settings/settings">
+    <image class="tab-icon" src="{{currentIndex === 2 ? selectedIconPath[1] : iconPath[1]}}" />
+    <text class="tab-text">设置</text>
+  </view>
+</view>

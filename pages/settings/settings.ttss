@@ -1,0 +1,58 @@
+/* 设置页样式 */
+
+/* 登录组件 */
+.login-section {
+  background-color: #ffffff;
+  margin: 0;
+  border-radius: 8rpx;
+  padding: 40rpx 30rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  margin-right: 30rpx;
+  background-color: #f0f0f0;
+}
+
+.user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 10rpx;
+}
+
+.user-desc {
+  font-size: 26rpx;
+  color: #999999;
+}
+
+.login-btn {
+  padding: 16rpx 40rpx;
+  background-color: #0081ff;
+  border-radius: 40rpx;
+}
+
+.login-btn-text {
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+/* 退出登录文字 */
+.de-logout-text {
+  color: #e54d42;
+  text-align: center;
+  width: 100%;
+}

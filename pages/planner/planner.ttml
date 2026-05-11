@@ -1,0 +1,6 @@
+<!-- 志愿规划页 -->
+<view class="container">
+  <view class="intro">
+    <text class="intro-text">志愿规划功能开发中...</text>
+  </view>
+</view>

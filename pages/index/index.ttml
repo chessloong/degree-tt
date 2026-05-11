@@ -1,7 +1,113 @@
-<view class="icon-wrapper">
-  <image class="icon-image" src="/icon.png"></image>
+<!-- 顶部横幅区域 -->
+<view class="header-banner" bindtap="goToTest">
+  <text class="banner-text">山河专升本</text>
 </view>
-<view class="intro">抖音小程序空白模板</view>
-<view class="nav-btn" bindtap="goToTest">
-  <text class="nav-btn-text">前往测试页</text>
+
+<!-- 主内容区域 -->
+<view class="container">
+  <!-- 横向滚动色块区域 -->
+  <scroll-view class="scroll-blocks" scroll-x="true">
+    <view class="block-item" style="background-color: #0081ff;">
+      <text class="block-text">考试资讯</text>
+    </view>
+    <view class="block-item" style="background-color: #39b54a;">
+      <text class="block-text">备考资料</text>
+    </view>
+    <view class="block-item" style="background-color: #e54d42;">
+      <text class="block-text">真题模拟</text>
+    </view>
+    <view class="block-item" style="background-color: #f37b1d;">
+      <text class="block-text">成绩查询</text>
+    </view>
+    <view class="block-item" style="background-color: #6739b6;">
+      <text class="block-text">志愿填报</text>
+    </view>
+  </scroll-view>
+
+  <!-- 双列色块区域 -->
+  <view class="double-blocks">
+    <view class="double-item" style="background-color: #0081ff;">
+      <text class="double-text">今日打卡</text>
+    </view>
+    <view class="double-item" style="background-color: #39b54a;">
+      <text class="double-text">学习统计</text>
+    </view>
+  </view>
+
+  <!-- 图表卡片 -->
+  <view class="de-card" style="margin-top: 16rpx;">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">学习趋势</text>
+      </view>
+      <view class="de-card-icons">
+        <icon type="info" size="20" color="#0081ff" class="de-card-icon-item" />
+      </view>
+    </view>
+    <view class="de-card-content">
+      <view class="de-chart-wrapper" style="height: {{chartHeight}}px; padding: 8rpx 0;">
+        <canvas id="homeChart" canvas-id="homeChart" class="de-chart-canvas" style="width: {{chartWidth}}px; height: {{chartHeight}}px;"></canvas>
+      </view>
+    </view>
+  </view>
+
+  <!-- 第二组：双列色块区域（1:2比例） -->
+  <view class="double-blocks" style="margin-top: 16rpx;">
+    <view class="double-item-ratio-1" style="background-color: #e54d42;">
+      <text class="double-text">错题本</text>
+    </view>
+    <view class="double-item-ratio-2" style="background-color: #f37b1d;">
+      <text class="double-text">重点笔记</text>
+    </view>
+  </view>
+
+  <!-- 第二组：图表卡片 -->
+  <view class="de-card" style="margin-top: 16rpx;">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">成绩分析</text>
+      </view>
+      <view class="de-card-icons">
+        <icon type="info" size="20" color="#0081ff" class="de-card-icon-item" />
+      </view>
+    </view>
+    <view class="de-card-content">
+      <view class="de-chart-wrapper" style="height: {{chartHeight2}}px; padding: 8rpx 0;">
+        <canvas id="homeChart2" canvas-id="homeChart2" class="de-chart-canvas" style="width: {{chartWidth2}}px; height: {{chartHeight2}}px;"></canvas>
+      </view>
+    </view>
+  </view>
+
+  <!-- 第三组：三列色块区域 -->
+  <view class="triple-blocks" style="margin-top: 16rpx;">
+    <view class="triple-item" style="background-color: #6739b6;">
+      <text class="triple-text">模拟考试</text>
+    </view>
+    <view class="triple-item" style="background-color: #0081ff;">
+      <text class="triple-text">学习计划</text>
+    </view>
+    <view class="triple-item" style="background-color: #39b54a;">
+      <text class="triple-text">课程表</text>
+    </view>
+  </view>
+
+  <!-- 第三组：图表卡片 -->
+  <view class="de-card" style="margin-top: 16rpx;">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">备考进度</text>
+      </view>
+      <view class="de-card-icons">
+        <icon type="info" size="20" color="#0081ff" class="de-card-icon-item" />
+      </view>
+    </view>
+    <view class="de-card-content">
+      <view class="de-chart-wrapper" style="height: {{chartHeight3}}px; padding: 8rpx 0;">
+        <canvas id="homeChart3" canvas-id="homeChart3" class="de-chart-canvas" style="width: {{chartWidth3}}px; height: {{chartHeight3}}px;"></canvas>
+      </view>
+    </view>
+  </view>
 </view>

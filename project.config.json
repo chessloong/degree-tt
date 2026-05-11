@@ -8,7 +8,7 @@
         "autoCompile": true,
         "compileHotReLoad": true,
         "nativeCompile": true,
-        "packNpmManually": true,
+        "packNpmManually": false,
         "packNpmRelationList": [
             {
                 "packageJsonPath": "./package.json",

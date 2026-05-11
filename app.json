@@ -1,12 +1,40 @@
 {
   "pages":[
     "pages/index/index",
+    "pages/settings/settings",
+    "pages/planner/planner",
     "pages/test/test"
   ],
   "window":{
     "backgroundTextStyle":"light",
-    "navigationBarBackgroundColor": "#fff",
+    "navigationBarBackgroundColor": "#0081ff",
     "navigationBarTitleText": "Mini Program",
     "navigationBarTextStyle":"black"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#0081ff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/home_normal.png",
+        "selectedIconPath": "assets/home_selected.png"
+      },
+      {
+        "pagePath": "pages/planner/planner",
+        "text": "志愿规划",
+        "iconPath": "assets/planner_normal.png",
+        "selectedIconPath": "assets/planner_selected.png"
+      },
+      {
+        "pagePath": "pages/settings/settings",
+        "text": "设置",
+        "iconPath": "assets/settings_normal.png",
+        "selectedIconPath": "assets/settings_selected.png"
+      }
+    ]
   }
 }

@@ -1,0 +1,9 @@
+.intro {
+  margin: 30px;
+  text-align: center;
+}
+
+.intro-text {
+  font-size: 32rpx;
+  color: #999999;
+}
