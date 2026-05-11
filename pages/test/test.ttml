@@ -1,0 +1,95 @@
+<view class="container">
+  <!-- 测试卡片样式 -->
+  <view class="de-card">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">测试卡片标题1</text>
+      </view>
+      <view class="de-card-icons">
+        <icon type="info" size="20" color="#0081ff" class="de-card-icon-item" />
+        <icon type="download" size="20" color="#0081ff" class="de-card-icon-item" />
+      </view>
+    </view>
+    <view class="de-card-content">
+      <text class="de-card-text">这是卡片内容区域，可以根据内容自动伸缩高度。</text>
+      <view style="margin-top: 20rpx;">
+        <text class="de-card-text">测试内容行121313132 1</text>
+      </view>
+      <view style="margin-top: 20rpx;">
+        <text class="de-card-text">测试内容行 2</text>
+      </view>
+      <view style="margin-top: 20rpx;">
+        <text class="">测试内容行 3</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 第二个测试卡片 - 图表 -->
+  <view class="de-card">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">数据图表</text>
+      </view>
+      <view class="de-card-icons">
+        <icon type="search" size="20" color="#0081ff" class="de-card-icon-item" />
+      </view>
+    </view>
+    <view class="de-card-content">
+      <!-- 图表功能暂时禁用，等待组件兼容后再启用 -->
+      <view class="de-chart-box" style="display: flex; align-items: center; justify-content: center;">
+        <text style="color: #999; font-size: 28rpx;">图表功能开发中...</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 第三个测试卡片 - 表格 -->
+  <view class="de-card">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">数据表格</text>
+      </view>
+      <view class="de-card-icons">
+        <icon type="download" size="20" color="#0081ff" class="de-card-icon-item" />
+      </view>
+    </view>
+    <view class="de-card-content">
+      <view class="de-table">
+        <!-- 表头 -->
+        <view class="de-table-header">
+          <view class="de-table-cell de-table-cell-center">序号</view>
+          <view class="de-table-cell">姓名</view>
+          <view class="de-table-cell de-table-cell-right">分数</view>
+        </view>
+        <!-- 数据行 -->
+        <view class="de-table-row de-table-row-alt">
+          <view class="de-table-cell de-table-cell-center">1</view>
+          <view class="de-table-cell">张三</view>
+          <view class="de-table-cell de-table-cell-number">95</view>
+        </view>
+        <view class="de-table-row">
+          <view class="de-table-cell de-table-cell-center">2</view>
+          <view class="de-table-cell">李四这是一个非常长的名字用来测试单元格内容较多时的自动折行效果</view>
+          <view class="de-table-cell de-table-cell-number">88</view>
+        </view>
+        <view class="de-table-row de-table-row-alt">
+          <view class="de-table-cell de-table-cell-center">3</view>
+          <view class="de-table-cell">王五</view>
+          <view class="de-table-cell de-table-cell-number">92</view>
+        </view>
+        <view class="de-table-row">
+          <view class="de-table-cell de-table-cell-center">4</view>
+          <view class="de-table-cell">赵六</view>
+          <view class="de-table-cell de-table-cell-number">85</view>
+        </view>
+        <view class="de-table-row de-table-row-alt">
+          <view class="de-table-cell de-table-cell-center">5</view>
+          <view class="de-table-cell">这是一段很长的备注信息，用来测试当单元格内容非常多时是否能够正常换行显示而不会溢出</view>
+          <view class="de-table-cell de-table-cell-number">78</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

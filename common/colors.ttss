@@ -1,0 +1,17 @@
+.blueMain { color: #0081ff; }
+.blueLight { color: #cce6ff; }
+.orangeMain { color: #f37b1d; }
+.orangeLight { color: #fde6d2; }
+.greenMain { color: #39b54a; }
+.greenLight { color: #d7f0db; }
+.redMain { color: #e54d42; }
+.redLight { color: #fadbd9; }
+
+.bg-blueMain { background-color: #0081ff; }
+.bg-blueLight { background-color: #cce6ff; }
+.bg-orangeMain { background-color: #f37b1d; }
+.bg-orangeLight { background-color: #fde6d2; }
+.bg-greenMain { background-color: #39b54a; }
+.bg-greenLight { background-color: #d7f0db; }
+.bg-redMain { background-color: #e54d42; }
+.bg-redLight { background-color: #fadbd9; }

@@ -2,3 +2,6 @@
   <image class="icon-image" src="/icon.png"></image>
 </view>
 <view class="intro">抖音小程序空白模板</view>
+<view class="nav-btn" bindtap="goToTest">
+  <text class="nav-btn-text">前往测试页</text>
+</view>

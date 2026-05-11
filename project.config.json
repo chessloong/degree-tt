@@ -7,7 +7,14 @@
         "newFeature": true,
         "autoCompile": true,
         "compileHotReLoad": true,
-        "nativeCompile": true
+        "nativeCompile": true,
+        "packNpmManually": true,
+        "packNpmRelationList": [
+            {
+                "packageJsonPath": "./package.json",
+                "miniprogramNpmDistDir": "./"
+            }
+        ]
     },
     "appid": "ttab77ddca3510275d01",
     "projectname": "degree-tt",
