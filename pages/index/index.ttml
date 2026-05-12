@@ -1,11 +1,8 @@
-<!-- 顶部横幅区域 -->
 <view class="header-banner" bindtap="goToTest">
   <text class="banner-text">山河专升本</text>
 </view>
 
-<!-- 主内容区域 -->
 <view class="container">
-  <!-- 横向滚动色块区域 -->
   <scroll-view class="scroll-blocks" scroll-x="true">
     <view class="block-item" style="background-color: #0081ff;">
       <text class="block-text">考试资讯</text>
@@ -24,7 +21,6 @@
     </view>
   </scroll-view>
 
-  <!-- 双列色块区域 -->
   <view class="double-blocks">
     <view class="double-item" style="background-color: #0081ff;">
       <text class="double-text">今日打卡</text>
@@ -34,7 +30,6 @@
     </view>
   </view>
 
-  <!-- 图表卡片 -->
   <view class="de-card" style="margin-top: 16rpx;">
     <view class="de-card-header">
       <view class="de-card-title-left">
@@ -42,7 +37,7 @@
         <text class="de-card-title">学习趋势</text>
       </view>
       <view class="de-card-icons">
-        <icon type="info" size="20" color="#0081ff" class="de-card-icon-item" />
+        <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-card-content">
@@ -52,7 +47,6 @@
     </view>
   </view>
 
-  <!-- 第二组：双列色块区域（1:2比例） -->
   <view class="double-blocks" style="margin-top: 16rpx;">
     <view class="double-item-ratio-1" style="background-color: #e54d42;">
       <text class="double-text">错题本</text>
@@ -62,7 +56,6 @@
     </view>
   </view>
 
-  <!-- 第二组：图表卡片 -->
   <view class="de-card" style="margin-top: 16rpx;">
     <view class="de-card-header">
       <view class="de-card-title-left">
@@ -70,7 +63,7 @@
         <text class="de-card-title">成绩分析</text>
       </view>
       <view class="de-card-icons">
-        <icon type="info" size="20" color="#0081ff" class="de-card-icon-item" />
+        <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-card-content">
@@ -80,7 +73,6 @@
     </view>
   </view>
 
-  <!-- 第三组：三列色块区域 -->
   <view class="triple-blocks" style="margin-top: 16rpx;">
     <view class="triple-item" style="background-color: #6739b6;">
       <text class="triple-text">模拟考试</text>
@@ -93,7 +85,6 @@
     </view>
   </view>
 
-  <!-- 第三组：图表卡片 -->
   <view class="de-card" style="margin-top: 16rpx;">
     <view class="de-card-header">
       <view class="de-card-title-left">
@@ -101,7 +92,7 @@
         <text class="de-card-title">备考进度</text>
       </view>
       <view class="de-card-icons">
-        <icon type="info" size="20" color="#0081ff" class="de-card-icon-item" />
+        <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-card-content">

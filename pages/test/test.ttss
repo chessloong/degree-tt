@@ -1,2 +1,32 @@
 @import "../../common/colors.ttss";
 @import "../../common/common.ttss";
+
+/* SVG图标测试区域样式 */
+.svg-test-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+  padding: 20rpx 0;
+}
+
+.svg-test-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: calc(33.33% - 14rpx);
+  margin-bottom: 20rpx;
+}
+
+.svg-test-icon {
+  width: 80rpx;
+  height: 80rpx;
+  margin-bottom: 10rpx;
+  background-color: #f5f5f5;
+  border-radius: 8rpx;
+}
+
+.svg-test-label {
+  font-size: 22rpx;
+  color: #666;
+  text-align: center;
+}

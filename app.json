@@ -2,7 +2,7 @@
   "pages":[
     "pages/index/index",
     "pages/settings/settings",
-    "pages/planner/planner",
+    "pages/volunteer_planning/volunteer_planning",
     "pages/test/test"
   ],
   "window":{
@@ -24,7 +24,7 @@
         "selectedIconPath": "assets/home_selected.png"
       },
       {
-        "pagePath": "pages/planner/planner",
+        "pagePath": "pages/volunteer_planning/volunteer_planning",
         "text": "志愿规划",
         "iconPath": "assets/planner_normal.png",
         "selectedIconPath": "assets/planner_selected.png"

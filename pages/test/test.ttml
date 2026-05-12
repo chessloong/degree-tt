@@ -1,4 +1,54 @@
 <view class="container">
+  <!-- SVG图标测试区域 - 直接引用文件路径 -->
+  <view class="de-card">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">SVG图标测试（直接引用）</text>
+      </view>
+    </view>
+    <view class="de-card-content">
+      <view class="svg-test-grid">
+        <view class="svg-test-item">
+          <image class="svg-test-icon" src="/assets/svg/搜索.svg" mode="aspectFit" />
+          <text class="svg-test-label">搜索.svg</text>
+        </view>
+        <view class="svg-test-item">
+          <image class="svg-test-icon" src="/assets/svg/更多.svg" mode="aspectFit" />
+          <text class="svg-test-label">更多.svg</text>
+        </view>
+        <view class="svg-test-item">
+          <image class="svg-test-icon" src="/assets/svg/刷新.svg" mode="aspectFit" />
+          <text class="svg-test-label">刷新.svg</text>
+        </view>
+        <view class="svg-test-item">
+          <image class="svg-test-icon" src="/assets/svg/喜欢.svg" mode="aspectFit" />
+          <text class="svg-test-label">喜欢.svg</text>
+        </view>
+        <view class="svg-test-item">
+          <image class="svg-test-icon" src="/assets/svg/书签.svg" mode="aspectFit" />
+          <text class="svg-test-label">书签.svg</text>
+        </view>
+        <view class="svg-test-item">
+          <image class="svg-test-icon" src="/assets/svg/全部.svg" mode="aspectFit" />
+          <text class="svg-test-label">全部.svg</text>
+        </view>
+        <view class="svg-test-item">
+          <image class="svg-test-icon" src="/assets/svg/配置.svg" mode="aspectFit" />
+          <text class="svg-test-label">配置.svg</text>
+        </view>
+        <view class="svg-test-item">
+          <image class="svg-test-icon" src="/assets/svg/汉堡图标.svg" mode="aspectFit" />
+          <text class="svg-test-label">汉堡图标.svg</text>
+        </view>
+        <view class="svg-test-item">
+          <image class="svg-test-icon" src="/assets/svg/加载4.svg" mode="aspectFit" />
+          <text class="svg-test-label">加载4.svg</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <!-- 测试卡片样式 -->
   <view class="de-card">
     <view class="de-card-header">
@@ -7,8 +57,8 @@
         <text class="de-card-title">测试卡片标题1</text>
       </view>
       <view class="de-card-icons">
-        <icon type="info" size="20" color="#0081ff" class="de-card-icon-item" />
-        <icon type="download" size="20" color="#0081ff" class="de-card-icon-item" />
+        <image class="de-card-icon-item" src="/assets/svg/搜索.svg" mode="aspectFit" />
+        <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-card-content">
@@ -33,7 +83,7 @@
         <text class="de-card-title">数据图表</text>
       </view>
       <view class="de-card-icons">
-        <icon type="search" size="20" color="#0081ff" class="de-card-icon-item" />
+        <image class="de-card-icon-item" src="/assets/svg/搜索.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-card-content">
@@ -49,7 +99,7 @@
         <text class="de-card-title">数据表格</text>
       </view>
       <view class="de-card-icons">
-        <icon type="download" size="20" color="#0081ff" class="de-card-icon-item" />
+        <image class="de-card-icon-item" src="/assets/svg/刷新.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-card-content">
@@ -98,7 +148,7 @@
         <text class="de-card-title">趋势分析</text>
       </view>
       <view class="de-card-icons">
-        <icon type="info" size="20" color="#0081ff" class="de-card-icon-item" />
+        <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-card-content">
@@ -117,7 +167,7 @@
       </view>
       <view class="de-list-content">
         <text class="de-list-text">张三</text>
-        <image class="de-list-arrow" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyTDggNkw0IDEwIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+" />
+        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
     
@@ -150,49 +200,63 @@
     <!-- 单列选择器 -->
     <view class="de-list-item de-list-item-clickable">
       <icon type="info" size="20" color="#0081ff" class="de-list-icon" />
-      <text class="de-list-title">所在城市</text>
-      <picker mode="selector" range="{{cities}}" value="{{cityIndex}}" bindchange="onCityChange">
-        <view class="de-list-content">
-          <text class="de-list-text">{{cities[cityIndex]}}</text>
-          <image class="de-list-arrow" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyTDggNkw0IDEwIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+" />
-        </view>
-      </picker>
+      <view class="de-list-title-wrapper">
+        <text class="de-list-title">年级选择</text>
+      </view>
+      <view class="de-list-content">
+        <text class="de-list-text">高三</text>
+        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
+      </view>
     </view>
     
     <!-- 多列选择器 -->
     <view class="de-list-item de-list-item-clickable">
-      <icon type="success" size="20" color="#39b54a" class="de-list-icon" />
-      <text class="de-list-title">日期选择</text>
-      <picker mode="multiSelector" range="{{dateRange}}" value="{{dateIndex}}" bindchange="onDateChange">
-        <view class="de-list-content">
-          <text class="de-list-text">{{dateRange[0][dateIndex[0]]}}年{{dateRange[1][dateIndex[1]]}}月</text>
-          <image class="de-list-arrow" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyTDggNkw0IDEwIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+" />
-        </view>
-      </picker>
-    </view>
-    
-    <!-- 多列选择器 - 省市 -->
-    <view class="de-list-item de-list-item-clickable">
-      <icon type="download" size="20" color="#f37b1d" class="de-list-icon" />
-      <text class="de-list-title">地区选择</text>
-      <picker mode="multiSelector" range="{{regionRange}}" value="{{regionIndex}}" bindchange="onRegionChange" bindcolumnchange="onRegionColumnChange">
-        <view class="de-list-content">
-          <text class="de-list-text">{{regionRange[0][regionIndex[0]]}} - {{regionRange[1][regionIndex[1]]}}</text>
-          <image class="de-list-arrow" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyTDggNkw0IDEwIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+" />
-        </view>
-      </picker>
+      <icon type="info" size="20" color="#0081ff" class="de-list-icon" />
+      <view class="de-list-title-wrapper">
+        <text class="de-list-title">学科选择</text>
+      </view>
+      <view class="de-list-content">
+        <text class="de-list-text">语文、数学、英语</text>
+        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
+      </view>
     </view>
     
     <!-- 时间选择器 -->
-    <view class="de-list-item de-list-item-last de-list-item-clickable">
-      <icon type="download" size="20" color="#f37b1d" class="de-list-icon" />
-      <text class="de-list-title">预约时间</text>
-      <picker mode="time" value="{{timeValue}}" bindchange="onTimeChange">
-        <view class="de-list-content">
-          <text class="de-list-text">{{timeValue}}</text>
-          <image class="de-list-arrow" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyTDggNkw0IDEwIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+" />
-        </view>
-      </picker>
+    <view class="de-list-item de-list-item-clickable de-list-item-last">
+      <icon type="info" size="20" color="#0081ff" class="de-list-icon" />
+      <view class="de-list-title-wrapper">
+        <text class="de-list-title">目标日期</text>
+      </view>
+      <view class="de-list-content">
+        <text class="de-list-text">2024-06-07</text>
+        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 第七个测试 - 操作按钮 -->
+  <view class="de-card">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">操作按钮</text>
+      </view>
+    </view>
+    <view class="de-card-content">
+      <view class="de-btn-group">
+        <button class="de-btn de-btn-primary">主要按钮</button>
+        <button class="de-btn de-btn-secondary">次要按钮</button>
+        <button class="de-btn de-btn-outline">描边按钮</button>
+      </view>
+      <view class="de-btn-group">
+        <button class="de-btn de-btn-primary de-btn-sm">小按钮</button>
+        <button class="de-btn de-btn-secondary de-btn-sm">小按钮</button>
+        <button class="de-btn de-btn-outline de-btn-sm">小按钮</button>
+      </view>
+      <view class="de-btn-group">
+        <button class="de-btn de-btn-danger">危险按钮</button>
+        <button class="de-btn de-btn-disabled" disabled>禁用按钮</button>
+      </view>
     </view>
   </view>
 </view>

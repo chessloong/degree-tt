@@ -1,6 +1,4 @@
-<!-- 设置页 -->
 <view class="container">
-  <!-- 登录组件 -->
   <view class="login-section">
     <image class="avatar" src="/assets/default-avatar.png" mode="aspectFill" />
     <view class="user-info">
@@ -12,82 +10,78 @@
     </view>
   </view>
 
-  <!-- 第一组：我的等级、学点余额、免费获取学点 -->
   <view class="de-list-group" style="margin-top: 16rpx;">
     <view class="de-list-item de-list-item-clickable">
-      <icon type="info" size="20" color="#0081ff" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/配置.svg" mode="aspectFit" />
       <text class="de-list-title">我的等级</text>
       <view class="de-list-content">
         <text class="de-list-text">Lv.0</text>
-        <image class="de-list-arrow" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyTDggNkw0IDEwIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+" />
+        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-list-item de-list-item-clickable">
-      <icon type="success" size="20" color="#39b54a" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/喜欢.svg" mode="aspectFit" />
       <text class="de-list-title">学点余额</text>
       <view class="de-list-content">
         <text class="de-list-text">0 学点</text>
-        <image class="de-list-arrow" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyTDggNkw0IDEwIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+" />
+        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-list-item de-list-item-last de-list-item-clickable">
-      <icon type="download" size="20" color="#f37b1d" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/加载4.svg" mode="aspectFit" />
       <text class="de-list-title">免费获取学点</text>
       <view class="de-list-content">
-        <image class="de-list-arrow" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyTDggNkw0IDEwIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+" />
+        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
   </view>
 
-  <!-- 第二组：专业大类、考试分数 -->
   <view class="de-list-group" style="margin-top: 16rpx;">
     <view class="de-list-item de-list-item-clickable">
-      <icon type="info" size="20" color="#6739b6" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/全部.svg" mode="aspectFit" />
       <text class="de-list-title">专业大类</text>
       <view class="de-list-content">
         <text class="de-list-text">未选择</text>
-        <image class="de-list-arrow" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyTDggNkw0IDEwIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+" />
+        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-list-item de-list-item-last de-list-item-clickable">
-      <icon type="success" size="20" color="#e54d42" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/刷新.svg" mode="aspectFit" />
       <text class="de-list-title">考试分数</text>
       <view class="de-list-content">
         <text class="de-list-text">查看成绩</text>
-        <image class="de-list-arrow" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyTDggNkw0IDEwIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+" />
+        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
   </view>
 
-  <!-- 第三组：超级管理 -->
   <view class="de-list-group" style="margin-top: 16rpx;">
     <view class="de-list-item de-list-item-last de-list-item-clickable">
-      <icon type="warn" size="20" color="#e54d42" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/汉堡图标.svg" mode="aspectFit" />
       <text class="de-list-title">超级管理</text>
       <view class="de-list-content">
-        <image class="de-list-arrow" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyTDggNkw0IDEwIiBzdHJva2U9IiM5OTkiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+" />
+        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
   </view>
 
-  <!-- 第四组：清除缓存、音效开关、版本号、退出登录 -->
   <view class="de-list-group" style="margin-top: 16rpx;">
     <view class="de-list-item de-list-item-clickable">
-      <icon type="clear" size="20" color="#999999" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/书签.svg" mode="aspectFit" />
       <text class="de-list-title">清除缓存</text>
       <view class="de-list-content">
         <text class="de-list-text">128MB</text>
       </view>
     </view>
     <view class="de-list-item">
-      <icon type="info" size="20" color="#0081ff" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/更多.svg" mode="aspectFit" />
       <text class="de-list-title">音效开关</text>
       <view class="de-list-content">
         <switch checked color="#0081ff" />
       </view>
     </view>
     <view class="de-list-item">
-      <icon type="info" size="20" color="#999999" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/搜索.svg" mode="aspectFit" />
       <text class="de-list-title">版本号</text>
       <view class="de-list-content">
         <text class="de-list-text">v1.0.0</text>

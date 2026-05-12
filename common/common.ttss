@@ -55,6 +55,15 @@
 /* 图标组中的单个图标 */
 .de-card-icon-item {
   margin-left: 16rpx;
+  width: 40rpx;
+  height: 40rpx;
+}
+
+/* SVG 图标基础样式 */
+.svg-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* 卡片内容区 */
