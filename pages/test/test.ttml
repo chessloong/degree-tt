@@ -10,40 +10,40 @@
     <view class="de-card-content">
       <view class="svg-test-grid">
         <view class="svg-test-item">
-          <image class="svg-test-icon" src="/assets/svg/搜索.svg" mode="aspectFit" />
-          <text class="svg-test-label">搜索.svg</text>
+          <image class="svg-test-icon" src="/assets/svg/more.svg" mode="aspectFit" />
+          <text class="svg-test-label">more.svg</text>
         </view>
         <view class="svg-test-item">
-          <image class="svg-test-icon" src="/assets/svg/更多.svg" mode="aspectFit" />
-          <text class="svg-test-label">更多.svg</text>
+          <image class="svg-test-icon" src="/assets/svg/redo.svg" mode="aspectFit" />
+          <text class="svg-test-label">redo.svg</text>
         </view>
         <view class="svg-test-item">
-          <image class="svg-test-icon" src="/assets/svg/刷新.svg" mode="aspectFit" />
-          <text class="svg-test-label">刷新.svg</text>
+          <image class="svg-test-icon" src="/assets/svg/money.svg" mode="aspectFit" />
+          <text class="svg-test-label">money.svg</text>
         </view>
         <view class="svg-test-item">
-          <image class="svg-test-icon" src="/assets/svg/喜欢.svg" mode="aspectFit" />
-          <text class="svg-test-label">喜欢.svg</text>
+          <image class="svg-test-icon" src="/assets/svg/clear.svg" mode="aspectFit" />
+          <text class="svg-test-label">clear.svg</text>
         </view>
         <view class="svg-test-item">
-          <image class="svg-test-icon" src="/assets/svg/书签.svg" mode="aspectFit" />
-          <text class="svg-test-label">书签.svg</text>
+          <image class="svg-test-icon" src="/assets/svg/class.svg" mode="aspectFit" />
+          <text class="svg-test-label">class.svg</text>
         </view>
         <view class="svg-test-item">
-          <image class="svg-test-icon" src="/assets/svg/全部.svg" mode="aspectFit" />
-          <text class="svg-test-label">全部.svg</text>
+          <image class="svg-test-icon" src="/assets/svg/score.svg" mode="aspectFit" />
+          <text class="svg-test-label">score.svg</text>
         </view>
         <view class="svg-test-item">
-          <image class="svg-test-icon" src="/assets/svg/配置.svg" mode="aspectFit" />
-          <text class="svg-test-label">配置.svg</text>
+          <image class="svg-test-icon" src="/assets/svg/supermanager.svg" mode="aspectFit" />
+          <text class="svg-test-label">supermanager.svg</text>
         </view>
         <view class="svg-test-item">
-          <image class="svg-test-icon" src="/assets/svg/汉堡图标.svg" mode="aspectFit" />
-          <text class="svg-test-label">汉堡图标.svg</text>
+          <image class="svg-test-icon" src="/assets/svg/free.svg" mode="aspectFit" />
+          <text class="svg-test-label">free.svg</text>
         </view>
         <view class="svg-test-item">
-          <image class="svg-test-icon" src="/assets/svg/加载4.svg" mode="aspectFit" />
-          <text class="svg-test-label">加载4.svg</text>
+          <image class="svg-test-icon" src="/assets/svg/caution.svg" mode="aspectFit" />
+          <text class="svg-test-label">caution.svg</text>
         </view>
       </view>
     </view>
@@ -57,8 +57,8 @@
         <text class="de-card-title">测试卡片标题1</text>
       </view>
       <view class="de-card-icons">
-        <image class="de-card-icon-item" src="/assets/svg/搜索.svg" mode="aspectFit" />
-        <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
+        <image class="de-card-icon-item" src="/assets/svg/more.svg" mode="aspectFit" />
+        <image class="de-card-icon-item" src="/assets/svg/more.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-card-content">
@@ -83,7 +83,7 @@
         <text class="de-card-title">数据图表</text>
       </view>
       <view class="de-card-icons">
-        <image class="de-card-icon-item" src="/assets/svg/搜索.svg" mode="aspectFit" />
+        <image class="de-card-icon-item" src="/assets/svg/more.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-card-content">
@@ -99,7 +99,7 @@
         <text class="de-card-title">数据表格</text>
       </view>
       <view class="de-card-icons">
-        <image class="de-card-icon-item" src="/assets/svg/刷新.svg" mode="aspectFit" />
+        <image class="de-card-icon-item" src="/assets/svg/redo.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-card-content">
@@ -148,7 +148,7 @@
         <text class="de-card-title">趋势分析</text>
       </view>
       <view class="de-card-icons">
-        <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
+        <image class="de-card-icon-item" src="/assets/svg/more.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-card-content">
@@ -160,7 +160,7 @@
   <view class="de-list-group">
     <!-- 带图标、文字、右箭头 -->
     <view class="de-list-item de-list-item-clickable">
-      <icon type="info" size="20" color="#0081ff" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/more.svg" mode="aspectFit" />
       <view class="de-list-title-wrapper">
         <text class="de-list-title">个人资料</text>
         <text class="de-list-desc">完善个人信息以便更好地为您服务，包括头像、昵称、联系方式等</text>
@@ -173,7 +173,7 @@
     
     <!-- 带图标、文字、开关 -->
     <view class="de-list-item">
-      <icon type="success" size="20" color="#39b54a" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/money.svg" mode="aspectFit" />
       <view class="de-list-title-wrapper">
         <text class="de-list-title">消息通知</text>
         <text class="de-list-desc">接收重要通知和学习提醒，包括课程更新、考试安排、系统公告等重要信息推送</text>
@@ -185,7 +185,7 @@
     
     <!-- 只有图标和文字 -->
     <view class="de-list-item de-list-item-last">
-      <icon type="warn" size="20" color="#e54d42" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/caution.svg" mode="aspectFit" />
       <view class="de-list-title-wrapper">
         <text class="de-list-title">版本号</text>
       </view>
@@ -199,7 +199,7 @@
   <view class="de-list-group">
     <!-- 单列选择器 -->
     <view class="de-list-item de-list-item-clickable">
-      <icon type="info" size="20" color="#0081ff" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/class.svg" mode="aspectFit" />
       <view class="de-list-title-wrapper">
         <text class="de-list-title">年级选择</text>
       </view>
@@ -211,7 +211,7 @@
     
     <!-- 多列选择器 -->
     <view class="de-list-item de-list-item-clickable">
-      <icon type="info" size="20" color="#0081ff" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/class.svg" mode="aspectFit" />
       <view class="de-list-title-wrapper">
         <text class="de-list-title">学科选择</text>
       </view>
@@ -223,7 +223,7 @@
     
     <!-- 时间选择器 -->
     <view class="de-list-item de-list-item-clickable de-list-item-last">
-      <icon type="info" size="20" color="#0081ff" class="de-list-icon" />
+      <image class="de-list-icon" src="/assets/svg/class.svg" mode="aspectFit" />
       <view class="de-list-title-wrapper">
         <text class="de-list-title">目标日期</text>
       </view>

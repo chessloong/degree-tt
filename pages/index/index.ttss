@@ -1,17 +1,18 @@
 /* 顶部横幅 */
 .header-banner {
   width: 100%;
-  height: 80px;
-  background-color: #0081ff;
+  height: 150rpx;
+  background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/titleimg.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .banner-text {
-  color: #ffffff;
-  font-size: 40rpx;
-  font-weight: bold;
+  display: none;
 }
 
 /* 横向滚动容器 */
@@ -55,14 +56,18 @@
   flex: 1;
   border-radius: 12rpx;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 12rpx;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .double-text {
-  color: #ffffff;
-  font-size: 32rpx;
-  font-weight: bold;
+  color: #000000;
+  font-size: 36rpx;
+  font-weight: normal;
 }
 
 /* 1:2 比例的色块 */
@@ -71,8 +76,12 @@
   height: 104px;
   border-radius: 12rpx;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 12rpx;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .double-item-ratio-2 {
@@ -80,8 +89,12 @@
   height: 104px;
   border-radius: 12rpx;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 12rpx;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 /* 三列色块容器 */
@@ -99,12 +112,16 @@
   height: 104px;
   border-radius: 12rpx;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 12rpx;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .triple-text {
-  color: #ffffff;
-  font-size: 32rpx;
-  font-weight: bold;
+  color: #000000;
+  font-size: 36rpx;
+  font-weight: normal;
 }

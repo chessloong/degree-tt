@@ -1890,16 +1890,21 @@ console.log('更新失败');
 #### 28.9.3 现有SVG图标清单
 | 图标文件 | 用途建议 |
 |---------|---------|
-| 搜索.svg | 搜索/查询功能 |
-| 更多.svg | 更多操作/菜单 |
-| 刷新.svg | 刷新/重试功能 |
-| 喜欢.svg | 收藏/喜欢功能 |
-| 书签.svg | 书签/标记功能 |
-| 全部.svg | 全选/全部功能 |
-| 配置.svg | 设置/配置功能 |
-| 汉堡图标.svg | 导航菜单 |
-| 加载4.svg | 加载动画/状态 |
 | arrow-right.svg | 右箭头/进入列表项 |
+| avatar.svg | 头像图标 |
+| caution.svg | 警告/提示功能 |
+| class.svg | 分类/专业/学科功能 |
+| clear.svg | 清除/清理功能 |
+| free.svg | 免费/获取功能 |
+| logout.svg | 退出登录功能 |
+| money.svg | 金钱/积分/余额功能 |
+| more.svg | 更多操作/菜单功能 |
+| redo.svg | 刷新/重试功能 |
+| right.svg | 正确/成功状态 |
+| score.svg | 分数/成绩功能 |
+| supermanager.svg | 超级管理/管理功能 |
+| voice.svg | 语音功能 |
+| volume.svg | 音量/音效功能 |
 
 #### 28.9.4 TabBar图标特殊说明
 - 抖音小程序原生TabBar**仅支持PNG/JPG格式**，不支持SVG

@@ -12,7 +12,7 @@
 
   <view class="de-list-group" style="margin-top: 16rpx;">
     <view class="de-list-item de-list-item-clickable">
-      <image class="de-list-icon" src="/assets/svg/配置.svg" mode="aspectFit" />
+      <image class="de-list-icon" src="/assets/svg/more.svg" mode="aspectFit" />
       <text class="de-list-title">我的等级</text>
       <view class="de-list-content">
         <text class="de-list-text">Lv.0</text>
@@ -20,7 +20,7 @@
       </view>
     </view>
     <view class="de-list-item de-list-item-clickable">
-      <image class="de-list-icon" src="/assets/svg/喜欢.svg" mode="aspectFit" />
+      <image class="de-list-icon" src="/assets/svg/money.svg" mode="aspectFit" />
       <text class="de-list-title">学点余额</text>
       <view class="de-list-content">
         <text class="de-list-text">0 学点</text>
@@ -28,7 +28,7 @@
       </view>
     </view>
     <view class="de-list-item de-list-item-last de-list-item-clickable">
-      <image class="de-list-icon" src="/assets/svg/加载4.svg" mode="aspectFit" />
+      <image class="de-list-icon" src="/assets/svg/free.svg" mode="aspectFit" />
       <text class="de-list-title">免费获取学点</text>
       <view class="de-list-content">
         <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
@@ -38,7 +38,7 @@
 
   <view class="de-list-group" style="margin-top: 16rpx;">
     <view class="de-list-item de-list-item-clickable">
-      <image class="de-list-icon" src="/assets/svg/全部.svg" mode="aspectFit" />
+      <image class="de-list-icon" src="/assets/svg/class.svg" mode="aspectFit" />
       <text class="de-list-title">专业大类</text>
       <view class="de-list-content">
         <text class="de-list-text">未选择</text>
@@ -46,7 +46,7 @@
       </view>
     </view>
     <view class="de-list-item de-list-item-last de-list-item-clickable">
-      <image class="de-list-icon" src="/assets/svg/刷新.svg" mode="aspectFit" />
+      <image class="de-list-icon" src="/assets/svg/score.svg" mode="aspectFit" />
       <text class="de-list-title">考试分数</text>
       <view class="de-list-content">
         <text class="de-list-text">查看成绩</text>
@@ -57,7 +57,7 @@
 
   <view class="de-list-group" style="margin-top: 16rpx;">
     <view class="de-list-item de-list-item-last de-list-item-clickable">
-      <image class="de-list-icon" src="/assets/svg/汉堡图标.svg" mode="aspectFit" />
+      <image class="de-list-icon" src="/assets/svg/supermanager.svg" mode="aspectFit" />
       <text class="de-list-title">超级管理</text>
       <view class="de-list-content">
         <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
@@ -67,7 +67,7 @@
 
   <view class="de-list-group" style="margin-top: 16rpx;">
     <view class="de-list-item de-list-item-clickable">
-      <image class="de-list-icon" src="/assets/svg/书签.svg" mode="aspectFit" />
+      <image class="de-list-icon" src="/assets/svg/clear.svg" mode="aspectFit" />
       <text class="de-list-title">清除缓存</text>
       <view class="de-list-content">
         <text class="de-list-text">128MB</text>
@@ -81,7 +81,7 @@
       </view>
     </view>
     <view class="de-list-item">
-      <image class="de-list-icon" src="/assets/svg/搜索.svg" mode="aspectFit" />
+      <image class="de-list-icon" src="/assets/svg/caution.svg" mode="aspectFit" />
       <text class="de-list-title">版本号</text>
       <view class="de-list-content">
         <text class="de-list-text">v1.0.0</text>

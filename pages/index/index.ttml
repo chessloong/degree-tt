@@ -22,15 +22,36 @@
   </scroll-view>
 
   <view class="double-blocks">
-    <view class="double-item" style="background-color: #0081ff;">
-      <text class="double-text">今日打卡</text>
+    <view class="double-item" style="background-color: #FFD9A0; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/schools.png');">
+      <text class="double-text">招生院校</text>
     </view>
-    <view class="double-item" style="background-color: #39b54a;">
-      <text class="double-text">学习统计</text>
+    <view class="double-item" style="background-color: #E8D5B7; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/majors.png');">
+      <text class="double-text">招生专业</text>
     </view>
   </view>
 
-  <view class="de-card" style="margin-top: 16rpx;">
+  <view class="double-blocks" style="margin-top: 16rpx;">
+    <view class="double-item-ratio-1" style="background-color: #B0E0E6; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/plans.png');">
+      <text class="double-text">招生计划</text>
+    </view>
+    <view class="double-item-ratio-2" style="background-color: #FFC0CB; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/choices.png');">
+      <text class="double-text">志愿规划</text>
+    </view>
+  </view>
+
+  <view class="triple-blocks" style="margin-top: 32rpx;">
+    <view class="triple-item" style="background-color: #C1FFC1; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/scores.png');">
+      <text class="triple-text">一分一段</text>
+    </view>
+    <view class="triple-item" style="background-color: #FFDAB9; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/controllines.png');">
+      <text class="triple-text">省控线</text>
+    </view>
+    <view class="triple-item" style="background-color: #E6E6FA; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/admission_lines.png');">
+      <text class="triple-text">投档线</text>
+    </view>
+  </view>
+
+  <view class="de-card" style="margin-top: 32rpx;">
     <view class="de-card-header">
       <view class="de-card-title-left">
         <view class="de-card-dot"></view>
@@ -44,15 +65,6 @@
       <view class="de-chart-wrapper" style="height: {{chartHeight}}px; padding: 8rpx 0;">
         <canvas id="homeChart" canvas-id="homeChart" class="de-chart-canvas" style="width: {{chartWidth}}px; height: {{chartHeight}}px;"></canvas>
       </view>
-    </view>
-  </view>
-
-  <view class="double-blocks" style="margin-top: 16rpx;">
-    <view class="double-item-ratio-1" style="background-color: #e54d42;">
-      <text class="double-text">错题本</text>
-    </view>
-    <view class="double-item-ratio-2" style="background-color: #f37b1d;">
-      <text class="double-text">重点笔记</text>
     </view>
   </view>
 
@@ -70,18 +82,6 @@
       <view class="de-chart-wrapper" style="height: {{chartHeight2}}px; padding: 8rpx 0;">
         <canvas id="homeChart2" canvas-id="homeChart2" class="de-chart-canvas" style="width: {{chartWidth2}}px; height: {{chartHeight2}}px;"></canvas>
       </view>
-    </view>
-  </view>
-
-  <view class="triple-blocks" style="margin-top: 16rpx;">
-    <view class="triple-item" style="background-color: #6739b6;">
-      <text class="triple-text">模拟考试</text>
-    </view>
-    <view class="triple-item" style="background-color: #0081ff;">
-      <text class="triple-text">学习计划</text>
-    </view>
-    <view class="triple-item" style="background-color: #39b54a;">
-      <text class="triple-text">课程表</text>
     </view>
   </view>
 
