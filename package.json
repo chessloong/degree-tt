@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@visactor/tt-vchart": "^0.1.0-alpha.0"
+    "@visactor/tt-vchart": "^0.1.0-alpha.0",
+    "pinyin-pro": "^3.28.1"
   }
 }

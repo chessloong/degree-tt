@@ -9,9 +9,6 @@ let { dySDK } = require("@open-dy/node-server-sdk");
 
 module.exports = async function (params, context) {
   try {
-    // 记录日志
-    context.log('开始加载应用配置');
-
     // 获取数据库实例
     const db = dySDK.database();
     
@@ -32,9 +29,7 @@ module.exports = async function (params, context) {
         }
       });
     }
-
-    context.log('配置加载完成:', configObject);
-
+    
     return {
       code: 0,
       message: 'success',

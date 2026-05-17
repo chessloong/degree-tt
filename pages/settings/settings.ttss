@@ -56,3 +56,66 @@
   text-align: center;
   width: 100%;
 }
+
+/* 专业大类选择器 */
+.picker-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: #fff;
+  border-radius: 20rpx 20rpx 0 0;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.picker-cancel {
+  font-size: 30rpx;
+  color: #999;
+  padding: 10rpx 20rpx;
+}
+
+.picker-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.picker-confirm {
+  font-size: 30rpx;
+  color: #0081ff;
+  padding: 10rpx 20rpx;
+  font-weight: bold;
+}
+
+.major-class-picker {
+  width: 100%;
+  height: 300px;
+  background-color: #fff;
+}
+
+.picker-item {
+  line-height: 50px;
+  text-align: center;
+  font-size: 32rpx;
+  color: #333;
+}
+
+/* 遮罩层 */
+.picker-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}

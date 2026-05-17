@@ -12,9 +12,7 @@ Page({
     img_pre:"https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/"
   },
   
-  onLoad: function() {
-    console.log('Welcome to Mini Code')
-  },
+  onLoad: function() {},
   
   onReady() {
     // 获取系统信息

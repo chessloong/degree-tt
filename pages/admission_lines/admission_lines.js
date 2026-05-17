@@ -5,23 +5,13 @@ Page({
     title: '投档线'
   },
 
-  onLoad: function(options) {
-    console.log('投档线页面加载:', options)
-  },
+  onLoad: function(options) {},
 
-  onReady: function() {
-    console.log('投档线页面渲染完成')
-  },
+  onReady: function() {},
 
-  onShow: function() {
-    console.log('投档线页面显示')
-  },
+  onShow: function() {},
 
-  onHide: function() {
-    console.log('投档线页面隐藏')
-  },
+  onHide: function() {},
 
-  onUnload: function() {
-    console.log('投档线页面卸载')
-  }
+  onUnload: function() {}
 })

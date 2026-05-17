@@ -37,11 +37,11 @@
   </view>
 
   <view class="de-list-group" style="margin-top: 16rpx;">
-    <view class="de-list-item de-list-item-clickable">
+    <view class="de-list-item de-list-item-clickable" bindtap="openMajorClassPicker">
       <image class="de-list-icon" src="/assets/svg/class.svg" mode="aspectFit" />
       <text class="de-list-title">专业大类</text>
       <view class="de-list-content">
-        <text class="de-list-text">未选择</text>
+        <text class="de-list-text">{{userClassName}}</text>
         <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
@@ -91,4 +91,37 @@
       <text class="de-list-title de-logout-text">退出登录</text>
     </view>
   </view>
+
+  <!-- 专业大类多列选择器 -->
+  <view wx:if="{{showPicker}}" class="picker-container">
+    <!-- 选择器头部 -->
+    <view class="picker-header">
+      <text class="picker-cancel" bindtap="closePicker">取消</text>
+      <text class="picker-title">选择专业大类</text>
+      <text class="picker-confirm" bindtap="confirmSelection">确定</text>
+    </view>
+    
+    <!-- 选择器主体 -->
+    <picker-view 
+      class="major-class-picker" 
+      indicator-style="height: 50px;" 
+      style="width: 100%; height: 300px; background-color: #fff;" 
+      value="{{multiIndex}}"
+      bindchange="onPickerChange"
+    >
+      <picker-view-column>
+        <view wx:for="{{multiArray[0]}}" wx:key="*this" class="picker-item">
+          {{item}}
+        </view>
+      </picker-view-column>
+      <picker-view-column>
+        <view wx:for="{{multiArray[1]}}" wx:key="*this" class="picker-item">
+          {{item}}
+        </view>
+      </picker-view-column>
+    </picker-view>
+  </view>
+
+  <!-- 遮罩层 -->
+  <view wx:if="{{showPicker}}" class="picker-mask"></view>
 </view>
