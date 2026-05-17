@@ -1844,6 +1844,232 @@ console.log('更新失败');
    - 常量使用全大写+下划线（UPPER_SNAKE_CASE）
    - 组件/页面文件使用小写+横杠命名（kebab-case，如 `user-info.js`）
 2. **缩进**：使用 2 空格缩进
+
+---
+
+## 第三部分：抖音云数据库集合字段文档
+
+本文档记录了抖音云数据库中所有数据集合及其字段定义，供小程序开发时参考。
+
+### 目录
+
+1. [征集志愿 - collect_volunteer](#1-征集志愿---collect_volunteer)
+2. [招生计划 - degree_plans](#2-招生计划---degree_plans)
+3. [一分一段表 - degree_score_segments](#3-一分一段表---degree_score_segments)
+4. [省控线 - degree_control_lines](#4-省控线---degree_control_lines)
+5. [投档线 - degree_admission_lines](#5-投档线---degree_admission_lines)
+6. [预告计划 - degree_preview_plans](#6-预告计划---degree_preview_plans)
+7. [升本日历 - degree_calendar_events](#7-升本日历---degree_calendar_events)
+8. [院校列表 - degree_schools](#8-院校列表---degree_schools)
+9. [专业大类 - degree_major_classes](#9-专业大类---degree_major_classes)
+10. [专业 - degree_majors](#10-专业---degree_majors)
+
+### 1. 征集志愿 - collect_volunteer
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| year | Number | 年份 |
+| batch | String | 批次 |
+| round | Number | 轮次（默认为0） |
+| school_name | String | 学校名称 |
+| school_code | String | 学校代码 |
+| major_name | String | 专业名称 |
+| major_code | String | 专业代码 |
+| class_name | String | 专业大类名称 |
+| class_code | String | 专业大类代码 |
+| plan_count | Number | 计划人数 |
+| culture_score | String | 文化课分数线 |
+| major_score | String | 专业课分数线 |
+| source_url | String | 来源链接 |
+| source_title | String | 来源标题 |
+| created_at | String (ISO) | 创建时间 |
+| updated_at | String (ISO) | 更新时间 |
+
+### 2. 招生计划 - degree_plans
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | String | 唯一标识 |
+| year | Number | 年份 |
+| school_id | String | 学校ID |
+| school_name | String | 学校名称 |
+| class_name | String | 专业大类名称 |
+| major_id | String | 专业ID |
+| major_name | String | 专业名称 |
+| tuition | Number | 学费 |
+| total | Number | 招生人数 |
+| remarks | String | 备注 |
+| full_years | Number | 学制年限 |
+| is_true | Boolean | 是否真实计划 |
+| major_test | Boolean | 是否需要专业课考试 |
+| created_at | String (ISO) | 创建时间 |
+| updated_at | String (ISO) | 更新时间 |
+| sync_timestamp | String (ISO) | 同步时间戳 |
+
+### 3. 一分一段表 - degree_score_segments
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | String | 唯一标识 |
+| year | Number | 年份 |
+| score | Number | 分数 |
+| rank | Number | 位次 |
+| cumulative_count | Number | 累计人数 |
+| class_name | String | 专业大类名称 |
+| created_at | String (ISO) | 创建时间 |
+| updated_at | String (ISO) | 更新时间 |
+| sync_timestamp | String (ISO) | 同步时间戳 |
+
+### 4. 省控线 - degree_control_lines
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | String | 唯一标识 |
+| year | Number | 年份 |
+| batch | String | 批次 |
+| category | String | 类别（理科/文科等） |
+| major_category | String | 专业类别 |
+| min_score | Number | 最低控制分数线 |
+| source_url | String | 来源链接 |
+| created_at | String (ISO) | 创建时间 |
+| updated_at | String (ISO) | 更新时间 |
+| sync_timestamp | String (ISO) | 同步时间戳 |
+
+### 5. 投档线 - degree_admission_lines
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | String | 唯一标识 |
+| year | Number | 年份 |
+| school_id | String | 学校ID |
+| school_name | String | 学校名称 |
+| batch | String | 批次 |
+| category | String | 类别 |
+| major_category | String | 专业类别 |
+| major_id | String | 专业ID |
+| major_name | String | 专业名称 |
+| min_score | Number | 最低投档分数线 |
+| source_url | String | 来源链接 |
+| created_at | String (ISO) | 创建时间 |
+| updated_at | String (ISO) | 更新时间 |
+| sync_timestamp | String (ISO) | 同步时间戳 |
+
+### 6. 预告计划 - degree_preview_plans
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | String | 唯一标识 |
+| year | Number | 年份 |
+| school_id | String | 学校ID |
+| school_name | String | 学校名称 |
+| major_class_id | String | 专业大类ID |
+| major_category | String | 专业类别 |
+| major_name | String | 专业名称 |
+| full_years | Number | 学制年限 |
+| volunteer_order | Number | 志愿顺序 |
+| source_url | String | 来源链接 |
+| created_at | String (ISO) | 创建时间 |
+| updated_at | String (ISO) | 更新时间 |
+| sync_timestamp | String (ISO) | 同步时间戳 |
+
+### 7. 升本日历 - degree_calendar_events
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | String | 唯一标识 |
+| name | String | 事件名称 |
+| start_datetime | String (ISO) | 开始时间 |
+| end_datetime | String (ISO) | 结束时间 |
+| content | String | 事件内容/描述 |
+| year | Number | 年份 |
+| is_forecast | Boolean | 是否为预测事件 |
+| event_type | String | 事件类型 |
+| show_in_home | Boolean | 是否在首页展示 |
+| created_at | String (ISO) | 创建时间 |
+| updated_at | String (ISO) | 更新时间 |
+| sync_timestamp | String (ISO) | 同步时间戳 |
+
+### 8. 院校列表 - degree_schools
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | String | 唯一标识 |
+| school_name | String | 学校名称 |
+| address | String | 学校地址 |
+| city | String | 所在城市 |
+| city_level | String | 城市级别 |
+| contact_phone | String | 联系电话 |
+| description | String | 学校描述 |
+| former_name | String | 曾用名 |
+| level | String | 学校层次 |
+| latitude | Number | 纬度 |
+| longitude | Number | 经度 |
+| logo_url | String | Logo链接 |
+| school_url | String | 学校官网链接 |
+| created_at | String (ISO) | 创建时间 |
+| updated_at | String (ISO) | 更新时间 |
+| sync_timestamp | String (ISO) | 同步时间戳 |
+
+### 9. 专业大类 - degree_major_classes
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | String | 唯一标识 |
+| class_name | String | 专业大类名称 |
+| major_test | Boolean | 是否需要专业课考试 |
+| created_at | String (ISO) | 创建时间 |
+| updated_at | String (ISO) | 更新时间 |
+| sync_timestamp | String (ISO) | 同步时间戳 |
+
+### 10. 专业 - degree_majors
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | String | 唯一标识 |
+| name | String | 专业名称 |
+| major_class_id | String | 所属专业大类ID |
+| major_class_name | String | 所属专业大类名称 |
+| employment_score | Number | 就业前景评分 |
+| salary_score | Number | 薪资水平评分 |
+| difficulty_score | Number | 学习难度评分 |
+| development_score | Number | 发展前景评分 |
+| practicality_score | Number | 实用性评分 |
+| created_at | String (ISO) | 创建时间 |
+| updated_at | String (ISO) | 更新时间 |
+| sync_timestamp | String (ISO) | 同步时间戳 |
+
+### 通用字段说明
+
+#### 时间字段格式
+所有时间字段（`created_at`, `updated_at`, `sync_timestamp`）均采用 ISO 8601 格式：
+```
+YYYY-MM-DDTHH:mm:ss.sssZ
+```
+
+#### 字段命名规范
+- 使用小写字母和下划线分隔（snake_case）
+- 避免使用中文字段名
+- 保持与微信云数据库字段一致
+
+### 集合汇总表
+
+| 序号 | 栏目 | 集合名称 |
+|------|------|----------|
+| 1 | 征集志愿 | `collect_volunteer` |
+| 2 | 招生计划 | `degree_plans` |
+| 3 | 一分一段表 | `degree_score_segments` |
+| 4 | 省控线 | `degree_control_lines` |
+| 5 | 投档线 | `degree_admission_lines` |
+| 6 | 预告计划 | `degree_preview_plans` |
+| 7 | 升本日历 | `degree_calendar_events` |
+| 8 | 院校列表 | `degree_schools` |
+| 9 | 专业大类 | `degree_major_classes` |
+| 10 | 专业 | `degree_majors` |
+
+---
+
+*文档生成时间：2026年5月*
+*版本：1.0*
 3. **注释**：重要逻辑块添加中文注释说明
 
 ### 28.4 API文档查询规范

@@ -1,0 +1,11 @@
+.container {
+  padding: 20rpx;
+}
+
+.placeholder-text {
+  font-size: 28rpx;
+  color: #999;
+  text-align: center;
+  display: block;
+  padding: 60rpx 0;
+}

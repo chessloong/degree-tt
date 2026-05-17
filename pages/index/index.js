@@ -8,7 +8,8 @@ Page({
     chartWidth2: 0,
     chartHeight2: 0,
     chartWidth3: 0,
-    chartHeight3: 0
+    chartHeight3: 0,
+    img_pre:"https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/"
   },
   
   onLoad: function() {
@@ -229,6 +230,55 @@ Page({
   goToTest: function() {
     tt.navigateTo({
       url: '/pages/test/test'
+    });
+  },
+
+  // 跳转到招生计划
+  goToPlans: function() {
+    tt.navigateTo({
+      url: '/pages/plans/plans'
+    });
+  },
+
+  // 跳转到招生院校
+  goToSchools: function() {
+    tt.navigateTo({
+      url: '/pages/schools/schools'
+    });
+  },
+
+  // 跳转到招生专业
+  goToMajors: function() {
+    tt.navigateTo({
+      url: '/pages/majors/majors'
+    });
+  },
+
+  // 跳转到一分一段
+  goToScoreSegments: function() {
+    tt.navigateTo({
+      url: '/pages/score_segments/score_segments'
+    });
+  },
+
+  // 跳转到省控线
+  goToControlLines: function() {
+    tt.navigateTo({
+      url: '/pages/control_lines/control_lines'
+    });
+  },
+
+  // 跳转到投档线
+  goToAdmissionLines: function() {
+    tt.navigateTo({
+      url: '/pages/admission_lines/admission_lines'
+    });
+  },
+
+  // 跳转到志愿规划
+  goToVolunteer: function() {
+    tt.navigateTo({
+      url: '/pages/volunteer_planning/volunteer_planning'
     });
   }
 })

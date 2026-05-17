@@ -1,104 +1,84 @@
 <view class="header-banner" bindtap="goToTest">
-  <text class="banner-text">山河专升本</text>
+    <text class="banner-text">山河专升本</text>
 </view>
 
 <view class="container">
-  <scroll-view class="scroll-blocks" scroll-x="true">
-    <view class="block-item" style="background-color: #0081ff;">
-      <text class="block-text">考试资讯</text>
+    <view class="cell-box">
+        <view class="cell-item box1" bindtap="goToPlans" style="background-color: #B0E0E6; background-image: url('{{img_pre}}plans.png');">
+            <view class="cell-text">招生计划</view>
+        </view>
+        <view  class="cell-item box2" bindtap="goToVolunteer" style="background-color: #FFC0CB; background-image: url('{{img_pre}}choices.png');">
+            <view class="cell-text">志愿规划</view>
+        </view>
     </view>
-    <view class="block-item" style="background-color: #39b54a;">
-      <text class="block-text">备考资料</text>
+    <view class="cell-box">
+        <view class="cell-item box1" bindtap="goToSchools" style="background-color: #FFD9A0; background-image: url('{{img_pre}}schools.png');">
+          <view class="cell-text">招生院校</view>
+        </view>
+        <view class="cell-item box1" bindtap="goToMajors" style="background-color: #E8D5B7; background-image: url('{{img_pre}}majors.png');">
+            <view class="cell-text">招生专业</view>
+        </view>
+    </view>    
+    <view class="cell-box">
+        <view class="cell-item box1" bindtap="goToScoreSegments" style="background-color: #C1FFC1; background-image: url('{{img_pre}}scores.png');">
+            <view class="cell-text">一分一段</view>
+        </view>
+        <view class="cell-item box1" bindtap="goToControlLines" style="background-color: #FFDAB9; background-image: url('{{img_pre}}controllines.png');">
+            <view class="cell-text">省控线</view>
+        </view>
+        <view class="cell-item box1" bindtap="goToAdmissionLines" style="background-color: #E6E6FA; background-image: url('{{img_pre}}admission_lines.png');">
+            <view class="cell-text">投档线</view>
+        </view>
     </view>
-    <view class="block-item" style="background-color: #e54d42;">
-      <text class="block-text">真题模拟</text>
-    </view>
-    <view class="block-item" style="background-color: #f37b1d;">
-      <text class="block-text">成绩查询</text>
-    </view>
-    <view class="block-item" style="background-color: #6739b6;">
-      <text class="block-text">志愿填报</text>
-    </view>
-  </scroll-view>
 
-  <view class="double-blocks">
-    <view class="double-item" style="background-color: #FFD9A0; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/schools.png');">
-      <text class="double-text">招生院校</text>
+    <view class="de-card" style="margin-top: 32rpx;">
+        <view class="de-card-header">
+            <view class="de-card-title-left">
+                <view class="de-card-dot"></view>
+                <text class="de-card-title">学习趋势</text>
+            </view>
+            <view class="de-card-icons">
+                <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
+            </view>
+        </view>
+        <view class="de-card-content">
+            <view class="de-chart-wrapper" style="height: {{chartHeight}}px; padding: 8rpx 0;">
+                <canvas id="homeChart" canvas-id="homeChart" class="de-chart-canvas" style="width: {{chartWidth}}px; height: {{chartHeight}}px;"></canvas>
+            </view>
+        </view>
     </view>
-    <view class="double-item" style="background-color: #E8D5B7; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/majors.png');">
-      <text class="double-text">招生专业</text>
-    </view>
-  </view>
 
-  <view class="double-blocks" style="margin-top: 16rpx;">
-    <view class="double-item-ratio-1" style="background-color: #B0E0E6; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/plans.png');">
-      <text class="double-text">招生计划</text>
+    <view class="de-card" style="margin-top: 16rpx;">
+        <view class="de-card-header">
+            <view class="de-card-title-left">
+                <view class="de-card-dot"></view>
+                <text class="de-card-title">成绩分析</text>
+            </view>
+            <view class="de-card-icons">
+                <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
+            </view>
+        </view>
+        <view class="de-card-content">
+            <view class="de-chart-wrapper" style="height: {{chartHeight2}}px; padding: 8rpx 0;">
+                <canvas id="homeChart2" canvas-id="homeChart2" class="de-chart-canvas" style="width: {{chartWidth2}}px; height: {{chartHeight2}}px;"></canvas>
+            </view>
+        </view>
     </view>
-    <view class="double-item-ratio-2" style="background-color: #FFC0CB; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/choices.png');">
-      <text class="double-text">志愿规划</text>
-    </view>
-  </view>
 
-  <view class="triple-blocks" style="margin-top: 32rpx;">
-    <view class="triple-item" style="background-color: #C1FFC1; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/scores.png');">
-      <text class="triple-text">一分一段</text>
+    <view class="de-card" style="margin-top: 16rpx;">
+        <view class="de-card-header">
+            <view class="de-card-title-left">
+                <view class="de-card-dot"></view>
+                <text class="de-card-title">备考进度</text>
+            </view>
+            <view class="de-card-icons">
+                <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
+            </view>
+        </view>
+        <view class="de-card-content">
+            <view class="de-chart-wrapper" style="height: {{chartHeight3}}px; padding: 8rpx 0;">
+                <canvas id="homeChart3" canvas-id="homeChart3" class="de-chart-canvas" style="width: {{chartWidth3}}px; height: {{chartHeight3}}px;"></canvas>
+            </view>
+        </view>
     </view>
-    <view class="triple-item" style="background-color: #FFDAB9; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/controllines.png');">
-      <text class="triple-text">省控线</text>
-    </view>
-    <view class="triple-item" style="background-color: #E6E6FA; background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/admission_lines.png');">
-      <text class="triple-text">投档线</text>
-    </view>
-  </view>
-
-  <view class="de-card" style="margin-top: 32rpx;">
-    <view class="de-card-header">
-      <view class="de-card-title-left">
-        <view class="de-card-dot"></view>
-        <text class="de-card-title">学习趋势</text>
-      </view>
-      <view class="de-card-icons">
-        <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
-      </view>
-    </view>
-    <view class="de-card-content">
-      <view class="de-chart-wrapper" style="height: {{chartHeight}}px; padding: 8rpx 0;">
-        <canvas id="homeChart" canvas-id="homeChart" class="de-chart-canvas" style="width: {{chartWidth}}px; height: {{chartHeight}}px;"></canvas>
-      </view>
-    </view>
-  </view>
-
-  <view class="de-card" style="margin-top: 16rpx;">
-    <view class="de-card-header">
-      <view class="de-card-title-left">
-        <view class="de-card-dot"></view>
-        <text class="de-card-title">成绩分析</text>
-      </view>
-      <view class="de-card-icons">
-        <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
-      </view>
-    </view>
-    <view class="de-card-content">
-      <view class="de-chart-wrapper" style="height: {{chartHeight2}}px; padding: 8rpx 0;">
-        <canvas id="homeChart2" canvas-id="homeChart2" class="de-chart-canvas" style="width: {{chartWidth2}}px; height: {{chartHeight2}}px;"></canvas>
-      </view>
-    </view>
-  </view>
-
-  <view class="de-card" style="margin-top: 16rpx;">
-    <view class="de-card-header">
-      <view class="de-card-title-left">
-        <view class="de-card-dot"></view>
-        <text class="de-card-title">备考进度</text>
-      </view>
-      <view class="de-card-icons">
-        <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
-      </view>
-    </view>
-    <view class="de-card-content">
-      <view class="de-chart-wrapper" style="height: {{chartHeight3}}px; padding: 8rpx 0;">
-        <canvas id="homeChart3" canvas-id="homeChart3" class="de-chart-canvas" style="width: {{chartWidth3}}px; height: {{chartHeight3}}px;"></canvas>
-      </view>
-    </view>
-  </view>
 </view>

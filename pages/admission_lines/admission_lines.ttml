@@ -1,0 +1,13 @@
+<view class="container">
+  <view class="de-card">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">投档线</text>
+      </view>
+    </view>
+    <view class="de-card-content">
+      <text class="placeholder-text">投档线页面开发中...</text>
+    </view>
+  </view>
+</view>

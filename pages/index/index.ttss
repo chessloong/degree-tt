@@ -1,127 +1,54 @@
 /* 顶部横幅 */
 .header-banner {
-  width: 100%;
-  height: 150rpx;
-  background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/titleimg.png');
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 100%;
+    height: 150rpx;
+    background-image: url('https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/titleimg.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .banner-text {
-  display: none;
+    display: none;
 }
 
 /* 横向滚动容器 */
 .scroll-blocks {
-  width: 100%;
-  height: 80px;
-  white-space: nowrap;
-  margin-top: 0;
+    width: 100%;
+    height: 80px;
+    white-space: nowrap;
+    margin-top: 0;
+    display: flex;
 }
 
-/* 色块 */
-.block-item {
-  display: inline-block;
-  width: 200rpx;
-  height: 80px;
-  margin-right: 16rpx;
-  border-radius: 12rpx;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.cell-box {
+    width: 100%;
+    display: flex;
+    gap: 12rpx;
+    margin-top: 12rpx;
 }
 
-.block-text {
-  color: #ffffff;
-  font-size: 30rpx;
-  font-weight: bold;
+.cell-item {
+    height: 200rpx;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 15rpx;
 }
 
-/* 双列色块容器 */
-.double-blocks {
-  width: 100%;
-  height: 104px;
-  display: flex;
-  flex-direction: row;
-  gap: 16rpx;
-  margin-top: 16rpx;
+.box1 {
+    flex: 1;
 }
 
-/* 双列色块 */
-.double-item {
-  flex: 1;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 12rpx;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
+.box2 {
+    flex: 2;
 }
-
-.double-text {
-  color: #000000;
-  font-size: 36rpx;
-  font-weight: normal;
-}
-
-/* 1:2 比例的色块 */
-.double-item-ratio-1 {
-  flex: 1;
-  height: 104px;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 12rpx;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-.double-item-ratio-2 {
-  flex: 2;
-  height: 104px;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 12rpx;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-/* 三列色块容器 */
-.triple-blocks {
-  width: 100%;
-  height: 104px;
-  display: flex;
-  flex-direction: row;
-  gap: 16rpx;
-}
-
-/* 三列色块 */
-.triple-item {
-  flex: 1;
-  height: 104px;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 12rpx;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-.triple-text {
-  color: #000000;
-  font-size: 36rpx;
-  font-weight: normal;
+.cell-text{
+    font-size: 32rpx;
+    width: 100%;
+    text-align: center;
+    margin-top: 12rpx;
 }
