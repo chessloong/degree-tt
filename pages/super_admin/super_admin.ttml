@@ -1,3 +1,205 @@
 <view class="container">
-  <text>超级管理页面</text>
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 配置管理内容 -->
+  <view wx:else class="content">
+    <!-- 配置列表卡片 -->
+    <view class="de-card">
+      <view class="de-card-header">
+        <view class="de-card-title-left">
+          <view class="de-card-dot"></view>
+          <text class="de-card-title">缓存时长管理</text>
+        </view>
+        <button class="btn-save-header" bindtap="saveConfig" disabled="{{saving}}">
+          {{saving ? '保存中...' : '保存'}}
+        </button>
+      </view>
+      <view class="de-card-content">
+        <!-- default 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">default</text>
+            <text class="label-desc">默认缓存时间</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.default || 10}}"
+            data-key="default"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- schools 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">schools</text>
+            <text class="label-desc">院校数据缓存</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.schools || 20}}"
+            data-key="schools"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- major_classes 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">major_classes</text>
+            <text class="label-desc">专业大类缓存</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.major_classes || 10}}"
+            data-key="major_classes"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- majors 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">majors</text>
+            <text class="label-desc">专业列表缓存</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.majors || 10}}"
+            data-key="majors"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- plans 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">plans</text>
+            <text class="label-desc">招生计划缓存</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.plans || 10}}"
+            data-key="plans"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- preview_plans 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">preview_plans</text>
+            <text class="label-desc">预告计划缓存</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.preview_plans || 10}}"
+            data-key="preview_plans"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- score_segments 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">score_segments</text>
+            <text class="label-desc">一分一段缓存</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.score_segments || 10}}"
+            data-key="score_segments"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- control_lines 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">control_lines</text>
+            <text class="label-desc">省控线缓存</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.control_lines || 10}}"
+            data-key="control_lines"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- admission_lines 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">admission_lines</text>
+            <text class="label-desc">投档线缓存</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.admission_lines || 10}}"
+            data-key="admission_lines"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- calendar_events 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">calendar_events</text>
+            <text class="label-desc">升本日历缓存</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.calendar_events || 10}}"
+            data-key="calendar_events"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+      </view>
+    </view>
+
+    <!-- ICP备案号管理卡片 -->
+    <view class="de-card">
+      <view class="de-card-header">
+        <view class="de-card-title-left">
+          <view class="de-card-dot"></view>
+          <text class="de-card-title">ICP备案号</text>
+        </view>
+        <button class="btn-save-header" bindtap="saveIcpBeian" disabled="{{saving}}">
+          {{saving ? '保存中...' : '保存'}}
+        </button>
+      </view>
+      <view class="de-card-content" style="padding: 30rpx;">
+        <input 
+          class="beian-input-full" 
+          type="text" 
+          value="{{icpBeian}}"
+          placeholder="请输入ICP备案号，如：京ICP备12345678号"
+          bindinput="onBeianInputChange"
+        />
+      </view>
+    </view>
+  </view>
 </view>
