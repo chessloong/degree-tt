@@ -33,13 +33,13 @@ Page({
    */
   async loadPlansData(className) {
     console.log(`[计划] 加载数据: ${className}`)
-    // 使用便捷方法获取有效缓存（合并查找和验证）
-    const cachedItem = app.getValidCachedItem('plans', 'class_name', className, 'plans')
+    // 使用统一的数组型缓存获取方法（自动验证过期）
+    const cachedData = app.getArrayCacheItem('plans', 'class_name', className)
     
-    if (cachedItem) {
-      console.log(`[计划] 使用缓存数据，共 ${cachedItem.data.length} 条`)
+    if (cachedData) {
+      console.log(`[计划] 使用缓存数据，共 ${cachedData.length} 条`)
       this.setData({
-        plansData: cachedItem.data
+        plansData: cachedData
       })
       return
     }
@@ -54,65 +54,62 @@ Page({
    * @param {string} className - 大类名称
    */
   async fetchPlansFromCloud(className) {
-    return new Promise((resolve) => {
-      const cloud = app.globalData.cloud
+    const cloud = app.globalData.cloud
+    
+    if (!cloud) {
+      console.error('[计划] cloud 实例未初始化')
+      return null
+    }
+    
+    try {
+      const response = await new Promise((resolve, reject) => {
+        cloud.callContainer({
+          path: '/queryDegrees',
+          init: {
+            method: 'POST',
+            timeout: 60000,
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              collectionName: 'degree_plans',
+              limit: 1000,
+              filter: {
+                class_name: className
+              }
+            })
+          },
+          success: resolve,
+          fail: reject
+        })
+      })
       
-      if (!cloud) {
-        console.error('[计划] cloud 实例未初始化')
-        resolve(null)
-        return
+      if (response.statusCode !== 200) {
+        console.error('[计划] 接口失败，状态码:', response.statusCode)
+        return null
       }
       
-      cloud.callContainer({
-        path: '/queryDegrees',
-        init: {
-          method: 'POST',
-          timeout: 60000,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            collectionName: 'degree_plans',
-            limit: 1000,
-            filter: {
-              class_name: className
-            }
-          })
-        },
-        success: ({ statusCode, data }) => {
-          if (statusCode === 200) {
-            try {
-              const result = typeof data === 'string' ? JSON.parse(data) : data
-              if (result && result.code === 0 && result.data) {
-                // 更新页面数据
-                this.setData({
-                  plansData: result.data
-                })
-                
-                console.log(`[计划] 云端拉取成功，共 ${result.data.length} 条`)
-                
-                // 使用数组型缓存存储（按 class_name 分类）
-                app.updateCachedItem('plans', 'class_name', className, result.data)
-                
-                resolve(result.data)
-              } else {
-                console.error('[计划] 数据格式错误')
-                resolve(null)
-              }
-            } catch (err) {
-              console.error('[计划] 数据解析失败:', err)
-              resolve(null)
-            }
-          } else {
-            console.error('[计划] 接口失败，状态码:', statusCode)
-            resolve(null)
-          }
-        },
-        fail: (err) => {
-          console.error('[计划] 接口异常:', err)
-          resolve(null)
-        }
+      const result = typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+      
+      if (!result || result.code !== 0 || !result.data) {
+        console.error('[计划] 数据格式错误')
+        return null
+      }
+      
+      // 更新页面数据
+      this.setData({
+        plansData: result.data
       })
-    })
+      
+      console.log(`[计划] 云端拉取成功，共 ${result.data.length} 条`)
+      
+      // 使用统一的数组型缓存存储方法（按 class_name 分类）
+      app.setArrayCacheItem('plans', 'class_name', className, result.data)
+      
+      return result.data
+    } catch (err) {
+      console.error('[计划] 接口异常:', err)
+      return null
+    }
   },
 })

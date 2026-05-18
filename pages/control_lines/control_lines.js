@@ -2,16 +2,97 @@ const app = getApp()
 
 Page({
   data: {
-    title: '省控线'
+    title: '省控线',
+    controlLines: [],       // 省控线数据列表
+    currentClassName: '',   // 当前专业大类
+    loading: true,
+    loadingText: '加载中...'
   },
 
-  onLoad: function(options) {},
+  onLoad: function(options) {
+    console.log('[省控线] 页面加载')
+    this.loadControlLinesData()
+  },
 
   onReady: function() {},
 
-  onShow: function() {},
+  onShow: function() {
+    // 检查缓存是否过期
+    const className = app.getUserClassName()
+    const cachedData = app.getArrayCacheItem('control_lines', 'class_name', className)
+    if (!cachedData) {
+      console.log('[省控线] 缓存已过期或不存在')
+      this.loadControlLinesData()
+    }
+  },
 
   onHide: function() {},
 
-  onUnload: function() {}
+  onUnload: function() {},
+
+  /**
+   * 加载省控线数据
+   */
+  async loadControlLinesData() {
+    this.setData({
+      loading: true,
+      loadingText: '加载中...'
+    })
+
+    try {
+      // 获取用户的专业大类
+      const className = app.getUserClassName() || '管理类'
+      console.log(`[省控线] 当前用户大类: ${className}`)
+
+      // 检查缓存
+      const cachedData = app.getArrayCacheItem('control_lines', 'class_name', className)
+      if (cachedData) {
+        console.log(`[省控线] 使用缓存数据，共 ${cachedData.length} 条`)
+        this.setData({
+          controlLines: cachedData,
+          currentClassName: className,
+          loading: false,
+          loadingText: ''
+        })
+        return
+      }
+
+      // 缓存无效或不存在，从云端拉取
+      console.log('[省控线] 缓存无效，从云端加载')
+      const data = await app.loadDataFromCloud('degree_control_lines', { class_name: className })
+
+      if (data && data.length > 0) {
+        // 存入数组型缓存
+        app.setArrayCacheItem('control_lines', 'class_name', className, data)
+        
+        this.setData({
+          controlLines: data,
+          currentClassName: className,
+          loading: false,
+          loadingText: ''
+        })
+        console.log(`[省控线] 加载成功，共 ${data.length} 条`)
+      } else {
+        console.log(`[省控线] 未找到 ${className} 的省控线数据`)
+        this.setData({
+          controlLines: [],
+          currentClassName: className,
+          loading: false,
+          loadingText: ''
+        })
+      }
+
+    } catch (err) {
+      console.error('[省控线] 加载失败:', err)
+      tt.showToast({
+        title: '加载失败，请重试',
+        icon: 'none'
+      })
+      this.setData({
+        loading: false,
+        loadingText: '',
+        controlLines: []
+      })
+    }
+  }
 })

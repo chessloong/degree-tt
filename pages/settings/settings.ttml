@@ -55,11 +55,12 @@
     </view>
   </view>
 
-  <view class="de-list-group" style="margin-top: 16rpx;">
-    <view class="de-list-item de-list-item-last de-list-item-clickable">
+  <view wx:if="{{isAdmin}}" class="de-list-group" style="margin-top: 16rpx;">
+    <view class="de-list-item de-list-item-last de-list-item-clickable" bindtap="goToSuperAdmin">
       <image class="de-list-icon" src="/assets/svg/supermanager.svg" mode="aspectFit" />
       <text class="de-list-title">超级管理</text>
       <view class="de-list-content">
+        <text class="de-list-text">管理员专用</text>
         <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>

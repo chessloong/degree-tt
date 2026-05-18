@@ -8,6 +8,7 @@
     "pages/control_lines/control_lines",
     "pages/admission_lines/admission_lines",
     "pages/settings/settings",
+    "pages/super_admin/super_admin",
     "pages/volunteer_planning/volunteer_planning",
     "pages/test/test"
   ],

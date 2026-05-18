@@ -16,7 +16,13 @@ Page({
 
   onReady: function() {},
 
-  onShow: function() {},
+  onShow: function() {
+    // 检查缓存是否过期，如果过期则刷新数据
+    if (!app.isObjectCacheValid('schools')) {
+      console.log('[院校] 缓存已过期，刷新数据')
+      this.loadSchoolsData()
+    }
+  },
 
   onHide: function() {},
 

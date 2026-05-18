@@ -268,8 +268,8 @@ App({
    */
   async loadSchoolsData() {
     return new Promise((resolve) => {
-      // 尝试从缓存加载
-      const cachedData = this.getCachedData('schools')
+      // 尝试从缓存加载（使用统一的对象型缓存方法）
+      const cachedData = this.getObjectCache('schools')
       if (cachedData) {
         console.log('[院校] 使用缓存数据')
         this.globalData.schools = cachedData
@@ -279,9 +279,10 @@ App({
 
       // 缓存无效或不存在，从云端拉取
       console.log('[院校] 从云端加载')
-      this.loadDataFromCloud('degree_schools', 'schools').then((data) => {
+      this.loadDataFromCloud('degree_schools').then((data) => {
         if (data) {
           this.globalData.schools = data
+          this.setObjectCache('schools', data)
           resolve(data)
         } else {
           resolve([])
@@ -299,8 +300,8 @@ App({
    */
   async loadMajorClassesData() {
     return new Promise((resolve) => {
-      // 尝试从缓存加载
-      const cachedData = this.getCachedData('major_classes')
+      // 尝试从缓存加载（使用统一的对象型缓存方法）
+      const cachedData = this.getObjectCache('major_classes')
       if (cachedData) {
         console.log('[专业大类] 使用缓存数据')
         this.globalData.majorClasses = cachedData
@@ -310,9 +311,10 @@ App({
 
       // 缓存无效或不存在，从云端拉取
       console.log('[专业大类] 从云端加载')
-      this.loadDataFromCloud('degree_major_classes', 'major_classes').then((data) => {
+      this.loadDataFromCloud('degree_major_classes').then((data) => {
         if (data) {
           this.globalData.majorClasses = data
+          this.setObjectCache('major_classes', data)
           resolve(data)
         } else {
           resolve([])
@@ -324,13 +326,12 @@ App({
   },
 
   /**
-   * 从云端加载数据的通用方法
+   * 从云端加载数据的通用方法（仅负责获取数据，不处理缓存）
    * @param {string} collectionName - 表名
-   * @param {string} cacheKey - 缓存键名
    * @param {Object} filter - 筛选条件对象（可选，如 { year: "2024" } 或 { majorCategory: "工学" }）
    * @returns {Promise<Array|null>} 数据数组
    */
-  async loadDataFromCloud(collectionName, cacheKey, filter = {}) {
+  async loadDataFromCloud(collectionName, filter = {}) {
     return new Promise((resolve) => {
       const cloud = this.globalData.cloud
 
@@ -359,12 +360,6 @@ App({
             try {
               const result = typeof data === 'string' ? JSON.parse(data) : data
               if (result && result.code === 0 && result.data) {
-                // 获取缓存有效期（分钟）
-                const expireMinutes = this.getExpireMinutes(cacheKey)
-                
-                // 存入缓存（包含过期时间）
-                this.setCachedData(cacheKey, result.data, expireMinutes)
-                
                 console.log(`[云端] ${collectionName} 拉取成功，共 ${result.data.length} 条`)
                 resolve(result.data)
               } else {
@@ -400,69 +395,6 @@ App({
     return expireMinutes
   },
 
-  /**
-   * 获取缓存数据
-   * @param {string} key - 缓存键名
-   * @returns {any|null} 缓存数据，如果已过期或不存在返回 null
-   */
-  getCachedData(key) {
-    try {
-      const cached = tt.getStorageSync(key)
-      if (!cached) {
-        console.log(`[缓存] ${key} 不存在`)
-        return null
-      }
-
-      const parsed = JSON.parse(cached)
-      const now = Date.now()
-
-      // 获取当前配置的过期时长（分钟）
-      const expireMinutes = this.getExpireMinutes(key)
-      
-      // 检查是否有 timestamp
-      if (!parsed.timestamp) {
-        console.log(`[缓存] ${key} 无时间戳，视为无效`)
-        tt.removeStorageSync(key)
-        return null
-      }
-
-      // 计算缓存已存在的时间（分钟）
-      const elapsedMinutes = Math.floor((now - parsed.timestamp) / 60000)
-      
-      // 判断是否过期
-      if (elapsedMinutes < expireMinutes) {
-        console.log(`[缓存] ${key} 命中 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-        return parsed.data
-      }
-
-      console.log(`[缓存] ${key} 已过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-      // 删除过期缓存
-      tt.removeStorageSync(key)
-      return null
-    } catch (err) {
-      console.error(`[缓存] 读取 ${key} 失败:`, err)
-      return null
-    }
-  },
-
-  /**
-   * 设置缓存数据
-   * @param {string} key - 缓存键名
-   * @param {any} data - 缓存数据
-   * @param {number} expireMinutes - 有效期（分钟，仅用于日志显示）
-   */
-  setCachedData(key, data, expireMinutes) {
-    try {
-      const cacheObject = {
-        data: data,
-        timestamp: Date.now()
-      }
-      tt.setStorageSync(key, JSON.stringify(cacheObject))
-    } catch (err) {
-      console.error(`[缓存] 设置 ${key} 失败:`, err)
-    }
-  },
-  
   /**
    * 获取院校数据
    * @returns {Array} 院校数据数组
@@ -506,89 +438,161 @@ App({
     return null
   },
   
+  // ============================================
+  // 对象型缓存方法（适用于单一数据集，如院校、专业大类、用户信息）
+  // ============================================
+  
   /**
-   * 从缓存数组中查找指定键的数据项
-   * @param {string} cacheKey - 缓存键名（如 'plans'）
-   * @param {string} itemKey - 数组元素的查找键名（如 'class_name'）
-   * @param {string} itemValue - 要查找的值
-   * @returns {Object|null} 找到的数据项（包含 data 和 timestamp）
+   * 获取对象型缓存数据（自动验证过期）
+   * @param {string} key - 缓存键名
+   * @returns {any|null} 缓存数据（过期或不存在返回 null）
    */
-  findCachedItem(cacheKey, itemKey, itemValue) {
+  getObjectCache(key) {
     try {
-      const cached = tt.getStorageSync(cacheKey)
-      if (!cached) return null
+      const cached = tt.getStorageSync(key)
+      if (!cached) {
+        console.log(`[对象缓存] ${key} 不存在`)
+        return null
+      }
+
+      const parsed = JSON.parse(cached)
+      const now = Date.now()
+      const expireMinutes = this.getExpireMinutes(key)
       
-      const cacheArray = JSON.parse(cached)
-      if (!Array.isArray(cacheArray)) return null
+      if (!parsed.timestamp) {
+        console.log(`[对象缓存] ${key} 无时间戳，视为无效`)
+        tt.removeStorageSync(key)
+        return null
+      }
+
+      const elapsedMinutes = Math.floor((now - parsed.timestamp) / 60000)
       
-      return cacheArray.find(item => item[itemKey] === itemValue)
+      if (elapsedMinutes < expireMinutes) {
+        console.log(`[对象缓存] ${key} 命中 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
+        return parsed.data
+      }
+
+      console.log(`[对象缓存] ${key} 已过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
+      tt.removeStorageSync(key)
+      return null
     } catch (err) {
-      console.error(`从缓存 ${cacheKey} 查找数据失败:`, err)
+      console.error(`[对象缓存] 读取 ${key} 失败:`, err)
       return null
     }
   },
-  
+
   /**
-   * 获取有效的缓存数据项（合并查找和验证）
-   * @param {string} cacheKey - 缓存键名（如 'plans'）
-   * @param {string} itemKey - 数组元素的查找键名（如 'class_name'）
-   * @param {string} itemValue - 要查找的值
-   * @param {string} expireKey - 配置中的过期时间键名
-   * @returns {Object|null} 有效时返回数据项，否则返回 null
+   * 设置对象型缓存数据
+   * @param {string} key - 缓存键名
+   * @param {any} data - 要缓存的数据
    */
-  getValidCachedItem(cacheKey, itemKey, itemValue, expireKey) {
-    const cachedItem = this.findCachedItem(cacheKey, itemKey, itemValue)
-    if (!cachedItem) {
-      console.log(`[缓存] ${cacheKey} 中未找到 ${itemKey}=${itemValue}`)
-      return null
+  setObjectCache(key, data) {
+    try {
+      const cacheObject = {
+        data: data,
+        timestamp: Date.now()
+      }
+      tt.setStorageSync(key, JSON.stringify(cacheObject))
+      console.log(`[对象缓存] ${key} 已保存`)
+    } catch (err) {
+      console.error(`[对象缓存] 设置 ${key} 失败:`, err)
     }
-    
-    const isValid = this.isCachedItemValid(cachedItem, expireKey || cacheKey)
-    if (!isValid) {
-      console.log(`[缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 已过期`)
-      return null
-    }
-    
-    console.log(`[缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 命中`)
-    return cachedItem
   },
-  
+
   /**
-   * 判断缓存项是否有效（未过期）
-   * @param {Object} cachedItem - 缓存项（需包含 timestamp 字段）
-   * @param {string} expireKey - 配置中的过期时间键名（如 'plans'）
+   * 判断对象型缓存是否有效（未过期）
+   * @param {string} key - 缓存键名
    * @returns {boolean} 是否有效
    */
-  isCachedItemValid(cachedItem, expireKey) {
-    if (!cachedItem || !cachedItem.timestamp) {
-      console.log('[缓存验证] 缓存项不存在或缺少时间戳')
+  isObjectCacheValid(key) {
+    try {
+      const cached = tt.getStorageSync(key)
+      if (!cached) {
+        console.log(`[对象缓存验证] ${key} 不存在`)
+        return false
+      }
+
+      const parsed = JSON.parse(cached)
+      if (!parsed.timestamp) {
+        console.log(`[对象缓存验证] ${key} 无时间戳，视为无效`)
+        return false
+      }
+
+      const expireMinutes = this.getExpireMinutes(key)
+      const now = Date.now()
+      const elapsedMinutes = Math.floor((now - parsed.timestamp) / 60000)
+      const isExpired = elapsedMinutes >= expireMinutes
+
+      if (isExpired) {
+        console.log(`[对象缓存验证] ${key} 已过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
+      } else {
+        console.log(`[对象缓存验证] ${key} 未过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
+      }
+
+      return !isExpired
+    } catch (err) {
+      console.error(`[对象缓存验证] 判断 ${key} 有效性失败:`, err)
       return false
     }
-    
-    const expireMinutes = this.getExpireMinutes(expireKey)
-    const now = Date.now()
-    const elapsedMinutes = Math.floor((now - cachedItem.timestamp) / 60000)
-    const isExpired = elapsedMinutes >= expireMinutes
-    
-    if (isExpired) {
-      console.log(`[缓存验证] 已过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-    } else {
-      console.log(`[缓存验证] 未过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-    }
-    
-    return !isExpired
   },
   
+  // ============================================
+  // 数组型缓存方法（适用于按分类存储的数据集，如招生计划按大类存储）
+  // ============================================
+  
   /**
-   * 更新缓存数组中的数据项（存在则替换，不存在则新增）
+   * 获取数组型缓存中的指定数据项（自动验证过期）
+   * @param {string} cacheKey - 缓存键名（如 'plans'）
+   * @param {string} itemKey - 数组元素的唯一标识键名（如 'class_name'）
+   * @param {string} itemValue - 唯一标识值
+   * @returns {any|null} 缓存数据（过期或不存在返回 null）
+   */
+  getArrayCacheItem(cacheKey, itemKey, itemValue) {
+    try {
+      const cached = tt.getStorageSync(cacheKey)
+      if (!cached) {
+        console.log(`[数组缓存] ${cacheKey} 不存在`)
+        return null
+      }
+
+      const cacheArray = JSON.parse(cached)
+      if (!Array.isArray(cacheArray)) {
+        console.log(`[数组缓存] ${cacheKey} 不是数组格式`)
+        return null
+      }
+
+      const cachedItem = cacheArray.find(item => item[itemKey] === itemValue)
+      if (!cachedItem) {
+        console.log(`[数组缓存] ${cacheKey} 中未找到 ${itemKey}=${itemValue}`)
+        return null
+      }
+
+      const expireMinutes = this.getExpireMinutes(cacheKey)
+      const now = Date.now()
+      const elapsedMinutes = Math.floor((now - cachedItem.timestamp) / 60000)
+
+      if (elapsedMinutes < expireMinutes) {
+        console.log(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 命中 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
+        return cachedItem.data
+      }
+
+      console.log(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 已过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
+      return null
+    } catch (err) {
+      console.error(`[数组缓存] 获取 ${cacheKey} 中 ${itemKey}=${itemValue} 失败:`, err)
+      return null
+    }
+  },
+
+  /**
+   * 设置数组型缓存中的数据项（存在则替换，不存在则新增）
    * @param {string} cacheKey - 缓存键名（如 'plans'）
    * @param {string} itemKey - 数组元素的唯一标识键名（如 'class_name'）
    * @param {string} itemValue - 唯一标识值
    * @param {any} data - 要缓存的数据
    */
-  updateCachedItem(cacheKey, itemKey, itemValue, data) {
+  setArrayCacheItem(cacheKey, itemKey, itemValue, data) {
     try {
-      // 获取当前缓存数组
       let cacheArray = []
       const cached = tt.getStorageSync(cacheKey)
       if (cached) {
@@ -597,28 +601,50 @@ App({
           cacheArray = []
         }
       }
-      
-      // 查找并替换或新增
+
       const index = cacheArray.findIndex(item => item[itemKey] === itemValue)
-      
       const newItem = {
         [itemKey]: itemValue,
         data: data,
         timestamp: Date.now()
       }
-      
+
       if (index >= 0) {
-        // 替换现有数据
         cacheArray[index] = newItem
       } else {
-        // 新增数据
         cacheArray.push(newItem)
       }
-      
-      // 保存到 storage
+
       tt.setStorageSync(cacheKey, JSON.stringify(cacheArray))
+      console.log(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 已保存`)
     } catch (err) {
-      console.error(`[缓存] 更新 ${cacheKey} 失败:`, err)
+      console.error(`[数组缓存] 设置 ${cacheKey} 中 ${itemKey}=${itemValue} 失败:`, err)
     }
+  },
+
+  /**
+   * 判断数组型缓存项是否有效（未过期）
+   * @param {Object} cachedItem - 缓存项（需包含 timestamp 字段）
+   * @param {string} expireKey - 配置中的过期时间键名
+   * @returns {boolean} 是否有效
+   */
+  isArrayCacheItemValid(cachedItem, expireKey) {
+    if (!cachedItem || !cachedItem.timestamp) {
+      console.log('[数组缓存验证] 缓存项不存在或缺少时间戳')
+      return false
+    }
+
+    const expireMinutes = this.getExpireMinutes(expireKey)
+    const now = Date.now()
+    const elapsedMinutes = Math.floor((now - cachedItem.timestamp) / 60000)
+    const isExpired = elapsedMinutes >= expireMinutes
+
+    if (isExpired) {
+      console.log(`[数组缓存验证] 已过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
+    } else {
+      console.log(`[数组缓存验证] 未过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
+    }
+
+    return !isExpired
   }
 })
