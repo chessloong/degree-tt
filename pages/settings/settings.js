@@ -7,18 +7,16 @@ Page({
     showPicker: false,         // 是否显示选择器
     multiIndex: [0, 0],       // 当前选择的索引 [分组索引, 大类索引]
     multiArray: [[], []],     // 多列数据 [[分组列表], [对应大类列表]]
-    groups: [],               // 分组后的数据结构
-    isAdmin: false            // 是否为管理员用户
+    groups: []                // 分组后的数据结构
   },
   
   onLoad: function() {
     console.log('[设置] 页面加载')
     this.loadUserInfo()
-    this.ensureMajorClassesData()
   },
   
   onShow: function() {
-    // 每次显示时刷新用户信息
+    // 每次显示时刷新用户信息和专业大类数据
     this.loadUserInfo()
     this.ensureMajorClassesData()
   },
@@ -39,30 +37,8 @@ Page({
         userClassName: '未选择'
       })
     }
-    
-    // 检查是否为管理员
-    this.checkAdminPermission()
   },
-  
-  /**
-   * 检查管理员权限
-   */
-  checkAdminPermission() {
-    const userInfo = app.globalData.userInfo
-    const isAdmin = userInfo && userInfo.level === 99
-    this.setData({ isAdmin })
-    console.log(`[设置] 用户级别: ${userInfo?.level || '未知'}, 是否管理员: ${isAdmin}`)
-  },
-  
-  /**
-   * 跳转到超级管理页面
-   */
-  goToSuperAdmin() {
-    console.log('[设置] 跳转到超级管理页面')
-    tt.navigateTo({
-      url: '/pages/super_admin/super_admin'
-    })
-  },
+
   
   /**
    * 确保专业大类数据存在

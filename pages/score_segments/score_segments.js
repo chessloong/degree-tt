@@ -11,19 +11,13 @@ Page({
 
   onLoad: function(options) {
     console.log('[分段] 页面加载')
-    this.loadScoreSegmentsData()
   },
 
   onReady: function() {},
 
   onShow: function() {
-    // 检查缓存是否过期
-    const className = app.getUserClassName()
-    const cachedData = app.getArrayCacheItem('score_segments', 'class_name', className)
-    if (!cachedData) {
-      console.log('[分段] 缓存已过期或不存在')
-      this.loadScoreSegmentsData()
-    }
+    // 每次显示时加载/刷新数据（内部已有缓存保护）
+    this.loadScoreSegmentsData()
   },
 
   onHide: function() {},

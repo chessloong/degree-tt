@@ -11,17 +11,13 @@ Page({
 
   onLoad: function(options) {
     console.log('[院校] 页面加载')
-    this.loadSchoolsData()
   },
 
   onReady: function() {},
 
   onShow: function() {
-    // 检查缓存是否过期，如果过期则刷新数据
-    if (!app.isObjectCacheValid('schools')) {
-      console.log('[院校] 缓存已过期，刷新数据')
-      this.loadSchoolsData()
-    }
+    // 每次显示时加载/刷新数据（内部已有缓存保护）
+    this.loadSchoolsData()
   },
 
   onHide: function() {},

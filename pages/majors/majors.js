@@ -12,24 +12,13 @@ Page({
 
   onLoad: function(options) {
     console.log('[招生专业页] 页面加载')
-    this.loadData()
   },
 
   onReady: function() {},
 
   onShow: function() {
-    // 检查专业大类缓存是否过期
-    if (!app.isObjectCacheValid('major_classes')) {
-      console.log('[专业大类] 缓存已过期')
-      this.loadData()
-    }
-    // 检查专业列表缓存是否过期
-    const className = app.getUserClassName()
-    const majorsCache = app.getArrayCacheItem('majors', 'class_name', className)
-    if (!majorsCache) {
-      console.log('[专业列表] 缓存已过期或不存在')
-      this.loadMajorsData(className)
-    }
+    // 每次显示时加载/刷新数据（内部已有缓存保护）
+    this.loadData()
   },
 
   onHide: function() {},

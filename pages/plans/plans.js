@@ -15,13 +15,15 @@ Page({
     })
     
     console.log(`[计划] 页面加载，大类: ${className}`)
-    // 加载当前大类的数据
-    this.loadPlansData(className)
   },
 
   onReady: function() {},
 
-  onShow: function() {},
+  onShow: function() {
+    // 每次显示时加载/刷新数据
+    const className = this.data.className
+    this.loadPlansData(className)
+  },
 
   onHide: function() {},
 

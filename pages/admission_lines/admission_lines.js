@@ -11,19 +11,13 @@ Page({
 
   onLoad: function(options) {
     console.log('[投档线] 页面加载')
-    this.loadAdmissionLinesData()
   },
 
   onReady: function() {},
 
   onShow: function() {
-    // 检查缓存是否过期
-    const className = app.getUserClassName()
-    const cachedData = app.getArrayCacheItem('admission_lines', 'class_name', className)
-    if (!cachedData) {
-      console.log('[投档线] 缓存已过期或不存在')
-      this.loadAdmissionLinesData()
-    }
+    // 每次显示时加载/刷新数据（内部已有缓存保护）
+    this.loadAdmissionLinesData()
   },
 
   onHide: function() {},
