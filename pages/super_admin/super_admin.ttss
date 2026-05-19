@@ -132,9 +132,11 @@
   border-color: #0081ff;
 }
 
-/* ICP备案号输入框 */
+/* ICP备案号和版本号输入框 */
 .beian-input-full {
   width: 100%;
+  max-width: 680rpx;
+  box-sizing: border-box;
   height: 80rpx;
   padding: 0 20rpx;
   font-size: 28rpx;

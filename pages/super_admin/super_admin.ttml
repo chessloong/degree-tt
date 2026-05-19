@@ -211,5 +211,28 @@
         />
       </view>
     </view>
+
+    <!-- 版本号管理卡片 -->
+    <view class="de-card">
+      <view class="de-card-header" bindtap="toggleVersionCard">
+        <view class="de-card-title-left">
+          <view class="de-card-dot"></view>
+          <text class="de-card-title">版本号</text>
+          <text class="expand-icon">{{versionExpanded ? '▼' : '▶'}}</text>
+        </view>
+        <button class="btn-save-header" catchtap="saveVersion" disabled="{{saving}}">
+          {{saving ? '保存中...' : '保存'}}
+        </button>
+      </view>
+      <view wx:if="{{versionExpanded}}" class="de-card-content" style="padding: 30rpx;">
+        <input 
+          class="beian-input-full" 
+          type="text" 
+          value="{{version}}"
+          placeholder="请输入版本号，如：v1.0.0"
+          bindinput="onVersionInputChange"
+        />
+      </view>
+    </view>
   </view>
 </view>

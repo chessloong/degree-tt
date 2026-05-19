@@ -12,13 +12,16 @@ Page({
     isLogin: false,           // 登录状态
     nickname: '未登录',       // 用户昵称
     level: 0,                 // 用户等级
-    avatarUrl: ''             // 用户头像URL
+    avatarUrl: '',            // 用户头像URL
+    beian: '',                // 备案号
+    version: 'v1.0.0'         // 版本号
   },
   
   onLoad: function() {
     console.log('[设置] 页面加载')
     this.loadUserInfo()
     this.loadLoginStatus()
+    this.loadConfig()
   },
   
   onShow: function() {
@@ -26,6 +29,20 @@ Page({
     this.loadUserInfo()
     this.loadLoginStatus()
     this.ensureMajorClassesData()
+    this.loadConfig()
+  },
+  
+  /**
+   * 加载配置信息（备案号、版本号等）
+   */
+  loadConfig() {
+    const app = getApp()
+    const beian = app.getConfig('beian', '')
+    const version = app.getConfig('ver', 'v1.0.0')
+    this.setData({
+      beian: beian,
+      version: version
+    })
   },
   
   /**

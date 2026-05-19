@@ -86,7 +86,14 @@
       <image class="de-list-icon" src="/assets/svg/caution.svg" mode="aspectFit" />
       <text class="de-list-title">版本号</text>
       <view class="de-list-content">
-        <text class="de-list-text">v1.0.0</text>
+        <text class="de-list-text">{{version}}</text>
+      </view>
+    </view>
+    <view class="de-list-item">
+      <image class="de-list-icon" src="/assets/svg/caution.svg" mode="aspectFit" />
+      <text class="de-list-title">备案号</text>
+      <view class="de-list-content">
+        <text class="de-list-text">{{beian || '暂无'}}</text>
       </view>
     </view>
     <view class="de-list-item de-list-item-last de-list-item-clickable" bindtap="handleLogout">

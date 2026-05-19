@@ -4,10 +4,12 @@ Page({
   data: {
     expireConfig: {},        // 缓存过期配置
     icpBeian: '',            // ICP备案号
+    version: '',             // 版本号
     loading: true,           // 加载状态
     saving: false,           // 保存状态
     expireExpanded: false,   // 缓存配置卡片展开状态
-    beianExpanded: false     // ICP备案卡片展开状态
+    beianExpanded: false,    // ICP备案卡片展开状态
+    versionExpanded: false   // 版本号卡片展开状态
   },
   
   onLoad: function() {
@@ -19,6 +21,7 @@ Page({
     // 每次显示时刷新配置
     this.loadExpireConfig()
     this.loadIcpBeian()
+    this.loadVersion()
   },
   
   /**
@@ -303,6 +306,117 @@ Page({
       this.setData({ saving: false })
     } catch (err) {
       console.error('[超级管理] 保存备案号失败:', err)
+      tt.hideLoading()
+      tt.showToast({
+        title: '保存失败: ' + err.message,
+        icon: 'none'
+      })
+      this.setData({ saving: false })
+    }
+  },
+  
+  /**
+   * 加载版本号
+   */
+  loadVersion() {
+    const version = app.getConfig('ver', '')
+    this.setData({
+      version: version || ''
+    })
+    console.log('[超级管理] 版本号:', version || '未设置')
+  },
+  
+  /**
+   * 切换版本号卡片展开状态
+   */
+  toggleVersionCard() {
+    this.setData({
+      versionExpanded: !this.data.versionExpanded
+    })
+  },
+  
+  /**
+   * 版本号输入变化
+   */
+  onVersionInputChange(e) {
+    this.setData({
+      version: e.detail.value
+    })
+  },
+  
+  /**
+   * 保存版本号
+   */
+  async saveVersion() {
+    if (this.data.saving) {
+      return
+    }
+    
+    const version = this.data.version.trim()
+    
+    if (!version) {
+      tt.showToast({
+        title: '版本号不能为空',
+        icon: 'none'
+      })
+      return
+    }
+    
+    this.setData({ saving: true })
+    tt.showLoading({ title: '保存中...' })
+    
+    try {
+      const cloud = app.globalData.cloud
+      
+      if (!cloud) {
+        throw new Error('cloud 实例未初始化')
+      }
+      
+      console.log('[超级管理] 开始保存版本号:', version)
+      
+      const response = await new Promise((resolve, reject) => {
+        cloud.callContainer({
+          path: '/updateConfig',
+          init: {
+            method: 'POST',
+            timeout: 30000,
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              configKey: 'ver',
+              configValue: version
+            })
+          },
+          success: resolve,
+          fail: reject
+        })
+      })
+      
+      if (response.statusCode !== 200) {
+        throw new Error(`接口失败，状态码: ${response.statusCode}`)
+      }
+      
+      const result = typeof response.data === 'string' ? JSON.parse(response.data) : response.data
+      
+      if (result.code !== 0) {
+        throw new Error(result.message || '更新失败')
+      }
+      
+      console.log('[超级管理] 版本号保存成功:', result.data)
+      
+      tt.hideLoading()
+      tt.showToast({
+        title: '保存成功',
+        icon: 'success'
+      })
+      
+      // 重新加载配置（从云端拉取最新）
+      await app.loadAppConfig()
+      
+      this.setData({ saving: false })
+    } catch (err) {
+      console.error('[超级管理] 保存版本号失败:', err)
       tt.hideLoading()
       tt.showToast({
         title: '保存失败: ' + err.message,
