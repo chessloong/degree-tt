@@ -1,12 +1,12 @@
 <view class="container">
-  <view class="login-section">
-    <image class="avatar" src="/assets/default-avatar.png" mode="aspectFill" />
+  <view class="login-section" bindtap="handleLogin">
+    <image class="avatar" src="{{isLogin && avatarUrl ? avatarUrl : '/assets/default-avatar.png'}}" mode="aspectFill" />
     <view class="user-info">
-      <text class="username">未登录</text>
-      <text class="user-desc">点击登录享受更多服务</text>
+      <text class="username">{{isLogin ? nickname : '未登录'}}</text>
+      <text class="user-desc">{{isLogin ? `Lv.${level}` : '点击登录享受更多服务'}}</text>
     </view>
     <view class="login-btn">
-      <text class="login-btn-text">登录</text>
+      <text class="login-btn-text">{{isLogin ? '更新信息' : '登录'}}</text>
     </view>
   </view>
 
@@ -15,7 +15,7 @@
       <image class="de-list-icon" src="/assets/svg/more.svg" mode="aspectFit" />
       <text class="de-list-title">我的等级</text>
       <view class="de-list-content">
-        <text class="de-list-text">Lv.0</text>
+        <text class="de-list-text">Lv.{{level}}</text>
         <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
@@ -89,7 +89,7 @@
         <text class="de-list-text">v1.0.0</text>
       </view>
     </view>
-    <view class="de-list-item de-list-item-last de-list-item-clickable">
+    <view class="de-list-item de-list-item-last de-list-item-clickable" bindtap="handleLogout">
       <text class="de-list-title de-logout-text">退出登录</text>
     </view>
   </view>

@@ -9,15 +9,24 @@
     <!-- 配置列表卡片 -->
     <view class="de-card">
       <view class="de-card-header">
-        <view class="de-card-title-left">
+        <view class="de-card-title-left" bindtap="toggleExpireCard">
           <view class="de-card-dot"></view>
           <text class="de-card-title">缓存时长管理</text>
+          <text class="expand-icon">{{expireExpanded ? '▼' : '▶'}}</text>
         </view>
-        <button class="btn-save-header" bindtap="saveConfig" disabled="{{saving}}">
-          {{saving ? '保存中...' : '保存'}}
-        </button>
+        <view class="header-actions">
+          <picker mode="selector" range="{{['10分钟', '1天', '1个月', '随机']}}" bindchange="batchSetExpire">
+            <view class="batch-select">
+              <text class="batch-text">批量设置</text>
+              <text class="batch-arrow">▼</text>
+            </view>
+          </picker>
+          <button class="btn-save-header" catchtap="saveConfig" disabled="{{saving}}">
+            {{saving ? '保存中...' : '保存'}}
+          </button>
+        </view>
       </view>
-      <view class="de-card-content">
+      <view wx:if="{{expireExpanded}}" class="de-card-content">
         <!-- default 配置 -->
         <view class="config-item">
           <view class="config-label">
@@ -182,16 +191,17 @@
 
     <!-- ICP备案号管理卡片 -->
     <view class="de-card">
-      <view class="de-card-header">
+      <view class="de-card-header" bindtap="toggleBeianCard">
         <view class="de-card-title-left">
           <view class="de-card-dot"></view>
           <text class="de-card-title">ICP备案号</text>
+          <text class="expand-icon">{{beianExpanded ? '▼' : '▶'}}</text>
         </view>
-        <button class="btn-save-header" bindtap="saveIcpBeian" disabled="{{saving}}">
+        <button class="btn-save-header" catchtap="saveIcpBeian" disabled="{{saving}}">
           {{saving ? '保存中...' : '保存'}}
         </button>
       </view>
-      <view class="de-card-content" style="padding: 30rpx;">
+      <view wx:if="{{beianExpanded}}" class="de-card-content" style="padding: 30rpx;">
         <input 
           class="beian-input-full" 
           type="text" 

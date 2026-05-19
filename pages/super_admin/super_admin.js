@@ -5,7 +5,9 @@ Page({
     expireConfig: {},        // 缓存过期配置
     icpBeian: '',            // ICP备案号
     loading: true,           // 加载状态
-    saving: false            // 保存状态
+    saving: false,           // 保存状态
+    expireExpanded: false,   // 缓存配置卡片展开状态
+    beianExpanded: false     // ICP备案卡片展开状态
   },
   
   onLoad: function() {
@@ -56,6 +58,63 @@ Page({
     expireConfig[key] = value
     
     this.setData({ expireConfig })
+  },
+  
+  /**
+   * 头部操作区域点击（阻止冒泡）
+   */
+  onHeaderActionsTap() {
+    // 阻止事件冒泡到 toggleExpireCard
+  },
+  
+  /**
+   * 批量选择器点击（阻止冒泡）
+   */
+  onBatchSelectTap() {
+    // 阻止事件冒泡到 toggleExpireCard
+  },
+  
+  /**
+   * 批量设置缓存时长
+   */
+  batchSetExpire(e) {
+    const index = e.detail.value
+    const keys = ['default', 'schools', 'major_classes', 'majors', 'plans', 'preview_plans', 'score_segments', 'control_lines', 'admission_lines', 'calendar_events']
+    
+    let newValue = 10
+    let message = ''
+    
+    switch(index) {
+      case 0:
+        newValue = 10
+        message = '已全部设为10分钟'
+        break
+      case 1:
+        newValue = 1440
+        message = '已全部设为1天'
+        break
+      case 2:
+        newValue = 43200
+        message = '已全部设为1个月'
+        break
+      case 3:
+        const randomConfig = { ...this.data.expireConfig }
+        keys.forEach(key => {
+          randomConfig[key] = Math.floor(Math.random() * 21) + 10
+        })
+        this.setData({ expireConfig: randomConfig })
+        tt.showToast({ title: '已随机设置', icon: 'success' })
+        return
+      default:
+        return
+    }
+    
+    const newConfig = { ...this.data.expireConfig }
+    keys.forEach(key => {
+      newConfig[key] = newValue
+    })
+    this.setData({ expireConfig: newConfig })
+    tt.showToast({ title: message, icon: 'success' })
   },
   
   /**
@@ -131,6 +190,24 @@ Page({
       })
       this.setData({ saving: false })
     }
+  },
+  
+  /**
+   * 切换缓存配置卡片展开状态
+   */
+  toggleExpireCard() {
+    this.setData({
+      expireExpanded: !this.data.expireExpanded
+    })
+  },
+  
+  /**
+   * 切换ICP备案卡片展开状态
+   */
+  toggleBeianCard() {
+    this.setData({
+      beianExpanded: !this.data.beianExpanded
+    })
   },
   
   /**

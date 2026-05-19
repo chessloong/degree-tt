@@ -8,18 +8,150 @@ Page({
     multiIndex: [0, 0],       // 当前选择的索引 [分组索引, 大类索引]
     multiArray: [[], []],     // 多列数据 [[分组列表], [对应大类列表]]
     groups: [],               // 分组后的数据结构
-    isAdmin: false            // 是否为管理员用户
+    isAdmin: false,           // 是否为管理员用户
+    isLogin: false,           // 登录状态
+    nickname: '未登录',       // 用户昵称
+    level: 0,                 // 用户等级
+    avatarUrl: ''             // 用户头像URL
   },
   
   onLoad: function() {
     console.log('[设置] 页面加载')
     this.loadUserInfo()
+    this.loadLoginStatus()
   },
   
   onShow: function() {
     // 每次显示时刷新用户信息和专业大类数据
     this.loadUserInfo()
+    this.loadLoginStatus()
     this.ensureMajorClassesData()
+  },
+  
+  /**
+   * 加载登录状态
+   */
+  loadLoginStatus() {
+    const app = getApp()
+    const isLogin = app.isLoggedIn()
+    
+    // 如果标记为已登录但缺少必要信息，重新获取
+    if (isLogin && (!app.globalData.userInfo || !app.globalData.userInfo.nickname)) {
+      console.log('[设置] 登录状态不一致，重新获取用户信息')
+      if (app.globalData.openId) {
+        app.getUserInfo(app.globalData.openId)
+      }
+    }
+    
+    const nickname = app.getUserNickname()
+    const level = app.getUserLevel()
+    const avatarUrl = app.getUserAvatar()
+    
+    console.log(`[设置] loadLoginStatus - isLogin: ${isLogin}, nickname: ${nickname}, level: ${level}, avatarUrl: ${avatarUrl}`)
+    
+    this.setData({
+      isLogin: isLogin,
+      nickname: nickname,
+      level: level,
+      avatarUrl: avatarUrl
+    })
+  },
+  
+  /**
+   * 登录按钮点击处理
+   * 根据登录状态决定是登录还是更新头像昵称
+   */
+  handleLogin() {
+    const app = getApp()
+    
+    // 如果已登录，点击则执行更新头像昵称
+    if (app.isLoggedIn()) {
+      this.updateDouyinProfile()
+      return
+    }
+    
+    // 未登录，执行登录流程
+    tt.showLoading({ title: '登录中...' })
+    
+    // 先获取抖音用户信息（必须在用户点击事件中直接调用）
+    app.getDouyinUserProfile().then((douyinInfo) => {
+      console.log('[设置] 获取抖音信息:', douyinInfo)
+      
+      // 调用登录方法
+      return app.doLogin().then((success) => {
+        tt.hideLoading()
+        if (success) {
+          // 如果获取到了抖音信息，更新用户信息
+          if (douyinInfo.avatarUrl || douyinInfo.nickName) {
+            return app.getUserInfo(app.globalData.openId, douyinInfo)
+          }
+          return true
+        }
+        return false
+      })
+    }).then((success) => {
+      if (success) {
+        tt.showToast({ title: '登录成功', icon: 'success' })
+        this.loadLoginStatus()
+        this.loadUserInfo()
+        this.checkAdminPermission()
+      } else {
+        tt.showToast({ title: '登录失败', icon: 'none' })
+      }
+    }).catch((err) => {
+      tt.hideLoading()
+      console.error('[设置] 登录异常:', err)
+      // 如果获取抖音信息失败，仍尝试登录
+      this.tryLoginWithoutDouyinInfo()
+    })
+  },
+  
+  /**
+   * 不使用抖音信息登录
+   */
+  tryLoginWithoutDouyinInfo() {
+    const app = getApp()
+    
+    tt.showLoading({ title: '登录中...' })
+    
+    app.doLogin().then((success) => {
+      tt.hideLoading()
+      if (success) {
+        tt.showToast({ title: '登录成功', icon: 'success' })
+        this.loadLoginStatus()
+        this.loadUserInfo()
+        this.checkAdminPermission()
+      } else {
+        tt.showToast({ title: '登录失败', icon: 'none' })
+      }
+    }).catch((err) => {
+      tt.hideLoading()
+      console.error('[设置] 登录异常:', err)
+      tt.showToast({ title: '登录异常', icon: 'none' })
+    })
+  },
+  
+  /**
+   * 退出登录按钮点击处理
+   */
+  handleLogout() {
+    tt.showModal({
+      title: '确认退出',
+      content: '确定要退出登录吗？',
+      success: (res) => {
+        if (res.confirm) {
+          const app = getApp()
+          app.logout()
+          
+          // 刷新页面状态
+          this.loadLoginStatus()
+          this.loadUserInfo()
+          this.checkAdminPermission()
+          
+          tt.showToast({ title: '已退出登录', icon: 'success' })
+        }
+      }
+    })
   },
   
   /**
@@ -41,6 +173,67 @@ Page({
     
     // 检查是否为管理员
     this.checkAdminPermission()
+  },
+  
+  /**
+   * 更新抖音头像昵称
+   */
+  updateDouyinProfile() {
+    const app = getApp()
+    
+    // 检查是否已登录
+    if (!app.isLoggedIn()) {
+      tt.showToast({ title: '请先登录', icon: 'none' })
+      return
+    }
+    
+    tt.showLoading({ title: '更新中...' })
+    
+    // 获取最新的抖音用户信息
+    app.getDouyinUserProfile().then((douyinInfo) => {
+      console.log('[设置] 获取到抖音信息:', douyinInfo)
+      console.log('[设置] 当前globalData.userInfo:', app.globalData.userInfo)
+      
+      if (douyinInfo.avatarUrl || douyinInfo.nickName) {
+        // 先更新本地全局数据，确保页面能立即显示
+        if (app.globalData.userInfo) {
+          app.globalData.userInfo = {
+            ...app.globalData.userInfo,
+            avatarUrl: douyinInfo.avatarUrl || app.globalData.userInfo.avatarUrl,
+            nickname: douyinInfo.nickName || app.globalData.userInfo.nickname
+          }
+          tt.setStorageSync('userInfo', JSON.stringify(app.globalData.userInfo))
+          console.log('[设置] 已更新本地数据:', app.globalData.userInfo)
+        }
+        
+        // 调用云函数更新用户信息
+        return app.getUserInfo(app.globalData.openId, douyinInfo)
+      } else {
+        tt.hideLoading()
+        tt.showToast({ title: '未获取到用户信息', icon: 'none' })
+        return Promise.reject('未获取到用户信息')
+      }
+    }).then((userInfo) => {
+      console.log('[设置] 云函数返回的用户信息:', userInfo)
+      console.log('[设置] 更新后globalData.userInfo:', app.globalData.userInfo)
+      
+      // 检查云函数是否真正返回了有效的用户信息
+      if (!userInfo) {
+        tt.hideLoading()
+        tt.showToast({ title: '同步失败，请重试', icon: 'none' })
+        return
+      }
+      
+      tt.hideLoading()
+      tt.showToast({ title: '更新成功', icon: 'success' })
+      // 刷新页面显示
+      this.loadLoginStatus()
+      this.loadUserInfo()
+    }).catch((err) => {
+      tt.hideLoading()
+      console.error('[设置] 更新头像昵称失败:', err)
+      tt.showToast({ title: '更新失败', icon: 'none' })
+    })
   },
   
   /**

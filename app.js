@@ -100,6 +100,17 @@ App({
               this.globalData.unionId = result.data.unionId || ''
               console.log('[OpenID] 获取成功')
               
+              // 尝试从本地缓存恢复用户信息
+              try {
+                const cachedUserInfo = tt.getStorageSync('userInfo')
+                if (cachedUserInfo) {
+                  this.globalData.userInfo = JSON.parse(cachedUserInfo)
+                  console.log('[OpenID] 从缓存恢复用户信息')
+                }
+              } catch (err) {
+                console.error('[OpenID] 恢复缓存用户信息失败:', err)
+              }
+              
               // 获取openid后，调用getUser云函数获取或创建用户信息
               this.getUserInfo(this.globalData.openId).then(() => {
                 resolve()
@@ -123,8 +134,8 @@ App({
     })
   },
   
-  // 获取或创建用户信息
-  async getUserInfo(openid) {
+  // 获取或创建用户信息（支持传入抖音用户信息）
+  async getUserInfo(openid, douyinInfo = {}) {
     return new Promise((resolve) => {
       if (!openid) {
         console.error('openid为空，无法获取用户信息')
@@ -139,6 +150,21 @@ App({
         return
       }
       
+      // 构建请求参数，包含抖音用户信息
+      const requestBody = {
+        openid: openid
+      }
+      
+      // 如果有抖音头像或昵称，添加到请求中
+      if (douyinInfo.avatarUrl) {
+        requestBody.avatarUrl = douyinInfo.avatarUrl
+      }
+      if (douyinInfo.nickName) {
+        requestBody.nickName = douyinInfo.nickName
+      }
+      
+      console.log('[用户信息] 请求参数:', requestBody)
+      
       cloud.callContainer({
         path: '/getUser',
         init: {
@@ -147,22 +173,31 @@ App({
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            openid: openid
-          })
+          body: JSON.stringify(requestBody)
         },
         success: ({ statusCode, data }) => {
           if (statusCode === 200) {
             const result = typeof data === 'string' ? JSON.parse(data) : data
             if (result && result.code === 0 && result.data) {
+              let userInfo = result.data
+              
+              // 如果请求中包含抖音头像昵称，确保返回的数据也包含这些信息
+              // 防止云函数更新失败导致数据回退
+              if (douyinInfo.avatarUrl && !userInfo.avatarUrl) {
+                userInfo.avatarUrl = douyinInfo.avatarUrl
+              }
+              if (douyinInfo.nickName && !userInfo.nickname) {
+                userInfo.nickname = douyinInfo.nickName
+              }
+              
               // 更新全局变量
-              this.globalData.userInfo = result.data
-              console.log('[用户信息] 获取成功')
+              this.globalData.userInfo = userInfo
+              console.log('[用户信息] 获取成功，数据:', userInfo)
               
               // 更新storage
-              tt.setStorageSync('userInfo', JSON.stringify(result.data))
+              tt.setStorageSync('userInfo', JSON.stringify(userInfo))
               
-              resolve(result.data)
+              resolve(userInfo)
             } else {
               console.error('[用户信息] 获取失败:', result?.message || '未知错误')
               resolve(null)
@@ -646,5 +681,171 @@ App({
     }
 
     return !isExpired
+  },
+
+  // ============================================
+  // 统一登录状态管理方法
+  // ============================================
+
+  /**
+   * 统一登录方法（封装了checkSession、login、获取openid和用户信息的完整流程）
+   * @returns {Promise<boolean>} 返回登录是否成功
+   */
+  async doLogin() {
+    console.log('[登录] 开始统一登录流程')
+
+    try {
+      // 1. 先检查Session是否有效
+      await this.handleCheckSession()
+      console.log('[登录] Session有效')
+    } catch {
+      console.log('[登录] Session过期，重新登录')
+      const loginRes = await this.handleLogin()
+      if (loginRes.isLogin === false) {
+        console.error('[登录] 登录失败')
+        return false
+      }
+      console.log('[登录] 重新登录成功')
+    }
+
+    // 2. 获取OpenId
+    if (!this.globalData.openId) {
+      console.log('[登录] OpenId不存在，开始获取')
+      await this.getUserOpenId()
+    }
+
+    // 3. 获取用户信息（不自动获取抖音信息，因为需要用户主动授权）
+    if (this.globalData.openId) {
+      console.log('[登录] 获取用户信息')
+      await this.getUserInfo(this.globalData.openId)
+    }
+
+    // 5. 设置登录状态
+    this.globalData.isLogin = !!(this.globalData.openId && this.globalData.userInfo)
+    console.log(`[登录] 登录完成，状态: ${this.globalData.isLogin}`)
+
+    return this.globalData.isLogin
+  },
+
+  /**
+   * 退出登录方法
+   * 清除全局状态和本地缓存
+   */
+  logout() {
+    console.log('[登录] 开始退出登录')
+
+    // 1. 清除全局状态
+    this.globalData.isLogin = false
+    this.globalData.userInfo = {}
+    this.globalData.openId = ''
+    this.globalData.unionId = ''
+
+    // 2. 清除本地缓存
+    try {
+      tt.removeStorageSync('userInfo')
+      // 清除openid相关缓存
+      tt.removeStorageSync('openId')
+      tt.removeStorageSync('unionId')
+      console.log('[登录] 用户缓存已清除')
+    } catch (err) {
+      console.error('[登录] 清除用户缓存失败:', err)
+    }
+
+    console.log('[登录] 退出登录完成')
+  },
+
+  /**
+   * 获取当前登录状态
+   * @returns {boolean} 是否已登录
+   */
+  isLoggedIn() {
+    return this.globalData.isLogin && !!(this.globalData.openId && this.globalData.userInfo)
+  },
+
+  /**
+   * 获取用户昵称
+   * @returns {string} 用户昵称
+   */
+  getUserNickname() {
+    if (this.globalData.userInfo && this.globalData.userInfo.nickname) {
+      return this.globalData.userInfo.nickname
+    }
+    try {
+      const userInfoStr = tt.getStorageSync('userInfo')
+      if (userInfoStr) {
+        const userInfo = JSON.parse(userInfoStr)
+        return userInfo.nickname || '未登录'
+      }
+    } catch (err) {
+      console.error('[用户] 读取昵称失败:', err)
+    }
+    return '未登录'
+  },
+
+  /**
+   * 获取用户等级
+   * @returns {number} 用户等级
+   */
+  getUserLevel() {
+    if (this.globalData.userInfo && this.globalData.userInfo.level) {
+      return this.globalData.userInfo.level
+    }
+    try {
+      const userInfoStr = tt.getStorageSync('userInfo')
+      if (userInfoStr) {
+        const userInfo = JSON.parse(userInfoStr)
+        return userInfo.level || 0
+      }
+    } catch (err) {
+      console.error('[用户] 读取等级失败:', err)
+    }
+    return 0
+  },
+
+  /**
+   * 获取用户头像URL
+   * @returns {string} 用户头像URL
+   */
+  getUserAvatar() {
+    if (this.globalData.userInfo && this.globalData.userInfo.avatarUrl) {
+      return this.globalData.userInfo.avatarUrl
+    }
+    try {
+      const userInfoStr = tt.getStorageSync('userInfo')
+      if (userInfoStr) {
+        const userInfo = JSON.parse(userInfoStr)
+        return userInfo.avatarUrl || ''
+      }
+    } catch (err) {
+      console.error('[用户] 读取头像失败:', err)
+    }
+    return ''
+  },
+
+  /**
+   * 获取抖音用户信息（头像、昵称）
+   * @returns {Promise<Object>} 用户信息 {avatarUrl, nickName}
+   */
+  getDouyinUserProfile() {
+    return new Promise((resolve) => {
+      tt.getUserProfile({
+        desc: '用于完善用户资料',
+        success: (res) => {
+          console.log('[抖音] 获取用户信息成功:', res.userInfo)
+          resolve({
+            avatarUrl: res.userInfo.avatarUrl || '',
+            nickName: res.userInfo.nickName || ''
+          })
+        },
+        fail: (err) => {
+          console.error('[抖音] 获取用户信息失败:', err)
+          // 获取失败也继续，使用默认信息
+          resolve({
+            avatarUrl: '',
+            nickName: ''
+          })
+        }
+      })
+    })
   }
 })

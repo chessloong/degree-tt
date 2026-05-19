@@ -42,6 +42,9 @@
   padding: 16rpx 40rpx;
   background-color: #0081ff;
   border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .login-btn-text {
