@@ -7,14 +7,14 @@ Page({
     enrollmentStatsChart: {
       width: 0,
       height: 0,
-      visible: false,
+      loading: true,  // 加载状态
       data: null
     },
     // 历年报考及录取人数比图表
     examAdmissionChart: {
       width: 0,
       height: 0,
-      visible: false,
+      loading: true,  // 加载状态
       data: null
     },
     img_pre: "https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/"
@@ -44,9 +44,10 @@ Page({
       
       this.setData({
         'enrollmentStatsChart.data': cachedData,
-        'enrollmentStatsChart.visible': true
+        'enrollmentStatsChart.loading': false
       });
-      setTimeout(() => this.renderEnrollmentStatsChart(), 200);
+      // Canvas 已就绪，直接绘制
+      this.renderEnrollmentStatsChart();
       return;
     }
 
@@ -55,6 +56,7 @@ Page({
     const cloud = app.globalData.cloud;
     if (!cloud) {
       console.error('[首页-招生统计] cloud 实例未初始化');
+      this.setData({ 'enrollmentStatsChart.loading': false });
       return;
     }
 
@@ -75,6 +77,7 @@ Page({
 
       if (response.statusCode !== 200) {
         console.error('[首页-招生统计] 接口失败，状态码:', response.statusCode);
+        this.setData({ 'enrollmentStatsChart.loading': false });
         return;
       }
 
@@ -93,17 +96,20 @@ Page({
           console.log(`[首页-招生统计] ✅ 云端数据已缓存 - 键名: ${CACHE_KEY}, 数据量: ${validData.length}条`);
           this.setData({
             'enrollmentStatsChart.data': validData,
-            'enrollmentStatsChart.visible': true
+            'enrollmentStatsChart.loading': false
           });
-          setTimeout(() => this.renderEnrollmentStatsChart(), 200);
+          // Canvas 已就绪，直接绘制
+          this.renderEnrollmentStatsChart();
         } else {
           console.error('[首页-招生统计] 数据格式不正确');
         }
       } else {
         console.error('[首页-招生统计] 无有效数据');
+        this.setData({ 'enrollmentStatsChart.loading': false });
       }
     } catch (err) {
       console.error('[首页-招生统计] 调用云函数失败:', err);
+      this.setData({ 'enrollmentStatsChart.loading': false });
     }
   },
 
@@ -124,9 +130,10 @@ Page({
       
       this.setData({
         'examAdmissionChart.data': cachedData,
-        'examAdmissionChart.visible': true
+        'examAdmissionChart.loading': false
       });
-      setTimeout(() => this.renderExamAdmissionChart(), 200);
+      // Canvas 已就绪，直接绘制
+      this.renderExamAdmissionChart();
       return;
     }
 
@@ -135,6 +142,7 @@ Page({
     const cloud = app.globalData.cloud;
     if (!cloud) {
       console.error('[首页-报考录取] cloud 实例未初始化');
+      this.setData({ 'examAdmissionChart.loading': false });
       return;
     }
 
@@ -155,6 +163,7 @@ Page({
 
       if (response.statusCode !== 200) {
         console.error('[首页-报考录取] 接口失败，状态码:', response.statusCode);
+        this.setData({ 'examAdmissionChart.loading': false });
         return;
       }
 
@@ -173,17 +182,21 @@ Page({
           console.log(`[首页-报考录取] ✅ 云端数据已缓存 - 键名: ${CACHE_KEY}, 数据量: ${validData.length}条`);
           this.setData({
             'examAdmissionChart.data': validData,
-            'examAdmissionChart.visible': true
+            'examAdmissionChart.loading': false
           });
-          setTimeout(() => this.renderExamAdmissionChart(), 200);
+          // Canvas 已就绪，直接绘制
+          this.renderExamAdmissionChart();
         } else {
           console.error('[首页-报考录取] 数据格式不正确');
+          this.setData({ 'examAdmissionChart.loading': false });
         }
       } else {
         console.error('[首页-报考录取] 无有效数据');
+        this.setData({ 'examAdmissionChart.loading': false });
       }
     } catch (err) {
       console.error('[首页-报考录取] 调用云函数失败:', err);
+      this.setData({ 'examAdmissionChart.loading': false });
     }
   },
 
@@ -197,8 +210,7 @@ Page({
       return;
     }
 
-    await this.sleep(150);
-    
+    // Canvas 已就绪，直接获取尺寸
     const rect = await this.waitForCanvas('#enrollmentStatsChart', 50, 40);
     if (!rect) {
       console.error('[首页-招生统计] 获取 canvas 失败');
@@ -212,8 +224,6 @@ Page({
       'enrollmentStatsChart.width': canvasWidth,
       'enrollmentStatsChart.height': canvasHeight
     });
-
-    await this.sleep(50);
 
     const ctx = tt.createCanvasContext('enrollmentStatsChart', this);
     const data = chart.data;
@@ -314,8 +324,7 @@ Page({
       return;
     }
 
-    await this.sleep(150);
-    
+    // Canvas 已就绪，直接获取尺寸
     const rect = await this.waitForCanvas('#examAdmissionChart', 50, 40);
     if (!rect) {
       console.error('[首页-报考录取] 获取 canvas 失败');
@@ -329,8 +338,6 @@ Page({
       'examAdmissionChart.width': canvasWidth,
       'examAdmissionChart.height': canvasHeight
     });
-
-    await this.sleep(50);
 
     const ctx = tt.createCanvasContext('examAdmissionChart', this);
     const data = chart.data;
@@ -457,6 +464,7 @@ Page({
     const chart = this.data.enrollmentStatsChart;
     if (!chart.data || chart.data.length === 0) {
       // 无数据，先加载
+      this.setData({ 'enrollmentStatsChart.loading': true });
       tt.showLoading({ title: '加载中...' });
       this.loadEnrollmentStatsChart();
       setTimeout(() => tt.hideLoading(), 500);
@@ -465,8 +473,8 @@ Page({
 
     // 有数据，重新绘制（带动画）
     tt.showLoading({ title: '刷新中...' });
+    this.renderEnrollmentStatsChart();
     setTimeout(() => {
-      this.renderEnrollmentStatsChart();
       tt.hideLoading();
       tt.showToast({ title: '刷新成功', icon: 'success' });
     }, 200);
@@ -481,6 +489,7 @@ Page({
     const chart = this.data.examAdmissionChart;
     if (!chart.data || chart.data.length === 0) {
       // 无数据，先加载
+      this.setData({ 'examAdmissionChart.loading': true });
       tt.showLoading({ title: '加载中...' });
       this.loadExamAdmissionChart();
       setTimeout(() => tt.hideLoading(), 500);
@@ -489,8 +498,8 @@ Page({
 
     // 有数据，重新绘制（带动画）
     tt.showLoading({ title: '刷新中...' });
+    this.renderExamAdmissionChart();
     setTimeout(() => {
-      this.renderExamAdmissionChart();
       tt.hideLoading();
       tt.showToast({ title: '刷新成功', icon: 'success' });
     }, 200);

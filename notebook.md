@@ -2068,8 +2068,350 @@ YYYY-MM-DDTHH:mm:ss.sssZ
 
 ---
 
+### 28.10 图表开发命名规范
+
+#### 28.10.1 命名原则
+
+为支持未来添加多个图表，建立统一的命名体系，确保可扩展性和一致性。
+
+**核心原则：**
+- **语义化**：使用有意义的英文名称描述图表内容
+- **一致性**：前后端、缓存、配置使用统一的命名规则
+- **可扩展**：避免使用数字序号（如 chart1、chart2），使用业务含义命名
+
+#### 28.10.2 完整命名示例
+
+以"历年招生院校及专业数量统计"图表为例：
+
+| 层级 | 命名项 | 命名规则 | 示例值 |
+|------|--------|----------|--------|
+| **前端数据结构** | data对象名 | `[chartName]Chart`（小驼峰） | `enrollmentStatsChart` |
+| **数据属性** | width/height/visible/data | 嵌套在对象内 | `enrollmentStatsChart.width` |
+| **Canvas ID** | id/canvas-id | 与对象名一致 | `enrollmentStatsChart` |
+| **加载方法** | load方法 | `load[ChartName]Chart()` | `loadEnrollmentStatsChart()` |
+| **渲染方法** | render方法 | `render[ChartName]Chart()` | `renderEnrollmentStatsChart()` |
+| **刷新方法** | refresh方法 | `refresh[ChartName]Chart()` | `refreshEnrollmentStatsChart()` |
+| **云函数文件** | 文件名 | `get[ChartName].js` | `getEnrollmentStats.js` |
+| **云函数路径** | API path | `/get[ChartName]` | `/getEnrollmentStats` |
+| **缓存键名** | cache key | `[chart_name]_chart`（下划线分隔） | `enrollment_stats_chart` |
+| **云端配置键名** | expireMinute配置 | 与缓存键名一致 | `enrollment_stats_chart` |
+
+#### 28.10.3 命名转换规则
+
+**前端 → 后端/缓存的命名转换：**
+
+```javascript
+// 前端命名（小驼峰）
+enrollmentStatsChart
+examAdmissionChart
+scoreDistributionChart
+
+// 转换为后端/缓存命名（下划线分隔的小写）
+enrollment_stats_chart
+exam_admission_chart
+score_distribution_chart
+```
+
+**转换公式：**
+- 大写字母前插入下划线
+- 全部转为小写
+- 末尾添加 `_chart` 后缀
+
+#### 28.10.4 代码实现模板
+
+**1. 数据结构定义（index.js）**
+```javascript
+data: {
+  // 图表1：历年招生统计
+  enrollmentStatsChart: {
+    width: 0,
+    height: 0,
+    visible: false,
+    data: null
+  },
+  // 图表2：报考及录取人数比
+  examAdmissionChart: {
+    width: 0,
+    height: 0,
+    visible: false,
+    data: null
+  }
+}
+```
+
+**2. 数据加载方法（缓存优先策略）**
+```javascript
+async loadEnrollmentStatsChart() {
+  const CACHE_KEY = 'enrollment_stats_chart';
+  
+  // 检查缓存有效性
+  console.log('[首页-招生统计] 开始检查缓存');
+  const cachedData = app.getObjectCache(CACHE_KEY);
+  
+  if (cachedData) {
+    // 获取缓存有效期配置
+    const expireMinutes = app.getExpireMinutes(CACHE_KEY);
+    console.log(`[首页-招生统计] ✅ 缓存有效 - 键名: ${CACHE_KEY}, 有效期: ${expireMinutes}分钟`);
+    
+    this.setData({
+      'enrollmentStatsChart.data': cachedData,
+      'enrollmentStatsChart.visible': true
+    });
+    setTimeout(() => this.renderEnrollmentStatsChart(), 200);
+    return;
+  }
+
+  console.log(`[首页-招生统计] ❌ 缓存无效或不存在 - 键名: ${CACHE_KEY}, 将从云端拉取`);
+  
+  try {
+    const res = await tt.cloud.callContainer({
+      path: '/getEnrollmentStats',
+      init: { method: 'GET' }
+    });
+    
+    const parsedData = JSON.parse(res.data);
+    if (parsedData.code === 0 && parsedData.data) {
+      const validData = parsedData.data;
+      
+      if (validData.length > 0) {
+        app.setObjectCache(CACHE_KEY, validData);
+        console.log(`[首页-招生统计] ✅ 云端数据已缓存 - 键名: ${CACHE_KEY}, 数据量: ${validData.length}条`);
+        
+        this.setData({
+          'enrollmentStatsChart.data': validData,
+          'enrollmentStatsChart.visible': true
+        });
+        setTimeout(() => this.renderEnrollmentStatsChart(), 200);
+      }
+    }
+  } catch (err) {
+    console.error('[首页-招生统计] 加载失败:', err);
+  }
+}
+```
+
+**3. 图表渲染方法**
+```javascript
+async renderEnrollmentStatsChart() {
+  const chart = this.data.enrollmentStatsChart;
+  if (!chart.data || chart.data.length === 0) {
+    console.error('[首页-招生统计] 数据为空');
+    return;
+  }
+
+  await this.sleep(150);
+  
+  const rect = await this.waitForCanvas('#enrollmentStatsChart', 50, 40);
+  if (!rect) {
+    console.error('[首页-招生统计] 获取 canvas 失败');
+    return;
+  }
+
+  const canvasWidth = rect.width;
+  const canvasHeight = Math.round(rect.width * 46 / 75);
+
+  this.setData({
+    'enrollmentStatsChart.width': canvasWidth,
+    'enrollmentStatsChart.height': canvasHeight
+  });
+
+  await this.sleep(50);
+
+  const ctx = tt.createCanvasContext('enrollmentStatsChart', this);
+  const data = chart.data;
+  
+  const categories = data.map(item => item.year + '年');
+  const schoolData = data.map(item => item.schoolCount);
+  const majorData = data.map(item => item.majorCount);
+
+  // 动态计算 Y 轴范围
+  const maxMajor = Math.max(...majorData);  // 最大专业数
+  
+  // 最小值：固定为 0
+  const yAxisMin = 0;
+  // 最大值：比最大专业数大的 50 整倍数
+  const yAxisMax = Math.ceil(maxMajor / 50) * 50;
+
+  new uCharts({
+    _this: this,
+    canvasId: 'enrollmentStatsChart',
+    type: 'line',
+    animation: true,
+    timing: 'easeInOut',
+    duration: 1000,
+    fontSize: 11,
+    legend: {},
+    categories: categories,
+    series: [
+      {
+        name: '院校数量',
+        data: schoolData,
+        color: '#ff6b6b',
+        lineType: 'curve',
+        width: 3
+      },
+      {
+        name: '专业数量',
+        data: majorData,
+        color: '#4ecdc4',
+        lineType: 'curve',
+        width: 3
+      }
+    ],
+    padding: [15, 20, 10, 15],
+    xAxis: {
+      disableGrid: true,
+      axisLine: true,
+      axisLabel: { fontSize: 10 }
+    },
+    yAxis: {
+      disableGrid: true,
+      disabled: true,
+      gridType: 'dash',
+      dashLength: 2,
+      axisLabel: { show: false },
+      data: [{
+        min: yAxisMin,
+        max: yAxisMax
+      }]
+    },
+    legend: {
+      show: true,
+      position: 'bottom',
+      lineHeight: 20,
+      fontSize: 10
+    },
+    extra: {
+      line: {
+        type: 'curve',
+        width: 3,
+        activeType: 'hilight'
+      }
+    }
+  });
+  console.log('[首页-招生统计] 绘制完成');
+}
+```
+
+**4. 刷新方法（重绘而非强制刷新）**
+```javascript
+refreshEnrollmentStatsChart() {
+  const chart = this.data.enrollmentStatsChart;
+  if (!chart.data || chart.data.length === 0) {
+    // 无数据才加载
+    this.loadEnrollmentStatsChart();
+    return;
+  }
+  // 有数据直接重新绘制（带动画）
+  setTimeout(() => {
+    this.renderEnrollmentStatsChart();
+    tt.showToast({ title: '刷新成功', icon: 'success' });
+  }, 200);
+}
+```
+
+**5. 模板文件（index.ttml）**
+```html
+<!-- 图表卡片：条件渲染控制显隐 -->
+<view wx:if="{{enrollmentStatsChart.visible}}" class="de-card">
+  <view class="de-card-header">
+    <text class="de-card-title">历年招生院校及专业数量统计</text>
+    <image class="de-card-icon-item" src="/assets/svg/redo.svg" mode="aspectFit" bindtap="refreshEnrollmentStatsChart" />
+  </view>
+  <view class="de-chart-wrapper">
+    <canvas 
+      id="enrollmentStatsChart" 
+      canvas-id="enrollmentStatsChart"
+      style="width: {{enrollmentStatsChart.width > 0 ? enrollmentStatsChart.width + 'px' : '100%'}}; 
+             height: {{enrollmentStatsChart.height > 0 ? enrollmentStatsChart.height + 'px' : '200px'}};">
+    </canvas>
+  </view>
+</view>
+```
+
+**6. 云函数文件（getEnrollmentStats.js）**
+```javascript
+/**
+ * 获取历年招生统计数据
+ * 从 degree_plans 集合统计各年份的院校数量和专业数量
+ */
+let { dySDK } = require("@open-dy/node-server-sdk");
+
+module.exports = async function (params, context) {
+  try {
+    const db = dySDK.database();
+    const $ = db.command.aggregate;
+
+    // 统计各年份的院校数量（去重）
+    const schoolStats = await db.collection('degree_plans')
+      .aggregate()
+      .group({
+        _id: '$year',
+        schools: $.addToSet('$school_id'),
+        majors: $.addToSet('$major_id')
+      })
+      .project({
+        year: '$_id',
+        schoolCount: $.size('$schools'),
+        majorCount: $.size('$majors')
+      })
+      .sort({ year: 1 })
+      .end();
+
+    return { code: 0, message: "success", data: schoolStats.data || [] };
+  } catch (err) {
+    return { code: 500, message: "统计失败", error: err.message };
+  }
+};
+```
+
+**7. 云端配置（degree_app_configs 集合）**
+```javascript
+// expireMinute 配置中添加对应键名
+{
+  key: 'expireMinute',
+  value: {
+    "default": 10,
+    "enrollment_stats_chart": 10,  // 招生统计图表缓存时长（分钟）
+    "exam_admission_chart": 10,     // 报考录取图表缓存时长（分钟）
+    // ... 其他配置
+  }
+}
+```
+
+#### 28.10.5 实际案例对照表
+
+| 图表名称 | 前端对象 | Canvas ID | 缓存键 | 云函数 | API路径 |
+|---------|---------|-----------|--------|--------|---------|
+| 历年招生统计 | `enrollmentStatsChart` | `enrollmentStatsChart` | `enrollment_stats_chart` | `getEnrollmentStats.js` | `/getEnrollmentStats` |
+| 报考及录取人数比 | `examAdmissionChart` | `examAdmissionChart` | `exam_admission_chart` | `getExamAdmissionStats.js` | `/getExamAdmissionStats` |
+| （未来扩展）分数分布 | `scoreDistributionChart` | `scoreDistributionChart` | `score_distribution_chart` | `getScoreDistribution.js` | `/getScoreDistribution` |
+| （未来扩展）录取趋势 | `admissionTrendsChart` | `admissionTrendsChart` | `admission_trends_chart` | `getAdmissionTrends.js` | `/getAdmissionTrends` |
+
+#### 28.10.6 关键注意事项
+
+1. **Canvas ID 必须唯一**：每个图表使用独立的 Canvas ID，避免冲突
+2. **缓存键命名统一**：前端、后端、云端配置使用相同的缓存键名
+3. **云函数部署**：新增云函数后必须手动上传部署才能生效
+4. **延迟渲染策略**：setData 后延迟 200ms + 150ms + 50ms 确保 DOM 就绪
+5. **条件渲染控制**：使用 `wx:if="{{[chartName]Chart.visible}}"` 控制卡片显隐
+6. **刷新逻辑**：有数据时直接重绘（带动画），无数据时才从云端拉取
+7. **Y轴动态计算**：根据实际数据动态设置 Y 轴范围，避免过多空白
+
+#### 28.10.7 常见错误排查
+
+| 问题现象 | 可能原因 | 解决方案 |
+|---------|---------|----------|
+| 图表不显示 | Canvas 元素不存在 | 检查 wx:if 条件，确保 visible=true |
+| 只显示点没有曲线 | uCharts 配置错误 | 使用 `lineType: 'curve'` 而非 `lineStyle: 'smooth'` |
+| 云函数 404 | 未上传部署 | 右键云函数目录 → 上传并部署：云端安装依赖 |
+| 缓存无效 | 缓存键名不一致 | 检查前端、后端、配置中的缓存键是否完全一致 |
+| Y轴刻度仍显示 | 配置不完整 | 同时设置 `disabled: true` 和 `axisLabel: { show: false }` |
+
+---
+
 *文档生成时间：2026年5月*
-*版本：1.0*
+*版本：1.1*
 3. **注释**：重要逻辑块添加中文注释说明
 
 ### 28.4 API文档查询规范

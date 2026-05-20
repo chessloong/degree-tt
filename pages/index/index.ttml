@@ -32,7 +32,7 @@
     </view>
 
     <!-- 历年招生院校及专业数量统计图表 -->
-    <view wx:if="{{enrollmentStatsChart.visible}}" class="de-card" style="margin-top: 32rpx;">
+    <view class="de-card" style="margin-top: 32rpx;">
         <view class="de-card-header">
             <view class="de-card-title-left">
                 <view class="de-card-dot"></view>
@@ -43,14 +43,21 @@
             </view>
         </view>
         <view class="de-card-content">
-            <view class="de-chart-wrapper" style="height: {{enrollmentStatsChart.height > 0 ? enrollmentStatsChart.height + 'px' : '200px'}}; padding: 8rpx 0;">
+            <!-- 加载状态提示 -->
+            <view wx:if="{{enrollmentStatsChart.loading}}" class="de-chart-loading">
+                <view class="de-chart-loading-icon">
+                    <view class="de-chart-loading-ring"></view>
+                </view>
+            </view>
+            <!-- 图表容器（Canvas 始终存在） -->
+            <view wx:else class="de-chart-wrapper" style="height: {{enrollmentStatsChart.height > 0 ? enrollmentStatsChart.height + 'px' : '200px'}}; padding: 8rpx 0;">
                 <canvas id="enrollmentStatsChart" canvas-id="enrollmentStatsChart" class="de-chart-canvas" style="width: {{enrollmentStatsChart.width > 0 ? enrollmentStatsChart.width + 'px' : '100%'}}; height: {{enrollmentStatsChart.height > 0 ? enrollmentStatsChart.height + 'px' : '200px'}};"></canvas>
             </view>
         </view>
     </view>
 
     <!-- 历年报考及录取人数比图表 -->
-    <view wx:if="{{examAdmissionChart.visible}}" class="de-card" style="margin-top: 32rpx;">
+    <view class="de-card" style="margin-top: 32rpx;">
         <view class="de-card-header">
             <view class="de-card-title-left">
                 <view class="de-card-dot"></view>
@@ -61,7 +68,14 @@
             </view>
         </view>
         <view class="de-card-content">
-            <view class="de-chart-wrapper" style="height: {{examAdmissionChart.height > 0 ? examAdmissionChart.height + 'px' : '200px'}}; padding: 8rpx 0;">
+            <!-- 加载状态提示 -->
+            <view wx:if="{{examAdmissionChart.loading}}" class="de-chart-loading">
+                <view class="de-chart-loading-icon">
+                    <view class="de-chart-loading-ring"></view>
+                </view>
+            </view>
+            <!-- 图表容器（Canvas 始终存在） -->
+            <view wx:else class="de-chart-wrapper" style="height: {{examAdmissionChart.height > 0 ? examAdmissionChart.height + 'px' : '200px'}}; padding: 8rpx 0;">
                 <canvas id="examAdmissionChart" canvas-id="examAdmissionChart" class="de-chart-canvas" style="width: {{examAdmissionChart.width > 0 ? examAdmissionChart.width + 'px' : '100%'}}; height: {{examAdmissionChart.height > 0 ? examAdmissionChart.height + 'px' : '200px'}};"></canvas>
             </view>
         </view>
