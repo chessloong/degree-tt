@@ -3,277 +3,516 @@ import uCharts from '../../common/u-charts.min.js'
 
 Page({
   data: {
-    chartWidth: 0,
-    chartHeight: 0,
-    chartWidth2: 0,
-    chartHeight2: 0,
-    chartWidth3: 0,
-    chartHeight3: 0,
-    img_pre:"https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/"
+    // 历年招生统计图表
+    enrollmentStatsChart: {
+      width: 0,
+      height: 0,
+      visible: false,
+      data: null
+    },
+    // 历年报考及录取人数比图表
+    examAdmissionChart: {
+      width: 0,
+      height: 0,
+      visible: false,
+      data: null
+    },
+    img_pre: "https://ttab77ddca3510275d01-env-qmbjip2dbt.tos-cn-beijing.volces.com/backimg/"
   },
-  
+
   onLoad: function() {},
-  
+
   onReady() {
-    // 获取系统信息
-    const systemInfo = tt.getSystemInfoSync();
-    const pixelRatio = systemInfo.pixelRatio;
-    
-    // 获取卡片内容区尺寸
-    tt.createSelectorQuery()
-      .select('.de-card-content')
-      .boundingClientRect(rect => {
-        if (!rect) return;
-        
-        const canvasWidth = rect.width;
-        const canvasHeight = Math.round(rect.width * 46 / 75); // 75:46 比例
-        
-        // 设置数据
-        this.setData({
-          chartWidth: canvasWidth,
-          chartHeight: canvasHeight
-        });
-        
-        // 等待渲染完成后绘制图表
-        setTimeout(() => {
-          // 获取 canvas 绘图上下文
-          const ctx = tt.createCanvasContext('homeChart', this);
-        
-        // 动态计算柱宽
-        const categoryCount = 7;
-        const seriesCount = 2;
-        const padding = 30;
-        const groupSpacing = 20;
-        const availableWidth = canvasWidth - padding;
-        const groupWidth = availableWidth / categoryCount;
-        const columnWidth = (groupWidth - groupSpacing) / seriesCount;
-        
-        // 创建 uCharts 实例
-        new uCharts({
-          $this: this,
-          canvasId: 'homeChart',
-          context: ctx,
-          type: 'column',
-          pixelRatio: 1,
-          width: canvasWidth,
-          height: canvasHeight,
-          categories: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-          series: [
-            { name: '学习时长', data: [2, 3, 2.5, 4, 3.5, 5, 4.5], color: '#0081ff' },
-            { name: '做题数量', data: [20, 30, 25, 40, 35, 50, 45], color: '#39b54a' }
-          ],
-          padding: [15, 15, 0, 15],
-          xAxis: {
-            disableGrid: false,
-          },
-          yAxis: {
-            gridType: 'dash',
-            dashLength: 2,
-            data: [{
-              min: 0
-            }]
-          },
-          legend: {
-            show: true,
-            position: 'bottom',
-            lineHeight: 25
-          },
-          extra: {
-            column: {
-              type: 'group',
-              width: columnWidth,
-              activeType: 'hilight'
-            }
-          }
-        });
-        }, 300); // 延迟300ms等待渲染
-      })
-      .exec();
-    
-    // 初始化第二个图表
-    tt.createSelectorQuery()
-      .selectAll('.de-card-content')
-      .boundingClientRect(rects => {
-        if (!rects || rects.length < 2) return;
-        
-        const rect = rects[1]; // 第二个卡片内容区
-        const canvasWidth = rect.width;
-        const canvasHeight = Math.round(rect.width * 46 / 75);
-        
-        this.setData({
-          chartWidth2: canvasWidth,
-          chartHeight2: canvasHeight
-        });
-        
-        setTimeout(() => {
-          const ctx = tt.createCanvasContext('homeChart2', this);
-          
-          const categoryCount = 6;
-          const seriesCount = 1;
-          const padding = 30;
-          const groupSpacing = 20;
-          const availableWidth = canvasWidth - padding;
-          const groupWidth = availableWidth / categoryCount;
-          const columnWidth = (groupWidth - groupSpacing) / seriesCount;
-          
-          new uCharts({
-            $this: this,
-            canvasId: 'homeChart2',
-            context: ctx,
-            type: 'column',
-            pixelRatio: 1,
-            width: canvasWidth,
-            height: canvasHeight,
-            categories: ['语文', '数学', '英语', '政治', '物理', '化学'],
-            series: [
-              { name: '平均分', data: [85, 78, 92, 88, 76, 82], color: '#0081ff' }
-            ],
-            padding: [15, 15, 0, 15],
-            xAxis: {
-              disableGrid: false,
-            },
-            yAxis: {
-              gridType: 'dash',
-              dashLength: 2,
-              data: [{
-                min: 0
-              }]
-            },
-            legend: {
-              show: true,
-              position: 'bottom',
-              lineHeight: 25
-            },
-            extra: {
-              column: {
-                type: 'group',
-                width: columnWidth,
-                activeType: 'hilight'
-              }
-            }
-          });
-        }, 300);
-      })
-      .exec();
-    
-    // 初始化第三个图表
-    tt.createSelectorQuery()
-      .selectAll('.de-card-content')
-      .boundingClientRect(rects => {
-        if (!rects || rects.length < 3) return;
-        
-        const rect = rects[2]; // 第三个卡片内容区
-        const canvasWidth = rect.width;
-        const canvasHeight = Math.round(rect.width * 46 / 75);
-        
-        this.setData({
-          chartWidth3: canvasWidth,
-          chartHeight3: canvasHeight
-        });
-        
-        setTimeout(() => {
-          const ctx = tt.createCanvasContext('homeChart3', this);
-          
-          const categoryCount = 5;
-          const seriesCount = 2;
-          const padding = 30;
-          const groupSpacing = 20;
-          const availableWidth = canvasWidth - padding;
-          const groupWidth = availableWidth / categoryCount;
-          const columnWidth = (groupWidth - groupSpacing) / seriesCount;
-          
-          new uCharts({
-            $this: this,
-            canvasId: 'homeChart3',
-            context: ctx,
-            type: 'column',
-            pixelRatio: 1,
-            width: canvasWidth,
-            height: canvasHeight,
-            categories: ['第1周', '第2周', '第3周', '第4周', '第5周'],
-            series: [
-              { name: '计划进度', data: [20, 40, 60, 80, 100], color: '#0081ff' },
-              { name: '实际进度', data: [18, 35, 58, 75, 92], color: '#39b54a' }
-            ],
-            padding: [15, 15, 0, 15],
-            xAxis: {
-              disableGrid: false,
-            },
-            yAxis: {
-              gridType: 'dash',
-              dashLength: 2,
-              data: [{
-                min: 0
-              }]
-            },
-            legend: {
-              show: true,
-              position: 'bottom',
-              lineHeight: 25
-            },
-            extra: {
-              column: {
-                type: 'group',
-                width: columnWidth,
-                activeType: 'hilight'
-              }
-            }
-          });
-        }, 300);
-      })
-      .exec();
+    this.loadEnrollmentStatsChart();
+    this.loadExamAdmissionChart();
   },
-  
-  // 跳转到测试页
+
+  /**
+   * 加载历年招生统计图表数据
+   */
+  async loadEnrollmentStatsChart() {
+    const CACHE_KEY = 'enrollment_stats_chart';
+    
+    // 检查缓存有效性
+    console.log('[首页-招生统计] 开始检查缓存');
+    const cachedData = app.getObjectCache(CACHE_KEY);
+    
+    if (cachedData) {
+      // 获取缓存有效期配置
+      const expireMinutes = app.getExpireMinutes(CACHE_KEY);
+      console.log(`[首页-招生统计] ✅ 缓存有效 - 键名: ${CACHE_KEY}, 有效期: ${expireMinutes}分钟`);
+      
+      this.setData({
+        'enrollmentStatsChart.data': cachedData,
+        'enrollmentStatsChart.visible': true
+      });
+      setTimeout(() => this.renderEnrollmentStatsChart(), 200);
+      return;
+    }
+
+    console.log(`[首页-招生统计] ❌ 缓存无效或不存在 - 键名: ${CACHE_KEY}, 将从云端拉取`);
+
+    const cloud = app.globalData.cloud;
+    if (!cloud) {
+      console.error('[首页-招生统计] cloud 实例未初始化');
+      return;
+    }
+
+    try {
+      const response = await new Promise((resolve, reject) => {
+        cloud.callContainer({
+          path: '/getEnrollmentStats',
+          init: {
+            method: 'POST',
+            timeout: 60000,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          },
+          success: resolve,
+          fail: reject
+        });
+      });
+
+      if (response.statusCode !== 200) {
+        console.error('[首页-招生统计] 接口失败，状态码:', response.statusCode);
+        return;
+      }
+
+      const result = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+
+      if (result?.code === 0 && result?.data?.length > 0) {
+        const validData = result.data.filter(item => 
+          typeof item === 'object' && 
+          typeof item.year === 'number' && 
+          typeof item.schoolCount === 'number' && 
+          typeof item.majorCount === 'number'
+        );
+        
+        if (validData.length > 0) {
+          const expireMinutes = app.getExpireMinutes(CACHE_KEY);
+          app.setObjectCache(CACHE_KEY, validData);
+          console.log(`[首页-招生统计] ✅ 云端数据已缓存 - 键名: ${CACHE_KEY}, 有效期: ${expireMinutes}分钟, 数据量: ${validData.length}条`);
+          this.setData({
+            'enrollmentStatsChart.data': validData,
+            'enrollmentStatsChart.visible': true
+          });
+          setTimeout(() => this.renderEnrollmentStatsChart(), 200);
+        } else {
+          console.error('[首页-招生统计] 数据格式不正确');
+        }
+      } else {
+        console.error('[首页-招生统计] 无有效数据');
+      }
+    } catch (err) {
+      console.error('[首页-招生统计] 调用云函数失败:', err);
+    }
+  },
+
+  /**
+   * 加载历年报考及录取人数比图表数据
+   */
+  async loadExamAdmissionChart() {
+    const CACHE_KEY = 'exam_admission_chart';
+    
+    // 检查缓存有效性
+    console.log('[首页-报考录取] 开始检查缓存');
+    const cachedData = app.getObjectCache(CACHE_KEY);
+    
+    if (cachedData) {
+      // 获取缓存有效期配置
+      const expireMinutes = app.getExpireMinutes(CACHE_KEY);
+      console.log(`[首页-报考录取] ✅ 缓存有效 - 键名: ${CACHE_KEY}, 有效期: ${expireMinutes}分钟`);
+      
+      this.setData({
+        'examAdmissionChart.data': cachedData,
+        'examAdmissionChart.visible': true
+      });
+      setTimeout(() => this.renderExamAdmissionChart(), 200);
+      return;
+    }
+
+    console.log(`[首页-报考录取] ❌ 缓存无效或不存在 - 键名: ${CACHE_KEY}, 将从云端拉取`);
+
+    const cloud = app.globalData.cloud;
+    if (!cloud) {
+      console.error('[首页-报考录取] cloud 实例未初始化');
+      return;
+    }
+
+    try {
+      const response = await new Promise((resolve, reject) => {
+        cloud.callContainer({
+          path: '/getExamAdmissionStats',
+          init: {
+            method: 'POST',
+            timeout: 60000,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          },
+          success: resolve,
+          fail: reject
+        });
+      });
+
+      if (response.statusCode !== 200) {
+        console.error('[首页-报考录取] 接口失败，状态码:', response.statusCode);
+        return;
+      }
+
+      const result = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+
+      if (result?.code === 0 && result?.data?.length > 0) {
+        const validData = result.data.filter(item => 
+          typeof item === 'object' && 
+          typeof item.year === 'number' && 
+          typeof item.examTotal === 'number' && 
+          typeof item.admissionTotal === 'number'
+        );
+        
+        if (validData.length > 0) {
+          const expireMinutes = app.getExpireMinutes(CACHE_KEY);
+          app.setObjectCache(CACHE_KEY, validData);
+          console.log(`[首页-报考录取] ✅ 云端数据已缓存 - 键名: ${CACHE_KEY}, 有效期: ${expireMinutes}分钟, 数据量: ${validData.length}条`);
+          this.setData({
+            'examAdmissionChart.data': validData,
+            'examAdmissionChart.visible': true
+          });
+          setTimeout(() => this.renderExamAdmissionChart(), 200);
+        } else {
+          console.error('[首页-报考录取] 数据格式不正确');
+        }
+      } else {
+        console.error('[首页-报考录取] 无有效数据');
+      }
+    } catch (err) {
+      console.error('[首页-报考录取] 调用云函数失败:', err);
+    }
+  },
+
+  /**
+   * 渲染历年招生统计图表
+   */
+  async renderEnrollmentStatsChart() {
+    const chart = this.data.enrollmentStatsChart;
+    if (!chart.data || chart.data.length === 0) {
+      console.error('[首页-招生统计] 数据为空');
+      return;
+    }
+
+    await this.sleep(150);
+    
+    const rect = await this.waitForCanvas('#enrollmentStatsChart', 50, 40);
+    if (!rect) {
+      console.error('[首页-招生统计] 获取 canvas 失败');
+      return;
+    }
+
+    const canvasWidth = rect.width;
+    const canvasHeight = Math.round(rect.width * 46 / 75);
+
+    this.setData({
+      'enrollmentStatsChart.width': canvasWidth,
+      'enrollmentStatsChart.height': canvasHeight
+    });
+
+    await this.sleep(50);
+
+    const ctx = tt.createCanvasContext('enrollmentStatsChart', this);
+    const data = chart.data;
+    
+    const categories = data.map(item => item.year + '年');
+    const schoolData = data.map(item => item.schoolCount);
+    const majorData = data.map(item => item.majorCount);
+
+    try {
+      new uCharts({
+        $this: this,
+        canvasId: 'enrollmentStatsChart',
+        context: ctx,
+        type: 'line',
+        pixelRatio: 1,
+        width: canvasWidth,
+        height: canvasHeight,
+        animation: true,
+        timing: 'easeInOut',
+        duration: 1000,
+        categories: categories,
+        series: [
+          {
+            name: '院校数量',
+            data: schoolData,
+            color: '#0081ff',
+            lineType: 'curve',
+            width: 3,
+            showPoint: true,
+            pointShape: 'circle',
+            pointSize: 6,
+            label: { show: true, fontSize: 10, fontWeight: 'bold' }
+          },
+          {
+            name: '专业数量',
+            data: majorData,
+            color: '#39b54a',
+            lineType: 'curve',
+            width: 3,
+            showPoint: true,
+            pointShape: 'circle',
+            pointSize: 6,
+            label: { show: true, fontSize: 10, fontWeight: 'bold' }
+          }
+        ],
+        padding: [15, 20, 10, 15],
+        xAxis: {
+          disableGrid: false,
+          axisLine: true,
+          axisLabel: { fontSize: 10 }
+        },
+        yAxis: {
+          gridType: 'dash',
+          dashLength: 2,
+          axisLabel: { fontSize: 10 },
+          data: [{ min: 0 }]
+        },
+        legend: {
+          show: true,
+          position: 'bottom',
+          lineHeight: 20,
+          fontSize: 10
+        },
+        extra: {
+          line: {
+            type: 'curve',
+            width: 3,
+            activeType: 'hilight'
+          }
+        }
+      });
+      console.log('[首页-招生统计] 绘制完成');
+    } catch (err) {
+      console.error('[首页-招生统计] 绘制失败:', err);
+    }
+  },
+
+  /**
+   * 渲染历年报考及录取人数比图表
+   */
+  async renderExamAdmissionChart() {
+    const chart = this.data.examAdmissionChart;
+    if (!chart.data || chart.data.length === 0) {
+      console.error('[首页-报考录取] 数据为空');
+      return;
+    }
+
+    await this.sleep(150);
+    
+    const rect = await this.waitForCanvas('#examAdmissionChart', 50, 40);
+    if (!rect) {
+      console.error('[首页-报考录取] 获取 canvas 失败');
+      return;
+    }
+
+    const canvasWidth = rect.width;
+    const canvasHeight = Math.round(rect.width * 46 / 75);
+
+    this.setData({
+      'examAdmissionChart.width': canvasWidth,
+      'examAdmissionChart.height': canvasHeight
+    });
+
+    await this.sleep(50);
+
+    const ctx = tt.createCanvasContext('examAdmissionChart', this);
+    const data = chart.data;
+    
+    const categories = data.map(item => item.year + '年');
+    const examData = data.map(item => item.examTotal);
+    const admissionData = data.map(item => item.admissionTotal);
+
+    try {
+      new uCharts({
+        $this: this,
+        canvasId: 'examAdmissionChart',
+        context: ctx,
+        type: 'line',
+        pixelRatio: 1,
+        width: canvasWidth,
+        height: canvasHeight,
+        animation: true,
+        timing: 'easeInOut',
+        duration: 1000,
+        categories: categories,
+        series: [
+          {
+            name: '报考人数',
+            data: examData,
+            color: '#ff6b6b',
+            lineType: 'curve',
+            width: 3,
+            showPoint: true,
+            pointShape: 'circle',
+            pointSize: 6,
+            label: { show: true, fontSize: 10, fontWeight: 'bold' }
+          },
+          {
+            name: '录取人数',
+            data: admissionData,
+            color: '#4ecdc4',
+            lineType: 'curve',
+            width: 3,
+            showPoint: true,
+            pointShape: 'circle',
+            pointSize: 6,
+            label: { show: true, fontSize: 10, fontWeight: 'bold' }
+          }
+        ],
+        padding: [15, 20, 10, 15],
+        xAxis: {
+          disableGrid: false,
+          axisLine: true,
+          axisLabel: { fontSize: 10 }
+        },
+        yAxis: {
+          gridType: 'dash',
+          dashLength: 2,
+          axisLabel: { fontSize: 10 },
+          data: [{ min: 0 }]
+        },
+        legend: {
+          show: true,
+          position: 'bottom',
+          lineHeight: 20,
+          fontSize: 10
+        },
+        extra: {
+          line: {
+            type: 'curve',
+            width: 3,
+            activeType: 'hilight'
+          }
+        }
+      });
+      console.log('[首页-报考录取] 绘制完成');
+    } catch (err) {
+      console.error('[首页-报考录取] 绘制失败:', err);
+    }
+  },
+
+  waitForCanvas(selector, interval = 50, maxRetries = 40) {
+    return new Promise((resolve) => {
+      let retries = 0;
+      const check = () => {
+        tt.createSelectorQuery()
+          .select(selector)
+          .boundingClientRect(rect => {
+            if (rect && rect.width > 0) {
+              resolve(rect);
+            } else if (retries < maxRetries) {
+              retries++;
+              setTimeout(check, interval);
+            } else {
+              resolve(null);
+            }
+          })
+          .exec();
+      };
+      check();
+    });
+  },
+
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  },
+
+  /**
+   * 刷新历年招生统计图表
+   */
+  refreshEnrollmentStatsChart() {
+    console.log('[首页-招生统计] 刷新');
+    
+    const chart = this.data.enrollmentStatsChart;
+    if (!chart.data || chart.data.length === 0) {
+      // 无数据，先加载
+      tt.showLoading({ title: '加载中...' });
+      this.loadEnrollmentStatsChart();
+      setTimeout(() => tt.hideLoading(), 500);
+      return;
+    }
+
+    // 有数据，重新绘制（带动画）
+    tt.showLoading({ title: '刷新中...' });
+    setTimeout(() => {
+      this.renderEnrollmentStatsChart();
+      tt.hideLoading();
+      tt.showToast({ title: '刷新成功', icon: 'success' });
+    }, 200);
+  },
+
+  /**
+   * 刷新历年报考及录取人数比图表
+   */
+  refreshExamAdmissionChart() {
+    console.log('[首页-报考录取] 刷新');
+    
+    const chart = this.data.examAdmissionChart;
+    if (!chart.data || chart.data.length === 0) {
+      // 无数据，先加载
+      tt.showLoading({ title: '加载中...' });
+      this.loadExamAdmissionChart();
+      setTimeout(() => tt.hideLoading(), 500);
+      return;
+    }
+
+    // 有数据，重新绘制（带动画）
+    tt.showLoading({ title: '刷新中...' });
+    setTimeout(() => {
+      this.renderExamAdmissionChart();
+      tt.hideLoading();
+      tt.showToast({ title: '刷新成功', icon: 'success' });
+    }, 200);
+  },
+
   goToTest: function() {
     tt.navigateTo({
       url: '/pages/test/test'
     });
   },
 
-  // 跳转到招生计划
   goToPlans: function() {
     tt.navigateTo({
       url: '/pages/plans/plans'
     });
   },
 
-  // 跳转到招生院校
   goToSchools: function() {
     tt.navigateTo({
       url: '/pages/schools/schools'
     });
   },
 
-  // 跳转到招生专业
   goToMajors: function() {
     tt.navigateTo({
       url: '/pages/majors/majors'
     });
   },
 
-  // 跳转到一分一段
   goToScoreSegments: function() {
     tt.navigateTo({
       url: '/pages/score_segments/score_segments'
     });
   },
 
-  // 跳转到省控线
   goToControlLines: function() {
     tt.navigateTo({
       url: '/pages/control_lines/control_lines'
     });
   },
 
-  // 跳转到投档线
   goToAdmissionLines: function() {
     tt.navigateTo({
       url: '/pages/admission_lines/admission_lines'
     });
   },
 
-  // 跳转到志愿规划
   goToVolunteer: function() {
     tt.navigateTo({
       url: '/pages/volunteer_planning/volunteer_planning'

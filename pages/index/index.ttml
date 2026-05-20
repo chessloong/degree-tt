@@ -31,53 +31,38 @@
         </view>
     </view>
 
-    <view class="de-card" style="margin-top: 32rpx;">
+    <!-- 历年招生院校及专业数量统计图表 -->
+    <view wx:if="{{enrollmentStatsChart.visible}}" class="de-card" style="margin-top: 32rpx;">
         <view class="de-card-header">
             <view class="de-card-title-left">
                 <view class="de-card-dot"></view>
-                <text class="de-card-title">学习趋势</text>
+                <text class="de-card-title">历年招生院校及专业数量统计</text>
             </view>
             <view class="de-card-icons">
-                <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
+                <image class="de-card-icon-item" src="/assets/svg/redo.svg" mode="aspectFit" bindtap="refreshEnrollmentStatsChart" />
             </view>
         </view>
         <view class="de-card-content">
-            <view class="de-chart-wrapper" style="height: {{chartHeight}}px; padding: 8rpx 0;">
-                <canvas id="homeChart" canvas-id="homeChart" class="de-chart-canvas" style="width: {{chartWidth}}px; height: {{chartHeight}}px;"></canvas>
+            <view class="de-chart-wrapper" style="height: {{enrollmentStatsChart.height > 0 ? enrollmentStatsChart.height + 'px' : '200px'}}; padding: 8rpx 0;">
+                <canvas id="enrollmentStatsChart" canvas-id="enrollmentStatsChart" class="de-chart-canvas" style="width: {{enrollmentStatsChart.width > 0 ? enrollmentStatsChart.width + 'px' : '100%'}}; height: {{enrollmentStatsChart.height > 0 ? enrollmentStatsChart.height + 'px' : '200px'}};"></canvas>
             </view>
         </view>
     </view>
 
-    <view class="de-card" style="margin-top: 16rpx;">
+    <!-- 历年报考及录取人数比图表 -->
+    <view wx:if="{{examAdmissionChart.visible}}" class="de-card" style="margin-top: 32rpx;">
         <view class="de-card-header">
             <view class="de-card-title-left">
                 <view class="de-card-dot"></view>
-                <text class="de-card-title">成绩分析</text>
+                <text class="de-card-title">历年报考及录取人数比</text>
             </view>
             <view class="de-card-icons">
-                <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
+                <image class="de-card-icon-item" src="/assets/svg/redo.svg" mode="aspectFit" bindtap="refreshExamAdmissionChart" />
             </view>
         </view>
         <view class="de-card-content">
-            <view class="de-chart-wrapper" style="height: {{chartHeight2}}px; padding: 8rpx 0;">
-                <canvas id="homeChart2" canvas-id="homeChart2" class="de-chart-canvas" style="width: {{chartWidth2}}px; height: {{chartHeight2}}px;"></canvas>
-            </view>
-        </view>
-    </view>
-
-    <view class="de-card" style="margin-top: 16rpx;">
-        <view class="de-card-header">
-            <view class="de-card-title-left">
-                <view class="de-card-dot"></view>
-                <text class="de-card-title">备考进度</text>
-            </view>
-            <view class="de-card-icons">
-                <image class="de-card-icon-item" src="/assets/svg/更多.svg" mode="aspectFit" />
-            </view>
-        </view>
-        <view class="de-card-content">
-            <view class="de-chart-wrapper" style="height: {{chartHeight3}}px; padding: 8rpx 0;">
-                <canvas id="homeChart3" canvas-id="homeChart3" class="de-chart-canvas" style="width: {{chartWidth3}}px; height: {{chartHeight3}}px;"></canvas>
+            <view class="de-chart-wrapper" style="height: {{examAdmissionChart.height > 0 ? examAdmissionChart.height + 'px' : '200px'}}; padding: 8rpx 0;">
+                <canvas id="examAdmissionChart" canvas-id="examAdmissionChart" class="de-chart-canvas" style="width: {{examAdmissionChart.width > 0 ? examAdmissionChart.width + 'px' : '100%'}}; height: {{examAdmissionChart.height > 0 ? examAdmissionChart.height + 'px' : '200px'}};"></canvas>
             </view>
         </view>
     </view>

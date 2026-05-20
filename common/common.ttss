@@ -78,6 +78,7 @@
 .de-chart-wrapper {
   width: 100%;
   height: auto;
+  margin-top: 16rpx;
 }
 
 /* ====================
