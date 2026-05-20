@@ -5,47 +5,73 @@
     <text class="loading-text">{{loadingText}}</text>
   </view>
 
-  <!-- 院校表格 -->
+  <!-- 内容区域 -->
   <view wx:else class="schools-content">
-    <view class="de-card">
-      <view class="de-card-header">
-        <view class="de-card-title-left">
-          <view class="de-card-dot"></view>
-          <text class="de-card-title">招生院校列表</text>
-        </view>
-        <view class="de-card-title-right">
-          <text class="school-count">{{schools.length}} 所院校</text>
-        </view>
-      </view>
-      <view class="de-card-content">
-        <!-- 表格容器 -->
-        <scroll-view scroll-y class="table-scroll">
-          <view class="de-table">
-            <!-- 表头 -->
-            <view class="de-table-header">
-              <view class="de-table-cell de-table-cell-center" style="flex: 2;">院校名称</view>
-              <view class="de-table-cell de-table-cell-center" style="flex: 1;">城市</view>
-              <view class="de-table-cell de-table-cell-center" style="flex: 1;">层次</view>
-            </view>
-            
-            <!-- 数据行 -->
-            <view 
-              wx:for="{{schools}}" 
-              wx:key="_id" 
-              class="de-table-row"
-              wx:class="index % 2 === 0 ? '' : 'de-table-row-alt'"
-            >
-              <view class="de-table-cell de-table-cell-center" style="flex: 2;">{{item.school_name || '-'}}</view>
-              <view class="de-table-cell de-table-cell-center" style="flex: 1;">{{item.city || '-'}}</view>
-              <view class="de-table-cell de-table-cell-center" style="flex: 1;">{{item.level || '-'}}</view>
-            </view>
+    <!-- 地图背景 -->
+    <map
+      id="schoolMap"
+      class="map-background"
+      latitude="{{mapLatitude}}"
+      longitude="{{mapLongitude}}"
+      scale="{{mapScale}}"
+      markers="{{markers}}"
+      include-points="{{markers}}"
+      show-location="{{false}}"
+      enable-scroll="{{true}}"
+      enable-zoom="{{true}}"
+      enable-rotate="{{false}}"
+      enable-satellite="{{false}}"
+      enable-traffic="{{false}}"
+    >
+    </map>
 
-            <!-- 空数据提示 -->
-            <view wx:if="{{schools.length === 0}}" class="empty-container">
-              <text class="empty-text">暂无院校数据</text>
+    <!-- 浮动的院校列表卡片 -->
+    <view class="floating-card">
+      <view class="de-card">
+        <view class="de-card-header" bindtap="toggleCard">
+          <view class="de-card-title-left">
+            <view class="de-card-dot"></view>
+            <text class="de-card-title">招生院校列表</text>
+          </view>
+          <view class="de-card-title-right">
+            <text class="school-count">{{schools.length}} 所院校</text>
+            <view class="expand-icon {{isCardExpanded ? 'expanded' : ''}}">
+              <text>{{isCardExpanded ? '▲' : '▼'}}</text>
             </view>
           </view>
-        </scroll-view>
+        </view>
+        
+        <!-- 可折叠的内容区域 -->
+        <view wx:if="{{isCardExpanded}}" class="de-card-content">
+          <!-- 表格容器 -->
+          <scroll-view scroll-y class="table-scroll">
+            <view class="de-table">
+              <!-- 表头 -->
+              <view class="de-table-header">
+                <view class="de-table-cell de-table-cell-center" style="flex: 2;">院校名称</view>
+                <view class="de-table-cell de-table-cell-center" style="flex: 1;">城市</view>
+                <view class="de-table-cell de-table-cell-center" style="flex: 1;">层次</view>
+              </view>
+              
+              <!-- 数据行 -->
+              <view 
+                wx:for="{{schools}}" 
+                wx:key="_id" 
+                class="de-table-row"
+                wx:class="index % 2 === 0 ? '' : 'de-table-row-alt'"
+              >
+                <view class="de-table-cell de-table-cell-center" style="flex: 2;">{{item.school_name || '-'}}</view>
+                <view class="de-table-cell de-table-cell-center" style="flex: 1;">{{item.city || '-'}}</view>
+                <view class="de-table-cell de-table-cell-center" style="flex: 1;">{{item.level || '-'}}</view>
+              </view>
+
+              <!-- 空数据提示 -->
+              <view wx:if="{{schools.length === 0}}" class="empty-container">
+                <text class="empty-text">暂无院校数据</text>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
       </view>
     </view>
   </view>

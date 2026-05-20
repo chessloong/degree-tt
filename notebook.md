@@ -2410,6 +2410,220 @@ module.exports = async function (params, context) {
 
 ---
 
+### 28.11 招生院校页面地图功能
+
+#### 28.11.1 功能概述
+
+招生院校页面采用地图背景设计：
+1. **全屏地图背景**：地图作为页面整体背景，覆盖整个屏幕
+2. **自动缩放适配**：根据所有院校的经纬度自动计算地图中心点和缩放级别，确保所有标记点可见
+3. **浮动卡片**：招生院校列表卡片浮在地图上方，支持折叠/展开
+4. **交互优化**：用户可以拖动和缩放地图查看不同区域
+
+#### 28.11.2 技术实现
+
+**1. 数据结构（schools.js）**
+```javascript
+data: {
+  title: '招生院校',
+  schools: [],
+  loading: true,
+  loadingText: '加载中...',
+  isCardExpanded: false,  // 卡片展开状态
+  markers: [],             // 地图标记点
+  mapLatitude: 39.9042,    // 地图中心纬度
+  mapLongitude: 116.4074,  // 地图中心经度
+  mapScale: 5              // 地图缩放级别
+}
+```
+
+**2. 地图标记生成**
+```javascript
+generateMarkers: function(schools) {
+  return schools
+    .filter(school => school.latitude && school.longitude)
+    .map((school, index) => ({
+      id: index + 1,
+      latitude: parseFloat(school.latitude),
+      longitude: parseFloat(school.longitude),
+      title: school.school_name,
+      iconPath: '/assets/school_marker.svg',
+      width: 30,
+      height: 30,
+      callout: {
+        content: school.school_name,
+        color: '#333',
+        fontSize: 12,
+        borderRadius: 5,
+        bgColor: '#fff',
+        padding: 5,
+        display: 'BYCLICK'
+      }
+    }))
+}
+```
+
+**3. 卡片折叠切换**
+```javascript
+toggleCard: function() {
+  this.setData({
+    isCardExpanded: !this.data.isCardExpanded
+  })
+}
+```
+
+**4. 计算地图中心点**
+```javascript
+calculateMapCenter: function(markers) {
+  if (!markers || markers.length === 0) return
+
+  // 计算所有标记点的边界
+  let minLat = markers[0].latitude
+  let maxLat = markers[0].latitude
+  let minLng = markers[0].longitude
+  let maxLng = markers[0].longitude
+
+  markers.forEach(marker => {
+    minLat = Math.min(minLat, marker.latitude)
+    maxLat = Math.max(maxLat, marker.latitude)
+    minLng = Math.min(minLng, marker.longitude)
+    maxLng = Math.max(maxLng, marker.longitude)
+  })
+
+  // 计算中心点
+  const centerLat = (minLat + maxLat) / 2
+  const centerLng = (minLng + maxLng) / 2
+
+  this.setData({
+    mapLatitude: centerLat,
+    mapLongitude: centerLng,
+    mapScale: 10  // 默认缩放级别，include-points 会自动调整
+  })
+
+  console.log(`[地图] 中心点: (${centerLat.toFixed(4)}, ${centerLng.toFixed(4)})，使用 include-points 自动调整视野`)
+}
+```
+
+**注意**：使用 `include-points` 属性后，抖音小程序会自动根据所有标记点调整地图视野，无需手动计算缩放级别。
+
+**5. 模板结构（schools.ttml）**
+```html
+<!-- 地图背景 - 全屏 -->
+<map
+  id="schoolMap"
+  class="map-background"
+  latitude="{{mapLatitude}}"
+  longitude="{{mapLongitude}}"
+  scale="{{mapScale}}"
+  markers="{{markers}}"
+  include-points="{{markers}}"  <!-- 关键：自动调整视野以包含所有标记点 -->
+  show-location="{{false}}"
+  enable-scroll="{{true}}"
+  enable-zoom="{{true}}"
+  enable-rotate="{{false}}"
+  enable-satellite="{{false}}"
+  enable-traffic="{{false}}"
+>
+</map>
+
+<!-- 浮动的院校列表卡片 -->
+<view class="floating-card">
+  <view class="de-card">
+    <view class="de-card-header" bindtap="toggleCard">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">招生院校列表</text>
+      </view>
+      <view class="de-card-title-right">
+        <text class="school-count">{{schools.length}} 所院校</text>
+        <view class="expand-icon {{isCardExpanded ? 'expanded' : ''}}">
+          <text>{{isCardExpanded ? '▲' : '▼'}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 可折叠的内容区域 -->
+    <view wx:if="{{isCardExpanded}}" class="de-card-content">
+      <!-- 表格内容 -->
+    </view>
+  </view>
+</view>
+```
+
+**6. 样式设计（schools.ttss）**
+```css
+/* 容器 - 全屏 */
+.container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 内容区域 */
+.schools-content {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+/* 地图背景 - 全屏 */
+.map-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* 浮动卡片容器 */
+.floating-card {
+  position: absolute;
+  top: 20rpx;
+  left: 20rpx;
+  right: 20rpx;
+  z-index: 10;
+  max-height: calc(100vh - 40rpx);
+  overflow-y: auto;
+}
+
+.expand-icon {
+  font-size: 24rpx;
+  color: #999;
+  transition: transform 0.3s ease;
+}
+
+.expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+/* 表格滚动容器 */
+.table-scroll {
+  max-height: 60vh;
+}
+```
+
+#### 28.11.3 图标资源
+
+创建了地图标记图标：`assets/school_marker.svg`
+- SVG格式，蓝色水滴形状标记
+- 中心白色圆点
+- 尺寸：60x60px
+
+#### 28.11.4 注意事项
+
+1. **地图标记需要经纬度**：只有包含 `latitude` 和 `longitude` 字段的院校才会显示在地图上
+2. **include-points 自动适配**：使用 `include-points` 属性后，地图会自动调整视野以包含所有标记点，无需手动计算缩放级别
+3. **卡片初始状态**：默认折叠状态，用户点击标题栏展开
+4. **地图交互**：用户可以自由拖动和缩放地图查看不同区域
+5. **性能优化**：地图标记点在数据加载时一次性生成，避免重复计算
+6. **层级关系**：地图 z-index=1，浮动卡片 z-index=10，确保卡片在地图上方
+7. **响应式布局**：浮动卡片最大高度为 60vh，超出部分可滚动
+8. **学校名称显示**：使用 `label` 属性在标记点上方始终显示学校名称
+
+---
+
 *文档生成时间：2026年5月*
 *版本：1.1*
 3. **注释**：重要逻辑块添加中文注释说明

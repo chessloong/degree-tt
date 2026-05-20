@@ -1,8 +1,8 @@
 .container {
-  padding: 20rpx;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  box-sizing: border-box;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* 加载状态 */
@@ -37,13 +37,37 @@
 
 /* 内容区域 */
 .schools-content {
-  min-height: 100vh;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+/* 地图背景 - 全屏 */
+.map-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* 浮动卡片容器 */
+.floating-card {
+  position: absolute;
+  top: 20rpx;
+  left: 20rpx;
+  right: 20rpx;
+  z-index: 10;
+  max-height: calc(100vh - 40rpx);
+  overflow-y: auto;
 }
 
 /* 院校数量 */
 .de-card-title-right {
   display: flex;
   align-items: center;
+  gap: 12rpx;
 }
 
 .school-count {
@@ -54,9 +78,19 @@
   border-radius: 20rpx;
 }
 
+.expand-icon {
+  font-size: 24rpx;
+  color: #999;
+  transition: transform 0.3s ease;
+}
+
+.expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
 /* 表格滚动容器 */
 .table-scroll {
-  height: calc(100vh - 300rpx);
+  max-height: 60vh;
 }
 
 /* 空数据提示 */
