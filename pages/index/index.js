@@ -224,6 +224,14 @@ Page({
     const schoolData = data.map(item => item.schoolCount);
     const majorData = data.map(item => item.majorCount);
 
+    // 动态计算 Y 轴范围
+    const maxMajor = Math.max(...majorData);  // 最大专业数
+    
+    // 最小值：固定为 0
+    const yAxisMin = 0;
+    // 最大值：比最大专业数大的 50 整倍数
+    const yAxisMax = Math.ceil(maxMajor / 50) * 50;
+
     try {
       new uCharts({
         $this: this,
@@ -271,7 +279,10 @@ Page({
           gridType: 'dash',
           dashLength: 2,
           axisLabel: { fontSize: 10 },
-          data: [{ min: 0 }]
+          data: [{
+            min: yAxisMin,
+            max: yAxisMax
+          }]
         },
         legend: {
           show: true,
@@ -328,6 +339,15 @@ Page({
     const examData = data.map(item => item.examTotal);
     const admissionData = data.map(item => item.admissionTotal);
 
+    // 动态计算 Y 轴范围（整万数）
+    const minAdmission = Math.min(...admissionData);  // 最小录取人数
+    const maxExam = Math.max(...examData);            // 最大报考人数
+    
+    // 最小值：比最小录取人数小的整万数
+    const yAxisMin = Math.floor(minAdmission / 10000) * 10000;
+    // 最大值：比最大报考人数大的整万数
+    const yAxisMax = Math.ceil(maxExam / 10000) * 10000;
+
     try {
       new uCharts({
         $this: this,
@@ -375,7 +395,10 @@ Page({
           gridType: 'dash',
           dashLength: 2,
           axisLabel: { fontSize: 10 },
-          data: [{ min: 0 }]
+          data: [{
+            min: yAxisMin,
+            max: yAxisMax
+          }]
         },
         legend: {
           show: true,
