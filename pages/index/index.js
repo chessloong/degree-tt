@@ -89,9 +89,8 @@ Page({
         );
         
         if (validData.length > 0) {
-          const expireMinutes = app.getExpireMinutes(CACHE_KEY);
           app.setObjectCache(CACHE_KEY, validData);
-          console.log(`[首页-招生统计] ✅ 云端数据已缓存 - 键名: ${CACHE_KEY}, 有效期: ${expireMinutes}分钟, 数据量: ${validData.length}条`);
+          console.log(`[首页-招生统计] ✅ 云端数据已缓存 - 键名: ${CACHE_KEY}, 数据量: ${validData.length}条`);
           this.setData({
             'enrollmentStatsChart.data': validData,
             'enrollmentStatsChart.visible': true
@@ -170,9 +169,8 @@ Page({
         );
         
         if (validData.length > 0) {
-          const expireMinutes = app.getExpireMinutes(CACHE_KEY);
           app.setObjectCache(CACHE_KEY, validData);
-          console.log(`[首页-报考录取] ✅ 云端数据已缓存 - 键名: ${CACHE_KEY}, 有效期: ${expireMinutes}分钟, 数据量: ${validData.length}条`);
+          console.log(`[首页-报考录取] ✅ 云端数据已缓存 - 键名: ${CACHE_KEY}, 数据量: ${validData.length}条`);
           this.setData({
             'examAdmissionChart.data': validData,
             'examAdmissionChart.visible': true
@@ -271,14 +269,16 @@ Page({
         ],
         padding: [15, 20, 10, 15],
         xAxis: {
-          disableGrid: false,
+          disableGrid: true,
           axisLine: true,
           axisLabel: { fontSize: 10 }
         },
         yAxis: {
+          disableGrid: true,
+          disabled: true,
           gridType: 'dash',
           dashLength: 2,
-          axisLabel: { fontSize: 10 },
+          axisLabel: { show: false },
           data: [{
             min: yAxisMin,
             max: yAxisMax
@@ -387,14 +387,16 @@ Page({
         ],
         padding: [15, 20, 10, 15],
         xAxis: {
-          disableGrid: false,
+          disableGrid: true,
           axisLine: true,
           axisLabel: { fontSize: 10 }
         },
         yAxis: {
+          disableGrid: true,
+          disabled: true,
           gridType: 'dash',
           dashLength: 2,
-          axisLabel: { fontSize: 10 },
+          axisLabel: { show: false },
           data: [{
             min: yAxisMin,
             max: yAxisMax
