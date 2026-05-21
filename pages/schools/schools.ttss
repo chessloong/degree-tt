@@ -63,6 +63,28 @@
   overflow-y: auto;
 }
 
+/* 重置视野按钮 */
+.reset-map-btn {
+  position: absolute;
+  bottom: 40rpx;
+  right: 20rpx;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 16rpx 24rpx;
+  border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+  font-size: 26rpx;
+  color: #0081ff;
+}
+
+.reset-icon {
+  width: 32rpx;
+  height: 32rpx;
+}
+
 /* 院校数量 */
 .de-card-title-right {
   display: flex;
@@ -102,4 +124,127 @@
 .empty-text {
   font-size: 28rpx;
   color: #999;
+}
+
+/* 模态框遮罩层 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* 模态框内容 */
+.modal-content {
+  width: 100%;
+  max-height: 70vh;
+  background-color: #fff;
+  border-radius: 32rpx 32rpx 0 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 模态框头部 */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.modal-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  flex: 1;
+}
+
+.modal-close {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+  color: #999;
+  margin-left: 20rpx;
+}
+
+/* 模态框主体 */
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32rpx;
+  max-height: 60vh;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* 学校信息区域 */
+.school-info-section {
+  margin-bottom: 32rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.info-item {
+  display: flex;
+  margin-bottom: 20rpx;
+  line-height: 1.6;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.info-label {
+  font-size: 28rpx;
+  color: #666;
+  min-width: 160rpx;
+  flex-shrink: 0;
+}
+
+.info-value {
+  font-size: 28rpx;
+  color: #333;
+  flex: 1;
+  word-wrap: break-word;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
+/* 学校介绍区域 */
+.school-description-section {
+  margin-top: 32rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  padding-bottom: 12rpx;
+  border-bottom: 2rpx solid #0081ff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.description-text {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.8;
+  text-align: justify;
+  word-wrap: break-word;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
 }

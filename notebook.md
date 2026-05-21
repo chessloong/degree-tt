@@ -2416,9 +2416,10 @@ module.exports = async function (params, context) {
 
 招生院校页面采用地图背景设计：
 1. **全屏地图背景**：地图作为页面整体背景，覆盖整个屏幕
-2. **自动缩放适配**：根据所有院校的经纬度自动计算地图中心点和缩放级别，确保所有标记点可见
+2. **自动缩放适配**：使用 `include-points` 属性自动调整视野以包含所有标记点
 3. **浮动卡片**：招生院校列表卡片浮在地图上方，支持折叠/展开
-4. **交互优化**：用户可以拖动和缩放地图查看不同区域
+4. **重置视野按钮**：用户改变地图视野后，可点击按钮回到初始视野
+5. **院校详情模态框**：点击地图标记点，从底部弹出模态框显示院校详细信息
 
 #### 28.11.2 技术实现
 
@@ -2472,6 +2473,47 @@ toggleCard: function() {
 }
 ```
 
+**4. 重置地图视野**
+```javascript
+resetMapView: function() {
+  if (this.data.markers.length > 0) {
+    this.calculateMapCenter(this.data.markers)
+    tt.showToast({
+      title: '已重置视野',
+      icon: 'success'
+    })
+  }
+}
+```
+
+**5. 点击标记点显示详情**
+```javascript
+onMarkerTap: function(e) {
+  const markerId = e.detail.markerId
+  const school = this.data.schools.find(s => {
+    const marker = this.data.markers.find(m => m.id === markerId)
+    return marker && parseFloat(s.latitude) === marker.latitude && parseFloat(s.longitude) === marker.longitude
+  })
+
+  if (school) {
+    this.setData({
+      showSchoolModal: true,
+      selectedSchool: school
+    })
+  }
+}
+```
+
+**6. 关闭模态框**
+```javascript
+closeSchoolModal: function() {
+  this.setData({
+    showSchoolModal: false,
+    selectedSchool: null
+  })
+}
+```
+
 **4. 计算地图中心点**
 ```javascript
 calculateMapCenter: function(markers) {
@@ -2516,91 +2558,104 @@ calculateMapCenter: function(markers) {
   longitude="{{mapLongitude}}"
   scale="{{mapScale}}"
   markers="{{markers}}"
-  include-points="{{markers}}"  <!-- 关键：自动调整视野以包含所有标记点 -->
-  show-location="{{false}}"
-  enable-scroll="{{true}}"
-  enable-zoom="{{true}}"
-  enable-rotate="{{false}}"
-  enable-satellite="{{false}}"
-  enable-traffic="{{false}}"
+  include-points="{{markers}}"
+  bindmarkertap="onMarkerTap"  <!-- 点击标记点事件 -->
 >
 </map>
 
+<!-- 重置视野按钮 -->
+<view class="reset-map-btn" bindtap="resetMapView">
+  <image src="/assets/svg/redo.svg" mode="aspectFit" class="reset-icon"></image>
+  <text>重置视野</text>
+</view>
+
 <!-- 浮动的院校列表卡片 -->
 <view class="floating-card">
-  <view class="de-card">
-    <view class="de-card-header" bindtap="toggleCard">
-      <view class="de-card-title-left">
-        <view class="de-card-dot"></view>
-        <text class="de-card-title">招生院校列表</text>
-      </view>
-      <view class="de-card-title-right">
-        <text class="school-count">{{schools.length}} 所院校</text>
-        <view class="expand-icon {{isCardExpanded ? 'expanded' : ''}}">
-          <text>{{isCardExpanded ? '▲' : '▼'}}</text>
-        </view>
+  <!-- ... -->
+</view>
+
+<!-- 院校详情模态框 -->
+<view wx:if="{{showSchoolModal}}" class="modal-overlay" bindtap="closeSchoolModal">
+  <view class="modal-content" catchtap="">
+    <view class="modal-header">
+      <text class="modal-title">{{selectedSchool.school_name}}</text>
+      <view class="modal-close" bindtap="closeSchoolModal">
+        <text>×</text>
       </view>
     </view>
     
-    <!-- 可折叠的内容区域 -->
-    <view wx:if="{{isCardExpanded}}" class="de-card-content">
-      <!-- 表格内容 -->
-    </view>
+    <scroll-view scroll-y class="modal-body">
+      <!-- 基本信息 -->
+      <view class="school-info-section">
+        <view class="info-item">
+          <text class="info-label">所在城市：</text>
+          <text class="info-value">{{selectedSchool.city || '未知'}}</text>
+        </view>
+        <!-- 其他信息... -->
+      </view>
+
+      <!-- 学校介绍 -->
+      <view class="school-description-section" wx:if="{{selectedSchool.description}}">
+        <view class="section-title">学校介绍</view>
+        <text class="description-text">{{selectedSchool.description}}</text>
+      </view>
+    </scroll-view>
   </view>
 </view>
 ```
 
 **6. 样式设计（schools.ttss）**
 ```css
-/* 容器 - 全屏 */
-.container {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-}
-
-/* 内容区域 */
-.schools-content {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-}
-
-/* 地图背景 - 全屏 */
-.map-background {
+/* 重置视野按钮 */
+.reset-map-btn {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-}
-
-/* 浮动卡片容器 */
-.floating-card {
-  position: absolute;
-  top: 20rpx;
-  left: 20rpx;
+  bottom: 40rpx;
   right: 20rpx;
   z-index: 10;
-  max-height: calc(100vh - 40rpx);
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 16rpx 24rpx;
+  border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+}
+
+/* 模态框遮罩层 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* 模态框内容 */
+.modal-content {
+  width: 100%;
+  max-height: 70vh;
+  background-color: #fff;
+  border-radius: 32rpx 32rpx 0 0;
+}
+
+/* 模态框主体 - 限制高度 */
+.modal-body {
+  flex: 1;
   overflow-y: auto;
+  padding: 32rpx;
+  max-height: 60vh;  /* 限制最大高度，防止模态框太高 */
 }
 
-.expand-icon {
-  font-size: 24rpx;
-  color: #999;
-  transition: transform 0.3s ease;
-}
-
-.expand-icon.expanded {
-  transform: rotate(180deg);
-}
-
-/* 表格滚动容器 */
-.table-scroll {
-  max-height: 60vh;
+/* 学校介绍文本 */
+.description-text {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.8;
+  text-align: justify;
 }
 ```
 
@@ -2618,9 +2673,16 @@ calculateMapCenter: function(markers) {
 3. **卡片初始状态**：默认折叠状态，用户点击标题栏展开
 4. **地图交互**：用户可以自由拖动和缩放地图查看不同区域
 5. **性能优化**：地图标记点在数据加载时一次性生成，避免重复计算
-6. **层级关系**：地图 z-index=1，浮动卡片 z-index=10，确保卡片在地图上方
+6. **层级关系**：地图 z-index=1，浮动卡片 z-index=10，模态框 z-index=100
 7. **响应式布局**：浮动卡片最大高度为 60vh，超出部分可滚动
 8. **学校名称显示**：使用 `label` 属性在标记点上方始终显示学校名称
+9. **重置视野按钮**：位于右下角，点击后地图回到初始视野
+10. **院校详情模态框**：
+    - 从底部弹出，半透明遮罩层
+    - 最大高度 70vh，内容区域最大 60vh
+    - 支持滚动查看长文本介绍
+    - 点击遮罩层或关闭按钮关闭
+    - 使用 `catchtap` 阻止事件冒泡
 
 ---
 

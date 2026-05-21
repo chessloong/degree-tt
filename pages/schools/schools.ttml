@@ -22,8 +22,17 @@
       enable-rotate="{{false}}"
       enable-satellite="{{false}}"
       enable-traffic="{{false}}"
+      bindmarkertap="onMarkerTap"
+      bindcallouttap="onCalloutTap"
+      disable-scroll="{{false}}"
     >
     </map>
+
+    <!-- 重置视野按钮 -->
+    <view class="reset-map-btn" bindtap="resetMapView">
+      <image src="/assets/svg/redo.svg" mode="aspectFit" class="reset-icon"></image>
+      <text>重置视野</text>
+    </view>
 
     <!-- 浮动的院校列表卡片 -->
     <view class="floating-card">
@@ -34,7 +43,7 @@
             <text class="de-card-title">招生院校列表</text>
           </view>
           <view class="de-card-title-right">
-            <text class="school-count">{{schools.length}} 所院校</text>
+            <text class="school-count">公办{{schoolStats.public}}所 民办{{schoolStats.private}}所</text>
             <view class="expand-icon {{isCardExpanded ? 'expanded' : ''}}">
               <text>{{isCardExpanded ? '▲' : '▼'}}</text>
             </view>
@@ -62,7 +71,7 @@
               >
                 <view class="de-table-cell de-table-cell-center" style="flex: 2;">{{item.school_name || '-'}}</view>
                 <view class="de-table-cell de-table-cell-center" style="flex: 1;">{{item.city || '-'}}</view>
-                <view class="de-table-cell de-table-cell-center" style="flex: 1;">{{item.level || '-'}}</view>
+                <view class="de-table-cell de-table-cell-center" style="flex: 1;">{{item.level || '-'}}{{item.level === '2B' ? '(公办)' : (item.level === '2C' ? '(民办)' : '')}}</view>
               </view>
 
               <!-- 空数据提示 -->
@@ -72,6 +81,50 @@
             </view>
           </scroll-view>
         </view>
+      </view>
+    </view>
+
+    <!-- 院校详情模态框 -->
+    <view wx:if="{{showSchoolModal}}" class="modal-overlay" bindtap="closeSchoolModal">
+      <view class="modal-content" catchtap="stopPropagation">
+        <view class="modal-header">
+          <text class="modal-title">{{selectedSchool.school_name}}</text>
+          <view class="modal-close" bindtap="closeSchoolModal">
+            <text>×</text>
+          </view>
+        </view>
+        
+        <scroll-view scroll-y class="modal-body">
+          <!-- 基本信息 -->
+          <view class="school-info-section">
+            <view class="info-item">
+              <text class="info-label">所在城市：</text>
+              <text class="info-value">{{selectedSchool.city || '未知'}}</text>
+            </view>
+            <view class="info-item">
+              <text class="info-label">学校层次：</text>
+              <text class="info-value">{{selectedSchool.level || '未知'}}{{selectedSchool.level === '2B' ? '(公办)' : (selectedSchool.level === '2C' ? '(民办)' : '')}}</text>
+            </view>
+            <view class="info-item">
+              <text class="info-label">学校地址：</text>
+              <text class="info-value">{{selectedSchool.address || '未知'}}</text>
+            </view>
+            <view class="info-item" wx:if="{{selectedSchool.contact_phone}}">
+              <text class="info-label">联系电话：</text>
+              <text class="info-value">{{selectedSchool.contact_phone}}</text>
+            </view>
+            <view class="info-item" wx:if="{{selectedSchool.former_name}}">
+              <text class="info-label">曾用名：</text>
+              <text class="info-value">{{selectedSchool.former_name}}</text>
+            </view>
+          </view>
+
+          <!-- 学校介绍 -->
+          <view class="school-description-section" wx:if="{{selectedSchool.description}}">
+            <view class="section-title">学校介绍</view>
+            <text class="description-text">{{selectedSchool.description}}</text>
+          </view>
+        </scroll-view>
       </view>
     </view>
   </view>
