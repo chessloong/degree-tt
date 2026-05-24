@@ -5,7 +5,7 @@
     <image class="help-icon" src="/assets/svg/caution.svg" mode="aspectFit"></image>
   </view>
 
-  <!-- 专业测试趋势图表卡片 -->
+  <!-- 专业测试趋势图表和表格卡片 -->
   <view wx:if="{{majorChart.visible}}" class="de-card">
     <view class="de-card-header">
       <view class="de-card-title-left">
@@ -21,9 +21,21 @@
                height: {{majorChart.height > 0 ? majorChart.height + 'px' : '200px'}};">
       </canvas>
     </view>
+    <view wx:if="{{majorTableData.visible}}" class="de-table-wrapper">
+      <view class="de-table">
+        <view class="de-table-header major-table-header">
+          <view class="de-table-cell de-table-cell-center">年份</view>
+          <view wx:for="{{majorTableData.batches}}" wx:key="*this" class="de-table-cell de-table-cell-center">{{item}}</view>
+        </view>
+        <view wx:for="{{majorTableData.data}}" wx:key="year" class="de-table-row">
+          <view class="de-table-cell de-table-cell-center">{{item.year}}</view>
+          <view wx:for="{{majorTableData.batches}}" wx:key="*this" wx:for-item="batch" class="de-table-cell de-table-cell-center de-table-cell-number">{{item[batch]}}</view>
+        </view>
+      </view>
+    </view>
   </view>
 
-  <!-- 文化分趋势图表卡片 -->
+  <!-- 文化分趋势图表和表格卡片 -->
   <view wx:if="{{cultureChart.visible}}" class="de-card">
     <view class="de-card-header">
       <view class="de-card-title-left">
@@ -38,6 +50,18 @@
         style="width: {{cultureChart.width > 0 ? cultureChart.width + 'px' : '100%'}}; 
                height: {{cultureChart.height > 0 ? cultureChart.height + 'px' : '200px'}};">
       </canvas>
+    </view>
+    <view wx:if="{{cultureTableData.visible}}" class="de-table-wrapper">
+      <view class="de-table">
+        <view class="de-table-header major-table-header">
+          <view class="de-table-cell de-table-cell-center">年份</view>
+          <view wx:for="{{cultureTableData.batches}}" wx:key="*this" class="de-table-cell de-table-cell-center">{{item}}</view>
+        </view>
+        <view wx:for="{{cultureTableData.data}}" wx:key="year" class="de-table-row">
+          <view class="de-table-cell de-table-cell-center">{{item.year}}</view>
+          <view wx:for="{{cultureTableData.batches}}" wx:key="*this" wx:for-item="batch" class="de-table-cell de-table-cell-center de-table-cell-number">{{item[batch]}}</view>
+        </view>
+      </view>
     </view>
   </view>
 

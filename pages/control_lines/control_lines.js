@@ -22,6 +22,20 @@ Page({
       height: 0,
       visible: false,
       data: null
+    },
+    // 文化分表格数据
+    cultureTableData: {
+      visible: false,
+      years: [],
+      batches: [],
+      data: []
+    },
+    // 专业测试表格数据
+    majorTableData: {
+      visible: false,
+      years: [],
+      batches: [],
+      data: []
     }
   },
 
@@ -167,22 +181,22 @@ Page({
 
     // 获取所有年份并排序
     const allYears = [...new Set(cultureData.map(item => item.year))].sort((a, b) => a - b)
-    const categories = allYears.map(year => year + '年')
+    const categories = allYears.map(year => year)
 
     // 构建系列数据
     const series = []
     const batchColors = {
-      '普通批': '#8B4513',              // 棕色
-      '建档立卡专项批': '#FF8C00',      // 橘色
-      '专升本': '#DAA520',              // 深黄色
-      '专接本': '#9370DB',              // 紫色
-      '专转本': '#FF6347'               // 橙红色
+      '普通批': '#0081ff',              // 蓝色
+      '建档立卡专项批': '#00C853',      // 绿色
+      '专升本': '#0081ff',              // 蓝色
+      '专接本': '#00C853',              // 绿色
+      '专转本': '#0081ff'               // 蓝色
     }
 
     Object.keys(batchMap).forEach(batch => {
       const yearData = batchMap[batch]
       const data = allYears.map(year => yearData[year] || null)
-      
+
       // 如果该批次没有数据，跳过
       if (data.every(v => v === null)) return
 
@@ -198,7 +212,7 @@ Page({
         showPoint: true,
         pointShape: 'circle',
         pointSize: 6,
-        label: { show: true, fontSize: 10, fontWeight: 'bold' }
+        label: { show: true, fontSize: 10, fontWeight: 'bold', color: color }
       })
     })
 
@@ -291,9 +305,42 @@ Page({
         }
       })
       console.log(`[省控线-文化分] 绘制完成，共 ${series.length} 条曲线`)
+      
+      // 生成表格数据
+      this.generateCultureTable(cultureData)
     } catch (err) {
       console.error('[省控线-文化分] 绘制失败:', err)
     }
+  },
+
+  /**
+   * 生成文化分表格数据
+   */
+  generateCultureTable(cultureData) {
+    // 获取所有年份并按降序排序
+    const years = [...new Set(cultureData.map(item => item.year))].sort((a, b) => b - a)
+    
+    // 获取所有批次
+    const batches = [...new Set(cultureData.map(item => item.batch || '普通'))]
+    
+    // 按年份和批次组织数据
+    const tableData = []
+    years.forEach(year => {
+      const row = { year: year }
+      batches.forEach(batch => {
+        const item = cultureData.find(d => d.year === year && d.batch === batch)
+        row[batch] = item ? item.min_score : '-'
+      })
+      tableData.push(row)
+    })
+    
+    this.setData({
+      'cultureTableData.visible': true,
+      'cultureTableData.years': years,
+      'cultureTableData.batches': batches,
+      'cultureTableData.data': tableData
+    })
+    console.log('[省控线-文化分] 表格数据生成完成')
   },
 
   /**
@@ -332,22 +379,22 @@ Page({
 
     // 获取所有年份并排序
     const allYears = [...new Set(majorData.map(item => item.year))].sort((a, b) => a - b)
-    const categories = allYears.map(year => year + '年')
+    const categories = allYears.map(year => year)
 
     // 构建系列数据
     const series = []
     const batchColors = {
-      '普通批': '#DAA520',              // 深黄色
+      '普通批': '#FF8C00',              // 橙色
       '建档立卡专项批': '#9370DB',      // 紫色
-      '专升本': '#FF6347',              // 橙红色
-      '专接本': '#20B2AA',              // 青绿色
-      '专转本': '#DC143C'               // 深红色
+      '专升本': '#FF8C00',              // 橙色
+      '专接本': '#9370DB',              // 紫色
+      '专转本': '#FF8C00'               // 橙色
     }
 
     Object.keys(batchMap).forEach(batch => {
       const yearData = batchMap[batch]
       const data = allYears.map(year => yearData[year] || null)
-      
+
       // 如果该批次没有数据，跳过
       if (data.every(v => v === null)) return
 
@@ -363,7 +410,7 @@ Page({
         showPoint: true,
         pointShape: 'circle',
         pointSize: 6,
-        label: { show: true, fontSize: 10, fontWeight: 'bold' }
+        label: { show: true, fontSize: 10, fontWeight: 'bold', color: color }
       })
     })
 
@@ -456,8 +503,41 @@ Page({
         }
       })
       console.log(`[省控线-专业测试] 绘制完成，共 ${series.length} 条曲线`)
+      
+      // 生成表格数据
+      this.generateMajorTable(majorData)
     } catch (err) {
       console.error('[省控线-专业测试] 绘制失败:', err)
     }
+  },
+
+  /**
+   * 生成专业测试表格数据
+   */
+  generateMajorTable(majorData) {
+    // 获取所有年份并按降序排序
+    const years = [...new Set(majorData.map(item => item.year))].sort((a, b) => b - a)
+    
+    // 获取所有批次
+    const batches = [...new Set(majorData.map(item => item.batch || '普通'))]
+    
+    // 按年份和批次组织数据
+    const tableData = []
+    years.forEach(year => {
+      const row = { year: year }
+      batches.forEach(batch => {
+        const item = majorData.find(d => d.year === year && d.batch === batch)
+        row[batch] = item ? item.min_score : '-'
+      })
+      tableData.push(row)
+    })
+    
+    this.setData({
+      'majorTableData.visible': true,
+      'majorTableData.years': years,
+      'majorTableData.batches': batches,
+      'majorTableData.data': tableData
+    })
+    console.log('[省控线-专业测试] 表格数据生成完成')
   }
 })

@@ -28,15 +28,8 @@
   padding: 20rpx 0;
 }
 
-/* 加载状态 */
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 100rpx 0;
-}
-
-.loading-text {
-  font-size: 28rpx;
-  color: #999;
+/* 专业测试表格表头颜色 - 黑色 */
+.major-table-header .de-table-cell {
+  color: #333333;
+  background-color: rgba(0, 0, 0, 0.05);
 }

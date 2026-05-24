@@ -228,7 +228,7 @@ Page({
     const ctx = tt.createCanvasContext('enrollmentStatsChart', this);
     const data = chart.data;
     
-    const categories = data.map(item => item.year + '年');
+    const categories = data.map(item => item.year);
     const schoolData = data.map(item => item.schoolCount);
     const majorData = data.map(item => item.majorCount);
 
@@ -342,7 +342,7 @@ Page({
     const ctx = tt.createCanvasContext('examAdmissionChart', this);
     const data = chart.data;
     
-    const categories = data.map(item => item.year + '年');
+    const categories = data.map(item => item.year);
     const examData = data.map(item => item.examTotal);
     const admissionData = data.map(item => item.admissionTotal);
 
