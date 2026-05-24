@@ -847,5 +847,125 @@ App({
         }
       })
     })
+  },
+
+  /**
+   * 批量加载页面数据（支持数组型和对象型缓存）
+   * @param {Array} dataConfigs - 数据配置数组
+   * @param {Object} options - 可选配置
+   * @returns {Object} 加载结果 { cacheKey: data }
+   */
+  async loadPageDataBatch(dataConfigs, options = {}) {
+    const { 
+      parallel = true,           // 是否并行加载
+      onError = 'continue'       // 错误策略: 'continue' | 'abort'
+    } = options
+    
+    console.log(`[批量加载] 开始加载 ${dataConfigs.length} 个数据项`)
+    const startTime = Date.now()
+    
+    const results = {}
+    
+    if (parallel) {
+      // 并行加载所有数据
+      const promises = dataConfigs.map(async (config) => {
+        try {
+          const data = await this._loadSingleData(config)
+          results[config.cacheKey] = data
+        } catch (err) {
+          console.error(`[批量加载] ${config.cacheKey} 失败:`, err)
+          if (onError === 'abort') {
+            throw err
+          }
+          results[config.cacheKey] = config.defaultValue || null
+        }
+      })
+      
+      await Promise.all(promises)
+    } else {
+      // 串行加载
+      for (const config of dataConfigs) {
+        try {
+          const data = await this._loadSingleData(config)
+          results[config.cacheKey] = data
+        } catch (err) {
+          console.error(`[批量加载] ${config.cacheKey} 失败:`, err)
+          if (onError === 'abort') {
+            throw err
+          }
+          results[config.cacheKey] = config.defaultValue || null
+        }
+      }
+    }
+    
+    const elapsed = Date.now() - startTime
+    console.log(`[批量加载] 完成，耗时 ${elapsed}ms`)
+    
+    return results
+  },
+
+  /**
+   * 加载单个数据项（内部方法，支持数组型和对象型）
+   */
+  async _loadSingleData(config) {
+    const { 
+      cacheKey,           // 缓存键名（也是 expireMinute 的配置键）
+      collection,         // 云端集合名
+      filter = {},        // 过滤条件
+      type = 'array',     // 缓存类型: 'array' | 'object'
+      itemKey,            // 数组型缓存的索引键（如 'class_name'）
+      itemValue,          // 数组型缓存的索引值（如 '管理类'）
+      defaultValue = null // 默认值
+    } = config
+    
+    console.log(`[数据加载] 开始: ${cacheKey} (类型: ${type})`)
+    
+    let cachedData = null
+    let isCacheValid = false
+    
+    // 1. 检查缓存（根据类型选择不同的验证方法）
+    if (type === 'array') {
+      // 数组型缓存：getArrayCacheItem 已内置过期验证，直接返回 data 或 null
+      if (itemKey && itemValue) {
+        cachedData = this.getArrayCacheItem(cacheKey, itemKey, itemValue)
+        isCacheValid = (cachedData !== null)
+      }
+    } else if (type === 'object') {
+      // 对象型缓存：getCachedData 已内置过期验证，直接返回 data 或 null
+      cachedData = this.getCachedData(cacheKey)
+      isCacheValid = (cachedData !== null)
+    }
+    
+    // 2. 缓存命中且有效
+    if (isCacheValid && cachedData !== null) {
+      console.log(`[数据加载] ${cacheKey} 使用缓存 (${type})`)
+      return cachedData
+    }
+    
+    // 3. 缓存无效或不存在，从云端加载
+    console.log(`[数据加载] ${cacheKey} 从云端加载`)
+    const cloudData = await this.loadDataFromCloud(collection, filter)
+    
+    // 4. 处理结果
+    const finalData = cloudData !== null ? cloudData : defaultValue
+    
+    // 5. 保存缓存（包括空数据/空对象）
+    if (cloudData !== null) {
+      if (type === 'array') {
+        // 数组型：保存到数组缓存
+        if (itemKey && itemValue) {
+          this.setArrayCacheItem(cacheKey, itemKey, itemValue, finalData || [])
+          console.log(`[数据加载] ${cacheKey} 已保存到数组缓存`)
+        }
+      } else if (type === 'object') {
+        // 对象型：保存到对象缓存
+        this.saveToCache(cacheKey, finalData || {})
+        console.log(`[数据加载] ${cacheKey} 已保存到对象缓存`)
+      }
+    } else {
+      console.warn(`[数据加载] ${cacheKey} 云端查询失败`)
+    }
+    
+    return finalData
   }
 })

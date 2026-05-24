@@ -39,49 +39,37 @@ Page({
       const className = app.getUserClassName() || '管理类'
       console.log(`[省控线] 当前用户大类: ${className}`)
 
-      // 检查缓存
-      const cachedData = app.getArrayCacheItem('control_lines', 'class_name', className)
-      if (cachedData) {
-        console.log(`[省控线] 使用缓存数据，共 ${cachedData.length} 条`)
-        this.setData({
-          controlLines: cachedData,
-          currentClassName: className,
-          loading: false,
-          loadingText: ''
-        })
-        
-        // 同时加载征集志愿数据
-        await this.loadCollectVolunteerData(className)
-        return
-      }
+      // 批量加载所需数据（并行加载）
+      const data = await app.loadPageDataBatch([
+        {
+          cacheKey: 'control_lines',
+          collection: 'degree_control_lines',
+          filter: { class_name: className },
+          type: 'array',
+          itemKey: 'class_name',
+          itemValue: className,
+          defaultValue: []
+        },
+        {
+          cacheKey: 'collect_volunteer',
+          collection: 'degree_collect_volunteer',
+          filter: { class_name: className },
+          type: 'array',
+          itemKey: 'class_name',
+          itemValue: className,
+          defaultValue: []
+        }
+      ])
 
-      // 缓存无效或不存在，从云端拉取
-      console.log('[省控线] 缓存无效，从云端加载')
-      const data = await app.loadDataFromCloud('degree_control_lines', { class_name: className })
+      this.setData({
+        controlLines: data.control_lines,
+        collectVolunteers: data.collect_volunteer,
+        currentClassName: className,
+        loading: false,
+        loadingText: ''
+      })
 
-      if (data && data.length > 0) {
-        // 存入数组型缓存
-        app.setArrayCacheItem('control_lines', 'class_name', className, data)
-        
-        this.setData({
-          controlLines: data,
-          currentClassName: className,
-          loading: false,
-          loadingText: ''
-        })
-        console.log(`[省控线] 加载成功，共 ${data.length} 条`)
-      } else {
-        console.log(`[省控线] 未找到 ${className} 的省控线数据`)
-        this.setData({
-          controlLines: [],
-          currentClassName: className,
-          loading: false,
-          loadingText: ''
-        })
-      }
-
-      // 同时加载征集志愿数据
-      await this.loadCollectVolunteerData(className)
+      console.log(`[省控线] 加载完成，省控线 ${data.control_lines.length} 条，征集志愿 ${data.collect_volunteer.length} 条`)
 
     } catch (err) {
       console.error('[省控线] 加载失败:', err)
@@ -92,50 +80,7 @@ Page({
       this.setData({
         loading: false,
         loadingText: '',
-        controlLines: []
-      })
-    }
-  },
-
-  /**
-   * 加载征集志愿数据
-   */
-  async loadCollectVolunteerData(className) {
-    try {
-      // 检查缓存
-      const cachedData = app.getArrayCacheItem('collect_volunteer', 'class_name', className)
-      if (cachedData) {
-        console.log(`[征集志愿] 使用缓存数据，共 ${cachedData.length} 条`)
-        this.setData({
-          collectVolunteers: cachedData
-        })
-        return
-      }
-
-      // 缓存无效或不存在，从云端拉取
-      console.log('[征集志愿] 缓存无效，从云端加载')
-      const data = await app.loadDataFromCloud('degree_collect_volunteer', { class_name: className })
-      console.log('[征集志愿] 云端返回数据:', data ? `共 ${data.length} 条` : 'null')
-
-      // 无论是否有数据，都保存到缓存（空数组表示已查询过且无匹配数据）
-      if (data !== null) {
-        console.log('[征集志愿] 准备保存到缓存...')
-        app.setArrayCacheItem('collect_volunteer', 'class_name', className, data || [])
-        
-        this.setData({
-          collectVolunteers: data || []
-        })
-        console.log(`[征集志愿] 加载成功，共 ${data ? data.length : 0} 条`)
-      } else {
-        console.log('[征集志愿] 云端查询失败')
-        this.setData({
-          collectVolunteers: []
-        })
-      }
-    } catch (err) {
-      console.error('[征集志愿] 加载失败:', err)
-      // 不显示错误提示，避免影响主流程
-      this.setData({
+        controlLines: [],
         collectVolunteers: []
       })
     }
