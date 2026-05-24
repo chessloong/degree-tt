@@ -82,7 +82,7 @@ Page({
    */
   batchSetExpire(e) {
     const index = e.detail.value
-    const keys = ['default', 'schools', 'major_classes', 'majors', 'plans', 'preview_plans', 'score_segments', 'control_lines', 'admission_lines', 'calendar_events']
+    const keys = ['default', 'schools', 'major_classes', 'majors', 'plans', 'preview_plans', 'score_segments', 'control_lines', 'admission_lines', 'calendar_events', 'enrollment_stats_chart', 'exam_admission_chart', 'collect_volunteer']
     
     let newValue = 10
     let message = ''

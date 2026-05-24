@@ -4,6 +4,7 @@ Page({
   data: {
     title: '省控线',
     controlLines: [],       // 省控线数据列表
+    collectVolunteers: [],  // 征集志愿数据列表
     currentClassName: '',   // 当前专业大类
     loading: true,
     loadingText: '加载中...'
@@ -48,6 +49,9 @@ Page({
           loading: false,
           loadingText: ''
         })
+        
+        // 同时加载征集志愿数据
+        await this.loadCollectVolunteerData(className)
         return
       }
 
@@ -76,6 +80,9 @@ Page({
         })
       }
 
+      // 同时加载征集志愿数据
+      await this.loadCollectVolunteerData(className)
+
     } catch (err) {
       console.error('[省控线] 加载失败:', err)
       tt.showToast({
@@ -86,6 +93,50 @@ Page({
         loading: false,
         loadingText: '',
         controlLines: []
+      })
+    }
+  },
+
+  /**
+   * 加载征集志愿数据
+   */
+  async loadCollectVolunteerData(className) {
+    try {
+      // 检查缓存
+      const cachedData = app.getArrayCacheItem('collect_volunteer', 'class_name', className)
+      if (cachedData) {
+        console.log(`[征集志愿] 使用缓存数据，共 ${cachedData.length} 条`)
+        this.setData({
+          collectVolunteers: cachedData
+        })
+        return
+      }
+
+      // 缓存无效或不存在，从云端拉取
+      console.log('[征集志愿] 缓存无效，从云端加载')
+      const data = await app.loadDataFromCloud('degree_collect_volunteer', { class_name: className })
+      console.log('[征集志愿] 云端返回数据:', data ? `共 ${data.length} 条` : 'null')
+
+      // 无论是否有数据，都保存到缓存（空数组表示已查询过且无匹配数据）
+      if (data !== null) {
+        console.log('[征集志愿] 准备保存到缓存...')
+        app.setArrayCacheItem('collect_volunteer', 'class_name', className, data || [])
+        
+        this.setData({
+          collectVolunteers: data || []
+        })
+        console.log(`[征集志愿] 加载成功，共 ${data ? data.length : 0} 条`)
+      } else {
+        console.log('[征集志愿] 云端查询失败')
+        this.setData({
+          collectVolunteers: []
+        })
+      }
+    } catch (err) {
+      console.error('[征集志愿] 加载失败:', err)
+      // 不显示错误提示，避免影响主流程
+      this.setData({
+        collectVolunteers: []
       })
     }
   }

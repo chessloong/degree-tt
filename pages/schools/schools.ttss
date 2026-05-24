@@ -110,6 +110,30 @@
   transform: rotate(180deg);
 }
 
+/* 排序指示器 */
+.sort-indicator {
+  font-size: 20rpx;
+  color: #0081ff;
+  margin-left: 4rpx;
+}
+
+/* 表格数据行 */
+.de-table-row {
+  display: flex;
+  border-bottom: 1rpx solid #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+/* 公办院校背景色（浅蓝色） */
+.row-public {
+  background-color: #e6f4ff;
+}
+
+/* 民办院校背景色（浅绿色） */
+.row-private {
+  background-color: #f0f9eb;
+}
+
 /* 表格滚动容器 */
 .table-scroll {
   max-height: 60vh;
@@ -157,6 +181,20 @@
   align-items: center;
   padding: 32rpx;
   border-bottom: 1rpx solid #f0f0f0;
+}
+
+.modal-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+}
+
+.school-logo {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 8rpx;
+  flex-shrink: 0;
 }
 
 .modal-title {

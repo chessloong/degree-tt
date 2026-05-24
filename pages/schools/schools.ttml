@@ -57,17 +57,27 @@
             <view class="de-table">
               <!-- 表头 -->
               <view class="de-table-header">
-                <view class="de-table-cell de-table-cell-center" style="flex: 2;">院校名称</view>
-                <view class="de-table-cell de-table-cell-center" style="flex: 1;">城市</view>
-                <view class="de-table-cell de-table-cell-center" style="flex: 1;">层次</view>
+                <view class="de-table-cell de-table-cell-center" style="flex: 2;" bindtap="sortByField" data-field="school_name">
+                  <text>院校名称</text>
+                  <text wx:if="{{sortField === 'school_name'}}" class="sort-indicator">{{sortOrder === 'asc' ? '▲' : '▼'}}</text>
+                </view>
+                <view class="de-table-cell de-table-cell-center" style="flex: 1;" bindtap="sortByField" data-field="city">
+                  <text>城市</text>
+                  <text wx:if="{{sortField === 'city'}}" class="sort-indicator">{{sortOrder === 'asc' ? '▲' : '▼'}}</text>
+                </view>
+                <view class="de-table-cell de-table-cell-center" style="flex: 1;" bindtap="sortByField" data-field="level">
+                  <text>层次</text>
+                  <text wx:if="{{sortField === 'level'}}" class="sort-indicator">{{sortOrder === 'asc' ? '▲' : '▼'}}</text>
+                </view>
               </view>
               
               <!-- 数据行 -->
               <view 
                 wx:for="{{schools}}" 
                 wx:key="_id" 
-                class="de-table-row"
-                wx:class="index % 2 === 0 ? '' : 'de-table-row-alt'"
+                class="de-table-row {{item.level === '2B' ? 'row-public' : (item.level === '2C' ? 'row-private' : '')}}"
+                bindtap="onSchoolRowTap"
+                data-index="{{index}}"
               >
                 <view class="de-table-cell de-table-cell-center" style="flex: 2;">{{item.school_name || '-'}}</view>
                 <view class="de-table-cell de-table-cell-center" style="flex: 1;">{{item.city || '-'}}</view>
@@ -88,7 +98,10 @@
     <view wx:if="{{showSchoolModal}}" class="modal-overlay" bindtap="closeSchoolModal">
       <view class="modal-content" catchtap="stopPropagation">
         <view class="modal-header">
-          <text class="modal-title">{{selectedSchool.school_name}}</text>
+          <view class="modal-title-wrapper">
+            <image wx:if="{{selectedSchool.logo_url}}" src="{{selectedSchool.logo_url}}" mode="aspectFit" class="school-logo"></image>
+            <text class="modal-title">{{selectedSchool.school_name}}</text>
+          </view>
           <view class="modal-close" bindtap="closeSchoolModal">
             <text>×</text>
           </view>

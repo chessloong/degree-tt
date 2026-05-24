@@ -14,7 +14,9 @@ Page({
     mapScale: 5, // 地图缩放级别
     showSchoolModal: false, // 显示院校详情模态框
     selectedSchool: null, // 选中的院校信息
-    schoolStats: { total: 0, public: 0, private: 0 } // 院校统计：总数、公办、民办
+    schoolStats: { total: 0, public: 0, private: 0 }, // 院校统计：总数、公办、民办
+    sortField: 'school_name', // 当前排序字段
+    sortOrder: 'asc' // 排序顺序：asc升序，desc降序
   },
 
   onLoad: function(options) {
@@ -114,6 +116,50 @@ Page({
     this.setData({
       isCardExpanded: !this.data.isCardExpanded
     })
+  },
+
+  /**
+   * 按字段排序
+   */
+  sortByField: function(e) {
+    const field = e.currentTarget.dataset.field
+    console.log('[院校] 点击排序字段:', field)
+
+    // 如果点击的是当前排序字段，则切换排序顺序
+    let newOrder = 'asc'
+    if (this.data.sortField === field) {
+      newOrder = this.data.sortOrder === 'asc' ? 'desc' : 'asc'
+    }
+
+    // 复制一份数据进行排序
+    let sortedSchools = [...this.data.schools]
+
+    // 根据字段类型选择排序方式
+    if (field === 'school_name' || field === 'city') {
+      // 使用拼音排序
+      sortedSchools = pinyinSort(sortedSchools, field)
+    } else if (field === 'level') {
+      // 批次直接按文本排序（2B < 2C）
+      sortedSchools.sort((a, b) => {
+        const levelA = a[field] || ''
+        const levelB = b[field] || ''
+        return levelA.localeCompare(levelB)
+      })
+    }
+
+    // 如果是降序，反转数组
+    if (newOrder === 'desc') {
+      sortedSchools.reverse()
+    }
+
+    // 更新数据和排序状态
+    this.setData({
+      schools: sortedSchools,
+      sortField: field,
+      sortOrder: newOrder
+    })
+
+    console.log(`[院校] 按 ${field} ${newOrder === 'asc' ? '升序' : '降序'} 排序`)
   },
 
   /**
@@ -267,72 +313,49 @@ Page({
    * 点击地图标记点
    */
   onMarkerTap: function(e) {
-    console.log('[地图] 点击标记点:', e)
-    
-    // 尝试多种方式获取 markerId
-    let markerId = null
-    
-    if (e.detail && e.detail.markerId) {
-      // markerId 可能是字符串，需要转换为数字
-      markerId = parseInt(e.detail.markerId)
-    } else if (e.target && e.target.id) {
-      markerId = parseInt(e.target.id)
-    } else if (e.target && e.target.dataset && e.target.dataset.id) {
-      markerId = parseInt(e.target.dataset.id)
-    }
-    
-    console.log('[地图] 获取到的 markerId:', markerId, '类型:', typeof markerId)
-    
-    if (!markerId) {
-      console.log('[地图] 无法获取 markerId')
-      return
-    }
-    
-    // 直接通过 markerId 找到对应的标记点
-    const marker = this.data.markers.find(m => m.id === markerId)
-    
-    if (!marker) {
-      console.log('[地图] 未找到标记点, markerId:', markerId)
-      console.log('[地图] 所有标记点 IDs:', this.data.markers.map(m => m.id))
-      return
-    }
-    
-    console.log('[地图] 找到标记点:', marker)
-    
-    // 通过经纬度找到对应的学校
-    const school = this.data.schools.find(s => 
-      parseFloat(s.latitude) === marker.latitude && 
-      parseFloat(s.longitude) === marker.longitude
-    )
-
-    if (school) {
-      console.log('[地图] 找到学校:', school.school_name)
-      // 使用 setTimeout 延迟显示模态框，避免与地图拖拽冲突
-      setTimeout(() => {
-        this.setData({
-          showSchoolModal: true,
-          selectedSchool: school
-        })
-      }, 100)
-    } else {
-      console.log('[地图] 未找到对应学校')
-    }
+    this.handleMapItemClick(e, '标记点')
   },
 
   /**
    * 点击地图标记点的 callout 标签
    */
   onCalloutTap: function(e) {
-    console.log('[地图] 点击 callout 标签:', e)
+    this.handleMapItemClick(e, 'callout标签')
+  },
+
+  /**
+   * 点击院校列表行
+   */
+  onSchoolRowTap: function(e) {
+    const index = e.currentTarget.dataset.index
+    console.log('[院校] 点击列表行, index:', index)
     
-    // callout 点击事件也返回 markerId
+    if (index !== undefined && this.data.schools[index]) {
+      const school = this.data.schools[index]
+      console.log('[院校] 打开学校详情:', school.school_name)
+      
+      // 直接显示模态框，不需要延迟
+      this.setData({
+        showSchoolModal: true,
+        selectedSchool: school
+      })
+    }
+  },
+
+  /**
+   * 处理地图项点击（标记点或标签）
+   */
+  handleMapItemClick: function(e, itemType) {
+    console.log(`[地图] 点击${itemType}:`, e)
+    
+    // 尝试获取 markerId
     let markerId = null
     
     if (e.detail && e.detail.markerId) {
       markerId = parseInt(e.detail.markerId)
     }
     
-    console.log('[地图] callout markerId:', markerId)
+    console.log(`[地图] ${itemType} markerId:`, markerId)
     
     if (!markerId) {
       console.log('[地图] 无法获取 markerId')

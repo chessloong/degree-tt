@@ -30,8 +30,8 @@
         <!-- default 配置 -->
         <view class="config-item">
           <view class="config-label">
-            <text class="label-text">default</text>
-            <text class="label-desc">默认缓存时间</text>
+            <text class="label-text">默认缓存时间</text>
+            <text class="label-desc">default</text>
           </view>
           <input 
             class="config-input" 
@@ -46,8 +46,8 @@
         <!-- schools 配置 -->
         <view class="config-item">
           <view class="config-label">
-            <text class="label-text">schools</text>
-            <text class="label-desc">院校数据缓存</text>
+            <text class="label-text">院校数据缓存</text>
+            <text class="label-desc">schools</text>
           </view>
           <input 
             class="config-input" 
@@ -62,8 +62,8 @@
         <!-- major_classes 配置 -->
         <view class="config-item">
           <view class="config-label">
-            <text class="label-text">major_classes</text>
-            <text class="label-desc">专业大类缓存</text>
+            <text class="label-text">专业大类缓存</text>
+            <text class="label-desc">major_classes</text>
           </view>
           <input 
             class="config-input" 
@@ -78,8 +78,8 @@
         <!-- majors 配置 -->
         <view class="config-item">
           <view class="config-label">
-            <text class="label-text">majors</text>
-            <text class="label-desc">专业列表缓存</text>
+            <text class="label-text">专业列表缓存</text>
+            <text class="label-desc">majors</text>
           </view>
           <input 
             class="config-input" 
@@ -94,8 +94,8 @@
         <!-- plans 配置 -->
         <view class="config-item">
           <view class="config-label">
-            <text class="label-text">plans</text>
-            <text class="label-desc">招生计划缓存</text>
+            <text class="label-text">招生计划缓存</text>
+            <text class="label-desc">plans</text>
           </view>
           <input 
             class="config-input" 
@@ -110,8 +110,8 @@
         <!-- preview_plans 配置 -->
         <view class="config-item">
           <view class="config-label">
-            <text class="label-text">preview_plans</text>
-            <text class="label-desc">预告计划缓存</text>
+            <text class="label-text">预告计划缓存</text>
+            <text class="label-desc">preview_plans</text>
           </view>
           <input 
             class="config-input" 
@@ -126,8 +126,8 @@
         <!-- score_segments 配置 -->
         <view class="config-item">
           <view class="config-label">
-            <text class="label-text">score_segments</text>
-            <text class="label-desc">一分一段缓存</text>
+            <text class="label-text">一分一段缓存</text>
+            <text class="label-desc">score_segments</text>
           </view>
           <input 
             class="config-input" 
@@ -142,8 +142,8 @@
         <!-- control_lines 配置 -->
         <view class="config-item">
           <view class="config-label">
-            <text class="label-text">control_lines</text>
-            <text class="label-desc">省控线缓存</text>
+            <text class="label-text">省控线缓存</text>
+            <text class="label-desc">control_lines</text>
           </view>
           <input 
             class="config-input" 
@@ -158,8 +158,8 @@
         <!-- admission_lines 配置 -->
         <view class="config-item">
           <view class="config-label">
-            <text class="label-text">admission_lines</text>
-            <text class="label-desc">投档线缓存</text>
+            <text class="label-text">投档线缓存</text>
+            <text class="label-desc">admission_lines</text>
           </view>
           <input 
             class="config-input" 
@@ -174,14 +174,62 @@
         <!-- calendar_events 配置 -->
         <view class="config-item">
           <view class="config-label">
-            <text class="label-text">calendar_events</text>
-            <text class="label-desc">升本日历缓存</text>
+            <text class="label-text">升本日历缓存</text>
+            <text class="label-desc">calendar_events</text>
           </view>
           <input 
             class="config-input" 
             type="number" 
             value="{{expireConfig.calendar_events || 10}}"
             data-key="calendar_events"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- enrollment_stats_chart 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">招生统计图表缓存</text>
+            <text class="label-desc">enrollment_stats_chart</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.enrollment_stats_chart || 10}}"
+            data-key="enrollment_stats_chart"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- exam_admission_chart 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">录取数据图表缓存</text>
+            <text class="label-desc">exam_admission_chart</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.exam_admission_chart || 10}}"
+            data-key="exam_admission_chart"
+            bindinput="onInputChange"
+            placeholder="请输入分钟数"
+          />
+        </view>
+
+        <!-- collect_volunteer 配置 -->
+        <view class="config-item">
+          <view class="config-label">
+            <text class="label-text">征集志愿缓存</text>
+            <text class="label-desc">collect_volunteer</text>
+          </view>
+          <input 
+            class="config-input" 
+            type="number" 
+            value="{{expireConfig.collect_volunteer || 10}}"
+            data-key="collect_volunteer"
             bindinput="onInputChange"
             placeholder="请输入分钟数"
           />
