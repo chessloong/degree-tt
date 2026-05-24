@@ -1,13 +1,48 @@
 <view class="container">
-  <view class="de-card">
+  <!-- 顶部信息栏 -->
+  <view class="header-bar">
+    <text class="class-name">{{currentClassName}}</text>
+    <image class="help-icon" src="/assets/svg/caution.svg" mode="aspectFit"></image>
+  </view>
+
+  <!-- 专业测试趋势图表卡片 -->
+  <view wx:if="{{majorChart.visible}}" class="de-card">
     <view class="de-card-header">
       <view class="de-card-title-left">
         <view class="de-card-dot"></view>
-        <text class="de-card-title">省控线</text>
+        <text class="de-card-title">专业测试历年趋势</text>
       </view>
     </view>
-    <view class="de-card-content">
-      <text class="placeholder-text">省控线页面开发中...</text>
+    <view class="de-chart-wrapper">
+      <canvas 
+        id="majorChart" 
+        canvas-id="majorChart"
+        style="width: {{majorChart.width > 0 ? majorChart.width + 'px' : '100%'}}; 
+               height: {{majorChart.height > 0 ? majorChart.height + 'px' : '200px'}};">
+      </canvas>
     </view>
+  </view>
+
+  <!-- 文化分趋势图表卡片 -->
+  <view wx:if="{{cultureChart.visible}}" class="de-card">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">文化分历年趋势</text>
+      </view>
+    </view>
+    <view class="de-chart-wrapper">
+      <canvas 
+        id="cultureChart" 
+        canvas-id="cultureChart"
+        style="width: {{cultureChart.width > 0 ? cultureChart.width + 'px' : '100%'}}; 
+               height: {{cultureChart.height > 0 ? cultureChart.height + 'px' : '200px'}};">
+      </canvas>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <text class="loading-text">{{loadingText}}</text>
   </view>
 </view>

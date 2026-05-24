@@ -61,7 +61,7 @@
       <image class="de-list-icon" src="/assets/svg/supermanager.svg" mode="aspectFit" />
       <text class="de-list-title">超级管理</text>
       <view class="de-list-content">
-        <text class="de-list-text">管理员专用</text>
+        <text class="de-list-text"></text>
         <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
