@@ -2,10 +2,36 @@
   padding: 20rpx;
 }
 
+/* 顶部信息栏 */
+.header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 10rpx;
+  margin-bottom: 10rpx;
+}
+
+.class-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.help-icon {
+  width: 48rpx;
+  height: 48rpx;
+}
+
 .placeholder-text {
   font-size: 28rpx;
   color: #999;
   text-align: center;
   display: block;
   padding: 60rpx 0;
+}
+
+/* 投档线页面专用图表容器样式 */
+.de-chart-wrapper {
+  width: 100%;
+  padding: 20rpx 0;
 }

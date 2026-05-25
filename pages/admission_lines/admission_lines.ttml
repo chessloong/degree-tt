@@ -1,13 +1,57 @@
 <view class="container">
-  <view class="de-card">
+  <!-- 顶部信息栏 -->
+  <view class="header-bar">
+    <text class="class-name">{{currentClassName}}</text>
+    <image class="help-icon" src="/assets/svg/caution.svg" mode="aspectFit"></image>
+  </view>
+
+  <!-- 投档分趋势图表卡片 -->
+  <view class="de-card" wx:if="{{admissionChart.visible}}">
     <view class="de-card-header">
       <view class="de-card-title-left">
         <view class="de-card-dot"></view>
-        <text class="de-card-title">投档线</text>
+        <text class="de-card-title">历年投档分趋势</text>
       </view>
     </view>
     <view class="de-card-content">
-      <text class="placeholder-text">投档线页面开发中...</text>
+      <view class="de-chart-wrapper">
+        <canvas 
+          canvas-id="admissionChart" 
+          id="admissionChart"
+          class="de-chart-canvas"
+          style="width: {{admissionChart.width > 0 ? admissionChart.width + 'px' : '100%'}}; height: {{admissionChart.height > 0 ? admissionChart.height + 'px' : '200px'}};"
+        ></canvas>
+      </view>
+      <view wx:if="{{admissionTableData.visible}}" class="de-table-wrapper">
+        <view class="de-table">
+          <view class="de-table-header major-table-header">
+            <view class="de-table-cell de-table-cell-center">年份</view>
+            <view wx:for="{{admissionTableData.types}}" wx:key="*this" class="de-table-cell de-table-cell-center">{{item}}院校</view>
+          </view>
+          <view wx:for="{{admissionTableData.data}}" wx:key="year" class="de-table-row">
+            <view class="de-table-cell de-table-cell-center">{{item.year}}</view>
+            <view wx:for="{{admissionTableData.types}}" wx:key="*this" wx:for-item="type" class="de-table-cell de-table-cell-center de-table-cell-number">{{item[type] || '-'}}</view>
+          </view>
+        </view>
+      </view>
     </view>
+  </view>
+
+  <!-- 无数据提示 -->
+  <view class="de-card" wx:if="{{!loading && !admissionChart.visible}}">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">历年投档分趋势</text>
+      </view>
+    </view>
+    <view class="de-card-content">
+      <text class="placeholder-text">暂无数据</text>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <text class="loading-text">{{loadingText}}</text>
   </view>
 </view>
