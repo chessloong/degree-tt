@@ -2,10 +2,59 @@
   padding: 20rpx;
 }
 
-.placeholder-text {
+.header-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.class-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 60rpx 0;
+}
+
+.loading-text {
   font-size: 28rpx;
   color: #999;
+}
+
+.content-area {
+  margin-top: 20rpx;
+}
+
+.de-chart-wrapper {
+  padding: 8rpx 0;
+}
+
+.de-table-wrapper {
+  overflow-x: auto;
+  margin-top: 16rpx;
+}
+
+.year-cell {
+  width: 120rpx;
+  flex: 0 0 120rpx;
   text-align: center;
-  display: block;
-  padding: 60rpx 0;
+}
+
+.ratio-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.4;
+}
+
+.ratio-text {
+  font-size: 22rpx;
+  color: #999;
 }

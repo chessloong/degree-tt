@@ -1,13 +1,61 @@
 <view class="container">
-  <view class="de-card">
-    <view class="de-card-header">
-      <view class="de-card-title-left">
-        <view class="de-card-dot"></view>
-        <text class="de-card-title">招生计划</text>
+  <!-- 顶部信息栏 -->
+  <view class="header-bar">
+    <text class="class-name">{{currentClassName}}</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <text class="loading-text">{{loadingText}}</text>
+  </view>
+
+  <!-- 内容区域 -->
+  <view wx:else class="content-area">
+    <!-- 图表卡片 -->
+    <view wx:if="{{admissionChart.visible}}" class="de-card">
+      <view class="de-card-header">
+        <view class="de-card-title-left">
+          <view class="de-card-dot"></view>
+          <text class="de-card-title">报考及录取人数</text>
+        </view>
       </view>
-    </view>
-    <view class="de-card-content">
-      <text class="placeholder-text">招生计划页面开发中...</text>
+      <view class="de-chart-wrapper">
+        <canvas
+          id="admissionChart"
+          canvas-id="admissionChart"
+          style="width: {{admissionChart.width > 0 ? admissionChart.width + 'px' : '100%'}};
+                 height: {{admissionChart.height > 0 ? admissionChart.height + 'px' : '200px'}};">
+        </canvas>
+      </view>
+
+      <!-- 数据表格 -->
+      <view class="de-table-wrapper">
+        <view class="de-table">
+          <view class="de-table-header">
+            <text class="de-table-cell year-cell">年份</text>
+            <text class="de-table-cell">报名数</text>
+            <text class="de-table-cell">2B数</text>
+            <text class="de-table-cell">2C数</text>
+            <text class="de-table-cell">总招生</text>
+          </view>
+          <view wx:for="{{tableData}}" wx:key="year" class="de-table-row">
+            <text class="de-table-cell year-cell">{{item.year}}</text>
+            <text class="de-table-cell">{{item.edu}}</text>
+            <view class="de-table-cell ratio-cell">
+              <text>{{item.plan2b}}</text>
+              <text class="ratio-text">{{item.ratioText2b}}</text>
+            </view>
+            <view class="de-table-cell ratio-cell">
+              <text>{{item.plan2c}}</text>
+              <text class="ratio-text">{{item.ratioText2c}}</text>
+            </view>
+            <view class="de-table-cell ratio-cell">
+              <text>{{item.total}}</text>
+              <text class="ratio-text">{{item.ratioTextTotal}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
     </view>
   </view>
 </view>

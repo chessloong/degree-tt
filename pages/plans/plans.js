@@ -1,117 +1,320 @@
 const app = getApp()
+import uCharts from '../../common/u-charts.min.js'
 
 Page({
   data: {
     title: '招生计划',
-    plansData: [],  // 当前大类的招生计划数据
-    className: ''   // 当前大类名称
+    currentClassName: '',
+    loading: true,
+    loadingText: '加载中...',
+    rawPlansData: [],
+    rawScoreSegmentsData: [],
+    schools: [],
+
+    admissionChart: {
+      data: null,
+      visible: false,
+      width: 0,
+      height: 0
+    },
+
+    tableData: []
   },
 
   onLoad: function(options) {
-    // 获取当前大类名称（调用全局方法 getUserClassName）
-    const className = app.getUserClassName() || '管理类'
-    this.setData({
-      className: className
-    })
-    
-    console.log(`[计划] 页面加载，大类: ${className}`)
+    console.log('[计划] 页面加载')
   },
 
   onReady: function() {},
 
   onShow: function() {
-    // 每次显示时加载/刷新数据
-    const className = this.data.className
-    this.loadPlansData(className)
+    this.loadData()
   },
 
   onHide: function() {},
 
   onUnload: function() {},
 
-  /**
-   * 加载指定大类的招生计划数据
-   * @param {string} className - 大类名称
-   */
-  async loadPlansData(className) {
-    console.log(`[计划] 加载数据: ${className}`)
-    // 使用统一的数组型缓存获取方法（自动验证过期）
-    const cachedData = app.getArrayCacheItem('plans', 'class_name', className)
-    
-    if (cachedData) {
-      console.log(`[计划] 使用缓存数据，共 ${cachedData.length} 条`)
+  async loadData() {
+    this.setData({
+      loading: true,
+      loadingText: '加载中...'
+    })
+
+    try {
+      const className = app.getUserClassName() || '管理类'
+      console.log(`[计划] 当前用户大类: ${className}`)
+
+      const data = await app.loadPageDataBatch([
+        {
+          cacheKey: 'plans',
+          collection: 'degree_plans',
+          filter: { class_name: className },
+          type: 'array',
+          itemKey: 'class_name',
+          itemValue: className,
+          defaultValue: []
+        },
+        {
+          cacheKey: 'score_segments',
+          collection: 'degree_score_segments',
+          filter: { class_name: className },
+          type: 'array',
+          itemKey: 'class_name',
+          itemValue: className,
+          defaultValue: []
+        },
+        {
+          cacheKey: 'schools',
+          collection: 'degree_schools',
+          type: 'object',
+          defaultValue: []
+        }
+      ])
+
       this.setData({
-        plansData: cachedData
+        currentClassName: className,
+        rawPlansData: data.plans || [],
+        rawScoreSegmentsData: data.score_segments || [],
+        schools: data.schools || [],
+        loading: false,
+        loadingText: ''
       })
-      return
+
+      console.log(`[计划] 数据加载完成，招生计划 ${data.plans?.length || 0} 条，一分一段 ${data.score_segments?.length || 0} 条，院校 ${data.schools?.length || 0} 条`)
+
+      this.renderAdmissionChart()
+
+    } catch (err) {
+      console.error('[计划] 加载失败:', err)
+      tt.showToast({
+        title: '加载失败，请重试',
+        icon: 'none'
+      })
+      this.setData({
+        loading: false,
+        loadingText: ''
+      })
     }
-    
-    // 数据不存在或已过期，从云端获取
-    console.log('[计划] 缓存未命中，从云端拉取')
-    await this.fetchPlansFromCloud(className)
   },
 
-  /**
-   * 从云端获取招生计划数据
-   * @param {string} className - 大类名称
-   */
-  async fetchPlansFromCloud(className) {
-    const cloud = app.globalData.cloud
-    
-    if (!cloud) {
-      console.error('[计划] cloud 实例未初始化')
-      return null
-    }
-    
-    try {
-      const response = await new Promise((resolve, reject) => {
-        cloud.callContainer({
-          path: '/queryDegrees',
-          init: {
-            method: 'POST',
-            timeout: 60000,
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              collectionName: 'degree_plans',
-              limit: 1000,
-              filter: {
-                class_name: className
-              }
-            })
-          },
-          success: resolve,
-          fail: reject
-        })
-      })
-      
-      if (response.statusCode !== 200) {
-        console.error('[计划] 接口失败，状态码:', response.statusCode)
-        return null
+  waitForCanvas(selector, interval = 50, maxRetries = 40) {
+    return new Promise((resolve) => {
+      let retries = 0
+      const check = () => {
+        tt.createSelectorQuery()
+          .select(selector)
+          .boundingClientRect((rect) => {
+            if (rect) {
+              resolve(rect)
+            } else if (retries < maxRetries) {
+              retries++
+              setTimeout(check, interval)
+            } else {
+              resolve(null)
+            }
+          })
+          .exec()
       }
-      
-      const result = typeof response.data === 'string' ? JSON.parse(response.data) : response.data
-      
-      if (!result || result.code !== 0 || !result.data) {
-        console.error('[计划] 数据格式错误')
-        return null
-      }
-      
-      // 更新页面数据
-      this.setData({
-        plansData: result.data
-      })
-      
-      console.log(`[计划] 云端拉取成功，共 ${result.data.length} 条`)
-      
-      // 使用统一的数组型缓存存储方法（按 class_name 分类）
-      app.setArrayCacheItem('plans', 'class_name', className, result.data)
-      
-      return result.data
-    } catch (err) {
-      console.error('[计划] 接口异常:', err)
-      return null
-    }
+      check()
+    })
   },
+
+  renderAdmissionChart() {
+    const plansData = this.data.rawPlansData
+    const scoreSegmentsData = this.data.rawScoreSegmentsData
+    const schools = this.data.schools
+
+    if ((!plansData || plansData.length === 0) && (!scoreSegmentsData || scoreSegmentsData.length === 0)) {
+      console.log('[计划-图表] 数据为空，不渲染')
+      return
+    }
+
+    const schoolLevelMap = {}
+    if (schools && schools.length > 0) {
+      schools.forEach(school => {
+        schoolLevelMap[school.school_name] = school.level || '其他'
+      })
+    }
+
+    const eduMaxCumulativeCount = {}
+    scoreSegmentsData.forEach(item => {
+      if (item.score_type === 'edu') {
+        const year = item.year
+        const cumulativeCount = item.cumulative_count || 0
+        if (!eduMaxCumulativeCount[year] || cumulativeCount > eduMaxCumulativeCount[year]) {
+          eduMaxCumulativeCount[year] = cumulativeCount
+        }
+      }
+    })
+
+    const plan2BSum = {}
+    const plan2CSum = {}
+    plansData.forEach(item => {
+      const year = item.year
+      const schoolName = item.school_name || ''
+      const total = parseFloat(item.total) || 0
+      let level = item.level
+
+      if (!level && schoolName) {
+        level = schoolLevelMap[schoolName] || '其他'
+      }
+
+      if (level === '2B') {
+        plan2BSum[year] = (plan2BSum[year] || 0) + total
+      } else if (level === '2C') {
+        plan2CSum[year] = (plan2CSum[year] || 0) + total
+      }
+    })
+
+    const allYears = [...new Set([
+      ...Object.keys(eduMaxCumulativeCount),
+      ...Object.keys(plan2BSum),
+      ...Object.keys(plan2CSum)
+    ])].sort((a, b) => a - b)
+
+    const allYearsDesc = [...allYears].reverse()
+
+    if (allYears.length === 0) {
+      console.log('[计划-图表] 无有效年份数据')
+      return
+    }
+
+    const categories = allYears
+
+    const eduData = allYears.map(year => eduMaxCumulativeCount[year] || null)
+    const data2B = allYears.map(year => plan2BSum[year] || null)
+    const data2C = allYears.map(year => plan2CSum[year] || null)
+    const dataTotal = allYears.map(year => (plan2BSum[year] || 0) + (plan2CSum[year] || 0))
+
+    const series = [
+      {
+        name: '报考人数',
+        data: eduData,
+        color: '#FF8C00'
+      },
+      {
+        name: '2B招生',
+        data: data2B,
+        color: '#0081ff'
+      },
+      {
+        name: '2C招生',
+        data: data2C,
+        color: '#39b54a'
+      },
+      {
+        name: '总招生',
+        data: dataTotal,
+        color: '#8B4513'
+      }
+    ]
+
+    const tableData = allYearsDesc.map(year => {
+      const edu = eduMaxCumulativeCount[year] || 0
+      const plan2b = plan2BSum[year] || 0
+      const plan2c = plan2CSum[year] || 0
+      const total = plan2b + plan2c
+      const ratio2b = edu > 0 ? Math.round((plan2b / edu) * 100) : 0
+      const ratio2c = edu > 0 ? Math.round((plan2c / edu) * 100) : 0
+      const ratioTotal = edu > 0 ? Math.round((total / edu) * 100) : 0
+
+      return {
+        year,
+        edu,
+        plan2b,
+        plan2c,
+        total,
+        ratio2b,
+        ratio2c,
+        ratioTotal,
+        ratioText2b: `${ratio2b}%`,
+        ratioText2c: `${ratio2c}%`,
+        ratioTextTotal: `${ratioTotal}%`
+      }
+    })
+
+    console.log('[计划-图表] 图表数据:', { categories, series })
+
+    this.setData({
+      'admissionChart.data': series,
+      'admissionChart.visible': true,
+      tableData: tableData
+    })
+
+    setTimeout(() => {
+      this.drawAdmissionChart(categories)
+    }, 200)
+  },
+
+  async drawAdmissionChart(categories) {
+    const chart = this.data.admissionChart
+    if (!chart.visible || !chart.data) {
+      return
+    }
+
+    const rect = await this.waitForCanvas('#admissionChart', 50, 40)
+    if (!rect) {
+      console.error('[计划-图表] 获取 canvas 失败')
+      return
+    }
+
+    const canvasWidth = rect.width
+    const canvasHeight = Math.round(rect.width * 46 / 75)
+
+    this.setData({
+      'admissionChart.width': canvasWidth,
+      'admissionChart.height': canvasHeight
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const ctx = tt.createCanvasContext('admissionChart', this)
+
+    try {
+      new uCharts({
+        $this: this,
+        canvasId: 'admissionChart',
+        context: ctx,
+        type: 'line',
+        pixelRatio: 1,
+        width: canvasWidth,
+        height: canvasHeight,
+        animation: true,
+        timing: 'easeInOut',
+        duration: 1000,
+        categories: categories,
+        series: chart.data,
+        padding: [15, 20, 10, 15],
+        xAxis: {
+          disableGrid: true,
+          axisLine: true,
+          axisLabel: { fontSize: 10 }
+        },
+        yAxis: {
+          disableGrid: true,
+          disabled: true,
+          gridType: 'dash',
+          dashLength: 2,
+          axisLabel: { show: false }
+        },
+        legend: {
+          show: true,
+          position: 'bottom',
+          lineHeight: 20,
+          fontSize: 10
+        },
+        extra: {
+          line: {
+            type: 'curve',
+            width: 3,
+            activeType: 'hilight'
+          }
+        }
+      })
+      console.log('[计划-图表] 绘制完成')
+    } catch (err) {
+      console.error('[计划-图表] 绘制失败:', err)
+    }
+  }
 })

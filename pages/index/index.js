@@ -23,8 +23,46 @@ Page({
   onLoad: function() {},
 
   onReady() {
+    this.initCharts();
+  },
+
+  /**
+   * 等待云实例初始化完成后再加载图表
+   */
+  async initCharts() {
+    const app = getApp();
+    
+    // 等待 cloud 实例初始化完成
+    await this.waitForCloudReady(app, 50, 100);
+    
+    // 云实例就绪后加载图表
     this.loadEnrollmentStatsChart();
     this.loadExamAdmissionChart();
+  },
+
+  /**
+   * 等待云实例就绪
+   * @param {Object} app - 应用实例
+   * @param {number} interval - 检查间隔（毫秒）
+   * @param {number} maxRetries - 最大重试次数
+   */
+  waitForCloudReady(app, interval = 50, maxRetries = 100) {
+    return new Promise((resolve) => {
+      let retries = 0;
+      const check = () => {
+        if (app.globalData.cloud) {
+          console.log('[首页] 云实例就绪');
+          resolve();
+        } else if (retries < maxRetries) {
+          retries++;
+          setTimeout(check, interval);
+        } else {
+          console.error('[首页] 云实例初始化超时');
+          resolve();
+        }
+      };
+      check();
+    });
   },
 
   /**

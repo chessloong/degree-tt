@@ -931,8 +931,8 @@ App({
         isCacheValid = (cachedData !== null)
       }
     } else if (type === 'object') {
-      // 对象型缓存：getCachedData 已内置过期验证，直接返回 data 或 null
-      cachedData = this.getCachedData(cacheKey)
+      // 对象型缓存：getObjectCache 已内置过期验证，直接返回 data 或 null
+      cachedData = this.getObjectCache(cacheKey)
       isCacheValid = (cachedData !== null)
     }
     
@@ -959,7 +959,7 @@ App({
         }
       } else if (type === 'object') {
         // 对象型：保存到对象缓存
-        this.saveToCache(cacheKey, finalData || {})
+        this.setObjectCache(cacheKey, finalData || {})
         console.log(`[数据加载] ${cacheKey} 已保存到对象缓存`)
       }
     } else {
