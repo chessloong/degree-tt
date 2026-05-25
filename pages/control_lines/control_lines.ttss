@@ -50,3 +50,8 @@
   font-weight: bold;
   color: #0081ff;
 }
+
+/* 征集志愿表格低于省控线的分数显示红色 */
+.score-lower {
+  color: #ff4d4f;
+}

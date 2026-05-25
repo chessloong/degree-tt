@@ -86,8 +86,8 @@
           <view wx:for="{{item.data}}" wx:key="year" class="de-table-row {{item.round === '省控线' ? 'major-control-row' : ''}}">
             <view class="de-table-cell de-table-cell-center">{{item.showYear ? item.year : ''}}</view>
             <view class="de-table-cell de-table-cell-center">{{item.round}}</view>
-            <view class="de-table-cell de-table-cell-center de-table-cell-number">{{item.cultureScore}}</view>
-            <view class="de-table-cell de-table-cell-center de-table-cell-number">{{item.majorScore}}</view>
+            <view class="de-table-cell de-table-cell-center de-table-cell-number {{item.cultureLower ? 'score-lower' : ''}}">{{item.cultureScore}}</view>
+            <view class="de-table-cell de-table-cell-center de-table-cell-number {{item.majorLower ? 'score-lower' : ''}}">{{item.majorScore}}</view>
           </view>
         </view>
       </view>

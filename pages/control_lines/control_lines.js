@@ -600,24 +600,34 @@ Page({
           const roundItems = batchData.filter(cv => cv.year === year && cv.round === round)
           if (roundItems.length === 0) return
 
-          // 获取文化线最小值
+          // 获取文化线最小值，如果为空则使用省控线分数
           const cultureScores = roundItems
             .map(item => parseFloat(item.culture_score))
             .filter(score => !isNaN(score))
-          const minCulture = cultureScores.length > 0 ? Math.min(...cultureScores) : '-'
+          let minCulture = cultureScores.length > 0 ? Math.min(...cultureScores) : '-'
+          const cultureLower = minCulture !== '-' && cultureScoreItem && minCulture < cultureScoreItem.min_score
+          if (minCulture === '-' && cultureScoreItem) {
+            minCulture = cultureScoreItem.min_score
+          }
 
-          // 获取专业线最小值
+          // 获取专业线最小值，如果为空则使用省控线分数
           const majorScores = roundItems
             .map(item => parseFloat(item.major_score))
             .filter(score => !isNaN(score))
-          const minMajor = majorScores.length > 0 ? Math.min(...majorScores) : '-'
+          let minMajor = majorScores.length > 0 ? Math.min(...majorScores) : '-'
+          const majorLower = minMajor !== '-' && majorScoreItem && minMajor < majorScoreItem.min_score
+          if (minMajor === '-' && majorScoreItem) {
+            minMajor = majorScoreItem.min_score
+          }
 
           tableData.push({
             year: year,
             showYear: false,
             round: round === 0 ? '征集' : (round === 99 ? '最后' : `征集${round}`),
             cultureScore: minCulture,
-            majorScore: minMajor
+            majorScore: minMajor,
+            cultureLower: cultureLower,
+            majorLower: majorLower
           })
           lastYear = year
         })
