@@ -1,28 +1,47 @@
 import uCharts from '../../common/u-charts.min.js'
 const app = getApp()
+const { pinyinSort } = require('../../utils/pinyinSort.js')
 
 Page({
   data: {
     title: '投档线',
-    admissionLines: [],     // 投档线数据列表
-    collectVolunteers: [],  // 征集志愿数据列表
-    currentClassName: '',   // 当前专业大类
+    admissionLines: [],
+    collectVolunteers: [],
+    currentClassName: '',
     loading: true,
     loadingText: '加载中...',
-    
-    // 投档分趋势图表
+
     admissionChart: {
       data: [],
       visible: false,
       width: 0,
       height: 0
     },
-    
-    // 投档分表格数据
+
     admissionTableData: {
       visible: false,
       types: [],
       data: []
+    },
+
+    filterOptions: {
+      years: [],
+      batches: []
+    },
+
+    yearLabels: [],
+    batchLabels: [],
+
+    filterValues: {
+      yearIndex: 0,
+      batchIndex: 0
+    },
+
+    detailTableData: [],
+
+    sortConfig: {
+      field: 'min_score',
+      order: 'desc'
     }
   },
 
@@ -33,7 +52,6 @@ Page({
   onReady: function() {},
 
   onShow: function() {
-    // 每次显示时加载/刷新数据（内部已有缓存保护）
     this.loadAdmissionLinesData()
   },
 
@@ -41,9 +59,6 @@ Page({
 
   onUnload: function() {},
 
-  /**
-   * 等待 Canvas 元素出现
-   */
   waitForCanvas(selector, interval = 50, maxTimes = 40) {
     return new Promise((resolve) => {
       let times = 0
@@ -66,9 +81,6 @@ Page({
     })
   },
 
-  /**
-   * 加载投档线数据
-   */
   async loadAdmissionLinesData() {
     this.setData({
       loading: true,
@@ -76,11 +88,9 @@ Page({
     })
 
     try {
-      // 获取用户的专业大类
       const className = app.getUserClassName() || '管理类'
       console.log(`[投档线] 当前用户大类: ${className}`)
 
-      // 并行加载投档线数据和院校数据
       const [batchData, schools] = await Promise.all([
         app.loadPageDataBatch([
           {
@@ -115,7 +125,7 @@ Page({
 
       console.log(`[投档线] 加载完成，投档线 ${batchData.admission_lines.length} 条，征集志愿 ${batchData.collect_volunteer.length} 条，院校 ${schools.length} 所`)
 
-      // 渲染投档分趋势图表（传入院校数据用于匹配学校类型）
+      this.generateFilterOptions(batchData.admission_lines, schools)
       this.renderAdmissionChart(batchData.admission_lines, schools)
 
     } catch (err) {
@@ -133,40 +143,32 @@ Page({
     }
   },
 
-  /**
-   * 渲染投档分趋势图表
-   */
   async renderAdmissionChart(admissionData, schools) {
     if (!admissionData || admissionData.length === 0) {
       console.log('[投档线] 数据为空，不渲染图表')
       return
     }
 
-    // 创建院校名称到类型的映射
     const schoolTypeMap = {}
     if (schools && schools.length > 0) {
       schools.forEach(school => {
         schoolTypeMap[school.school_name] = school.level || '其他'
       })
     }
-    console.log('[投档线] 院校类型映射创建完成，共', Object.keys(schoolTypeMap).length, '所')
 
-    // 按院校类型（2B/2C）分组
     const typeMap = {}
     admissionData.forEach(item => {
-      // 优先从投档线数据获取类型，否则从院校数据匹配
       let schoolType = item.school_type
       if (!schoolType && item.school_name) {
         schoolType = schoolTypeMap[item.school_name] || '其他'
       }
       schoolType = schoolType || '其他'
-      
+
       if (!typeMap[schoolType]) {
         typeMap[schoolType] = {}
       }
-      
+
       const year = item.year
-      // 取最低分（保留整数）
       const score = Math.round(item.min_score)
       if (!typeMap[schoolType][year] || score < typeMap[schoolType][year]) {
         typeMap[schoolType][year] = score
@@ -175,26 +177,22 @@ Page({
 
     console.log('[投档线] 院校类型分布:', Object.keys(typeMap))
 
-    // 获取所有年份并排序
     const allYears = [...new Set(admissionData.map(item => item.year))].sort((a, b) => a - b)
     const categories = allYears.map(year => year)
 
-    // 构建系列数据
     const series = []
     const typeColors = {
-      '2B': '#FF8C00',              // 橙色
-      '2C': '#9370DB'               // 紫色
+      '2B': '#FF8C00',
+      '2C': '#9370DB'
     }
 
     Object.keys(typeMap).forEach(type => {
       const yearData = typeMap[type]
       const data = allYears.map(year => yearData[year] || null)
 
-      // 如果该类型没有数据，跳过
       if (data.every(v => v === null)) return
 
       const color = typeColors[type] || '#0081ff'
-      console.log(`[投档线] 类型: ${type}, 颜色: ${color}`)
 
       series.push({
         name: type + '院校',
@@ -214,12 +212,11 @@ Page({
       return
     }
 
-    // 生成表格数据（按年份降序排列）
     const tableTypes = Object.keys(typeMap).filter(type => {
       const yearData = typeMap[type]
       return !allYears.every(year => !yearData[year])
     })
-    
+
     const tableData = allYears.sort((a, b) => b - a).map(year => {
       const row = { year: year }
       tableTypes.forEach(type => {
@@ -236,10 +233,8 @@ Page({
       'admissionTableData.data': tableData
     })
 
-    // 等待 DOM 更新
     await new Promise(resolve => setTimeout(resolve, 200))
 
-    // 获取 Canvas 尺寸
     const rect = await this.waitForCanvas('#admissionChart', 50, 40)
     if (!rect) {
       console.error('[投档线] 获取 canvas 失败')
@@ -254,18 +249,14 @@ Page({
       'admissionChart.height': canvasHeight
     })
 
-    // 再等待一下确保 setData 生效
     await new Promise(resolve => setTimeout(resolve, 50))
 
     const ctx = tt.createCanvasContext('admissionChart', this)
 
-    // 动态计算 Y 轴范围
     const allScores = series.flatMap(s => s.data.filter(v => v !== null))
     const maxScore = Math.max(...allScores)
-    
-    // 最小值固定为0
+
     const yAxisMin = 0
-    // 最大值：比最大分数大20的整10倍数
     const yAxisMax = Math.ceil((maxScore + 20) / 10) * 10
 
     try {
@@ -309,6 +300,126 @@ Page({
       console.log('[投档线] 图表绘制完成')
     } catch (err) {
       console.error('[投档线] 图表绘制失败:', err)
+    }
+  },
+
+  generateFilterOptions(admissionData, schools) {
+    const years = [...new Set(admissionData.map(item => item.year))].sort((a, b) => b - a)
+    const yearOptions = [{ label: '请选择年份', value: '' }, ...years.map(year => ({ label: year + '年', value: year }))]
+
+    const batches = [...new Set(admissionData.map(item => item.batch))].filter(Boolean)
+    const batchOptions = [{ label: '请选择批次', value: '' }, ...batches.map(batch => ({ label: batch, value: batch }))]
+
+    const schoolTypeMap = {}
+    if (schools && schools.length > 0) {
+      schools.forEach(school => {
+        schoolTypeMap[school.school_name] = school.level || ''
+      })
+    }
+
+    const fullData = admissionData.map(item => ({
+      id: item._id,
+      school_name: item.school_name,
+      major_name: item.major_name,
+      min_score: item.min_score,
+      year: item.year,
+      batch: item.batch,
+      level: item.school_type || schoolTypeMap[item.school_name] || ''
+    }))
+
+    const yearLabels = yearOptions.map(item => item.label)
+    const batchLabels = batchOptions.map(item => item.label)
+
+    this.setData({
+      'filterOptions.years': yearOptions,
+      'filterOptions.batches': batchOptions,
+      yearLabels: yearLabels,
+      batchLabels: batchLabels,
+      'filterValues.yearIndex': 1,
+      'filterValues.batchIndex': 1,
+      fullAdmissionData: fullData
+    })
+
+    this.filterAdmissionData()
+  },
+
+  onYearChange(e) {
+    const yearIndex = parseInt(e.detail.value)
+    this.setData({
+      'filterValues.yearIndex': yearIndex
+    })
+    this.filterAdmissionData()
+  },
+
+  onBatchChange(e) {
+    const batchIndex = parseInt(e.detail.value)
+    this.setData({
+      'filterValues.batchIndex': batchIndex
+    })
+    this.filterAdmissionData()
+  },
+
+  filterAdmissionData() {
+    const { filterOptions, filterValues, fullAdmissionData } = this.data
+
+    const selectedYear = filterOptions.years[filterValues.yearIndex]?.value
+    const selectedBatch = filterOptions.batches[filterValues.batchIndex]?.value
+
+    let filteredData = [...fullAdmissionData]
+
+    if (selectedYear) {
+      filteredData = filteredData.filter(item => item.year === selectedYear)
+    }
+
+    if (selectedBatch) {
+      filteredData = filteredData.filter(item => item.batch === selectedBatch)
+    }
+
+    filteredData = this.sortData(filteredData)
+
+    this.setData({
+      detailTableData: filteredData
+    })
+  },
+
+  onSortChange(e) {
+    const field = e.currentTarget.dataset.field
+    const { sortConfig } = this.data
+
+    let newOrder = 'desc'
+    if (sortConfig.field === field && sortConfig.order === 'desc') {
+      newOrder = 'asc'
+    }
+
+    this.setData({
+      'sortConfig.field': field,
+      'sortConfig.order': newOrder
+    })
+
+    this.filterAdmissionData()
+  },
+
+  sortData(data) {
+    const { sortConfig } = this.data
+    const { field, order } = sortConfig
+
+    const sorted = [...data]
+
+    if (field === 'school_name') {
+      const pinyinSorted = pinyinSort(sorted, 'school_name')
+      return order === 'asc' ? pinyinSorted : pinyinSorted.reverse()
+    } else if (field === 'major_name') {
+      const pinyinSorted = pinyinSort(sorted, 'major_name')
+      return order === 'asc' ? pinyinSorted : pinyinSorted.reverse()
+    } else {
+      sorted.sort((a, b) => {
+        if (order === 'asc') {
+          return a[field] - b[field]
+        } else {
+          return b[field] - a[field]
+        }
+      })
+      return sorted
     }
   }
 })

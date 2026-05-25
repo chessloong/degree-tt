@@ -15,8 +15,8 @@
     </view>
     <view class="de-card-content">
       <view class="de-chart-wrapper">
-        <canvas 
-          canvas-id="admissionChart" 
+        <canvas
+          canvas-id="admissionChart"
           id="admissionChart"
           class="de-chart-canvas"
           style="width: {{admissionChart.width > 0 ? admissionChart.width + 'px' : '100%'}}; height: {{admissionChart.height > 0 ? admissionChart.height + 'px' : '200px'}};"
@@ -47,6 +47,62 @@
     </view>
     <view class="de-card-content">
       <text class="placeholder-text">暂无数据</text>
+    </view>
+  </view>
+
+  <!-- 历年投档分明细数据卡片 -->
+  <view class="de-card" wx:if="{{!loading}}">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">历年投档分明细数据</text>
+      </view>
+    </view>
+    <view class="de-card-content">
+      <!-- 筛选区 -->
+      <view class="filter-row">
+        <picker mode="selector" range="{{yearLabels}}" value="{{filterValues.yearIndex}}" bindchange="onYearChange">
+          <view class="filter-picker">
+            <text>{{yearLabels[filterValues.yearIndex] || '请选择年份'}}</text>
+            <text class="filter-arrow">▼</text>
+          </view>
+        </picker>
+        <picker mode="selector" range="{{batchLabels}}" value="{{filterValues.batchIndex}}" bindchange="onBatchChange">
+          <view class="filter-picker">
+            <text>{{batchLabels[filterValues.batchIndex] || '请选择批次'}}</text>
+            <text class="filter-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 表格区 -->
+      <view wx:if="{{detailTableData.length > 0}}" class="de-table-wrapper">
+        <view class="de-table">
+          <view class="de-table-header major-table-header">
+            <view class="de-table-cell sortable" bindtap="onSortChange" data-field="school_name">
+              院校名称
+              <text wx:if="{{sortConfig.field === 'school_name'}}" class="sort-indicator">{{sortConfig.order === 'desc' ? '▼' : '▲'}}</text>
+            </view>
+            <view class="de-table-cell sortable" bindtap="onSortChange" data-field="major_name">
+              专业名称
+              <text wx:if="{{sortConfig.field === 'major_name'}}" class="sort-indicator">{{sortConfig.order === 'desc' ? '▼' : '▲'}}</text>
+            </view>
+            <view class="de-table-cell de-table-cell-center sortable" bindtap="onSortChange" data-field="min_score">
+              最低分
+              <text wx:if="{{sortConfig.field === 'min_score'}}" class="sort-indicator">{{sortConfig.order === 'desc' ? '▼' : '▲'}}</text>
+            </view>
+          </view>
+          <view wx:for="{{detailTableData}}" wx:key="id" class="de-table-row">
+            <view class="de-table-cell">
+              <text class="level-tag level-{{item.level}}">{{item.level}}</text>
+              <text class="school-name">{{item.school_name}}</text>
+            </view>
+            <view class="de-table-cell">{{item.major_name}}</view>
+            <view class="de-table-cell de-table-cell-center de-table-cell-number">{{item.min_score}}</view>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="placeholder-text">暂无数据</view>
     </view>
   </view>
 
