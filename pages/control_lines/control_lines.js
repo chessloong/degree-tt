@@ -36,6 +36,11 @@ Page({
       years: [],
       batches: [],
       data: []
+    },
+    // 征集志愿表格数据
+    collectVolunteerTableData: {
+      visible: false,
+      tables: []
     }
   },
 
@@ -103,6 +108,9 @@ Page({
       // 渲染趋势图表
       this.renderCultureChart()
       this.renderMajorChart()
+
+      // 生成征集志愿表格
+      this.generateCollectVolunteerTable(data.collect_volunteer, data.control_lines)
 
     } catch (err) {
       console.error('[省控线] 加载失败:', err)
@@ -539,5 +547,94 @@ Page({
       'majorTableData.data': tableData
     })
     console.log('[省控线-专业测试] 表格数据生成完成')
+  },
+
+  /**
+   * 生成征集志愿表格数据
+   */
+  generateCollectVolunteerTable(collectVolunteers, controlLines) {
+    if (!collectVolunteers || collectVolunteers.length === 0) {
+      console.log('[省控线-征集志愿] 数据为空，不生成表格')
+      return
+    }
+
+    // 获取所有年份并按降序排序
+    const years = [...new Set(collectVolunteers.map(item => item.year))].sort((a, b) => b - a)
+
+    // 获取所有轮次并排序
+    const rounds = [...new Set(collectVolunteers.map(item => item.round))].sort((a, b) => a - b)
+
+    // 获取所有批次并排序
+    const batches = [...new Set(collectVolunteers.map(item => item.batch))].sort()
+
+    // 按批次拆分为多个表格
+    const tables = []
+    batches.forEach(batch => {
+      // 过滤出当前批次的数据
+      const batchData = collectVolunteers.filter(cv => cv.batch === batch)
+      if (batchData.length === 0) return
+
+      // 构建表格数据：每行为一个年份+轮次组合
+      const tableData = []
+      let lastYear = null
+      years.forEach(year => {
+        // 查找当前年份、当前批次的省控线数据
+        const majorControlItems = controlLines.filter(mc => 
+          mc.year === year && mc.batch === batch
+        )
+        const cultureScoreItem = majorControlItems.find(mc => mc.score_type === 'culture')
+        const majorScoreItem = majorControlItems.find(mc => mc.score_type === 'major')
+        
+        // 每年第一行显示省控线
+        tableData.push({
+          year: year,
+          showYear: true,
+          round: '省控线',
+          cultureScore: cultureScoreItem ? cultureScoreItem.min_score : '-',
+          majorScore: majorScoreItem ? majorScoreItem.min_score : '-'
+        })
+        
+        // 再处理征集轮次数据
+        rounds.forEach(round => {
+          // 检查该年份+轮次是否有数据
+          const roundItems = batchData.filter(cv => cv.year === year && cv.round === round)
+          if (roundItems.length === 0) return
+
+          // 获取文化线最小值
+          const cultureScores = roundItems
+            .map(item => parseFloat(item.culture_score))
+            .filter(score => !isNaN(score))
+          const minCulture = cultureScores.length > 0 ? Math.min(...cultureScores) : '-'
+
+          // 获取专业线最小值
+          const majorScores = roundItems
+            .map(item => parseFloat(item.major_score))
+            .filter(score => !isNaN(score))
+          const minMajor = majorScores.length > 0 ? Math.min(...majorScores) : '-'
+
+          tableData.push({
+            year: year,
+            showYear: false,
+            round: round === 0 ? '征集' : (round === 99 ? '最后' : `征集${round}`),
+            cultureScore: minCulture,
+            majorScore: minMajor
+          })
+          lastYear = year
+        })
+      })
+
+      if (tableData.length > 0) {
+        tables.push({
+          batch: batch,
+          data: tableData
+        })
+      }
+    })
+
+    this.setData({
+      'collectVolunteerTableData.visible': true,
+      'collectVolunteerTableData.tables': tables
+    })
+    console.log('[省控线-征集志愿] 表格数据生成完成')
   }
 })

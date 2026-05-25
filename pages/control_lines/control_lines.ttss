@@ -33,3 +33,20 @@
   color: #333333;
   background-color: rgba(0, 0, 0, 0.05);
 }
+
+/* 征集志愿表格批次标题 */
+.collect-table-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  padding: 16rpx 0 8rpx 0;
+  border-bottom: 1rpx solid #eee;
+  margin-bottom: 8rpx;
+  text-align: center;
+}
+
+/* 征集志愿表格省控线行加粗 */
+.major-control-row .de-table-cell {
+  font-weight: bold;
+  color: #0081ff;
+}

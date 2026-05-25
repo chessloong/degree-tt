@@ -65,6 +65,35 @@
     </view>
   </view>
 
+  <!-- 征集志愿表格卡片 -->
+  <view wx:if="{{collectVolunteerTableData.visible}}" class="de-card">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">征集志愿历年数据</text>
+      </view>
+    </view>
+    <block wx:for="{{collectVolunteerTableData.tables}}" wx:key="batch">
+      <view class="collect-table-title">{{item.batch}}</view>
+      <view class="de-table-wrapper">
+        <view class="de-table">
+          <view class="de-table-header major-table-header">
+            <view class="de-table-cell de-table-cell-center">年份</view>
+            <view class="de-table-cell de-table-cell-center">轮次</view>
+            <view class="de-table-cell de-table-cell-center">文化线</view>
+            <view class="de-table-cell de-table-cell-center">专业线</view>
+          </view>
+          <view wx:for="{{item.data}}" wx:key="year" class="de-table-row {{item.round === '省控线' ? 'major-control-row' : ''}}">
+            <view class="de-table-cell de-table-cell-center">{{item.showYear ? item.year : ''}}</view>
+            <view class="de-table-cell de-table-cell-center">{{item.round}}</view>
+            <view class="de-table-cell de-table-cell-center de-table-cell-number">{{item.cultureScore}}</view>
+            <view class="de-table-cell de-table-cell-center de-table-cell-number">{{item.majorScore}}</view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
   <!-- 加载状态 -->
   <view wx:if="{{loading}}" class="loading-container">
     <text class="loading-text">{{loadingText}}</text>
