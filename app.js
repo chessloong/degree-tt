@@ -650,10 +650,21 @@ App({
         cacheArray.push(newItem)
       }
 
-      tt.setStorageSync(cacheKey, JSON.stringify(cacheArray))
+      const cacheStr = JSON.stringify(cacheArray)
+      
+      if (cacheStr.length > 1024 * 1024) {
+        console.warn(`[数组缓存] ${cacheKey} 数据过大 (${cacheStr.length} 字节)，跳过缓存`)
+        return
+      }
+
+      tt.setStorageSync(cacheKey, cacheStr)
       console.log(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 已保存`)
     } catch (err) {
-      console.error(`[数组缓存] 设置 ${cacheKey} 中 ${itemKey}=${itemValue} 失败:`, err)
+      if (err && err.errMsg && err.errMsg.includes('exceed storage item max length')) {
+        console.warn(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 数据过大，跳过缓存`)
+      } else {
+        console.error(`[数组缓存] 设置 ${cacheKey} 中 ${itemKey}=${itemValue} 失败:`, err)
+      }
     }
   },
 

@@ -57,5 +57,47 @@
         </view>
       </view>
     </view>
+
+    <!-- 各专业招生比例饼图卡片 -->
+    <view wx:if="{{majorPieChart.visible}}" class="de-card">
+      <view class="de-card-header">
+        <view class="de-card-title-left">
+          <view class="de-card-dot"></view>
+          <text class="de-card-title">各专业招生比例</text>
+        </view>
+        <view class="de-card-title-right">
+          <picker mode="selector" range="{{yearLabels}}" value="{{filterValues.yearIndex}}" bindchange="onYearChange">
+            <view class="filter-picker-header">
+              <text>{{yearLabels[filterValues.yearIndex] || '请选择年份'}}</text>
+              <text class="filter-arrow">▼</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+      <view class="de-card-content">
+        <view class="de-chart-wrapper">
+          <canvas
+            id="majorPieChart"
+            canvas-id="majorPieChart"
+            style="width: {{majorPieChart.width > 0 ? majorPieChart.width + 'px' : '100%'}};
+                   height: {{majorPieChart.height > 0 ? majorPieChart.height + 'px' : '200px'}};">
+          </canvas>
+        </view>
+        <view class="de-table-wrapper">
+          <view class="de-table">
+            <view class="de-table-header">
+              <view class="de-table-cell" style="flex: 2;">专业名称</view>
+              <view class="de-table-cell de-table-cell-center">人数</view>
+              <view class="de-table-cell de-table-cell-center">比例</view>
+            </view>
+            <view wx:for="{{majorPieTableData}}" wx:key="name" class="de-table-row">
+              <view class="de-table-cell" style="flex: 2;">{{item.name}}</view>
+              <view class="de-table-cell de-table-cell-center de-table-cell-number">{{item.count}}</view>
+              <view class="de-table-cell de-table-cell-center">{{item.ratio}}%</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
   </view>
 </view>

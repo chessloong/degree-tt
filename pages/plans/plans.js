@@ -18,7 +18,19 @@ Page({
       height: 0
     },
 
-    tableData: []
+    tableData: [],
+    majorPieChart: {
+      data: [],
+      visible: false,
+      width: 0,
+      height: 0
+    },
+    majorPieTableData: [],
+    yearLabels: [],
+    filterValues: {
+      yearIndex: 0,
+      selectedYear: ''
+    }
   },
 
   onLoad: function(options) {
@@ -72,11 +84,19 @@ Page({
         }
       ])
 
+      const years = [...new Set((data.plans || []).map(plan => plan.year).filter(Boolean))].sort((a, b) => b - a)
+      const yearLabels = years.map(y => `${y}年`)
+      
       this.setData({
         currentClassName: className,
         rawPlansData: data.plans || [],
         rawScoreSegmentsData: data.score_segments || [],
         schools: data.schools || [],
+        yearLabels: yearLabels,
+        filterValues: {
+          yearIndex: 0,
+          selectedYear: years[0] || ''
+        },
         loading: false,
         loadingText: ''
       })
@@ -84,6 +104,7 @@ Page({
       console.log(`[计划] 数据加载完成，招生计划 ${data.plans?.length || 0} 条，一分一段 ${data.score_segments?.length || 0} 条，院校 ${data.schools?.length || 0} 条`)
 
       this.renderAdmissionChart()
+      this.renderMajorPieChart()
 
     } catch (err) {
       console.error('[计划] 加载失败:', err)
@@ -316,5 +337,127 @@ Page({
     } catch (err) {
       console.error('[计划-图表] 绘制失败:', err)
     }
+  },
+
+  renderMajorPieChart() {
+    const { rawPlansData, filterValues, currentClassName } = this.data
+    const { selectedYear } = filterValues
+    const majorTotalMap = {}
+
+    console.log(`[计划-饼图] 当前专业大类: ${currentClassName}, 选中年份: ${selectedYear}, 原始数据条数: ${rawPlansData.length}`)
+
+    rawPlansData.forEach(plan => {
+      if (selectedYear && plan.year !== selectedYear) {
+        return
+      }
+      const majorName = plan.major_name || '未知专业'
+      const total = parseInt(plan.total) || 0
+      if (!majorTotalMap[majorName]) {
+        majorTotalMap[majorName] = 0
+      }
+      majorTotalMap[majorName] += total
+    })
+
+    console.log(`[计划-饼图] 统计结果:`, majorTotalMap)
+
+    let pieData = Object.keys(majorTotalMap).map(major => ({
+      name: major,
+      data: majorTotalMap[major]
+    }))
+
+    if (pieData.length === 0) {
+      pieData = [
+        { name: '暂无数据', data: 1 }
+      ]
+    }
+
+    pieData.sort((a, b) => b.data - a.data)
+
+    console.log('[计划-饼图] 专业招生比例数据:', pieData)
+
+    // 生成表格数据
+    const total = pieData.reduce((sum, item) => sum + item.data, 0)
+    const tableData = pieData.map(item => ({
+      name: item.name,
+      count: item.data,
+      ratio: total > 0 ? Math.round((item.data / total) * 100) : 0
+    }))
+
+    this.setData({
+      'majorPieChart.data': pieData,
+      'majorPieChart.visible': pieData.length > 0,
+      'majorPieTableData': tableData
+    })
+
+    setTimeout(() => {
+      this.drawMajorPieChart()
+    }, 200)
+  },
+
+  async drawMajorPieChart() {
+    const chart = this.data.majorPieChart
+    if (!chart.visible || !chart.data || chart.data.length === 0) {
+      return
+    }
+
+    const rect = await this.waitForCanvas('#majorPieChart', 50, 40)
+    if (!rect) {
+      console.error('[计划-饼图] 获取 canvas 失败')
+      return
+    }
+
+    const canvasWidth = rect.width
+    const canvasHeight = Math.round(rect.width * 0.8)
+
+    this.setData({
+      'majorPieChart.width': canvasWidth,
+      'majorPieChart.height': canvasHeight
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const ctx = tt.createCanvasContext('majorPieChart', this)
+
+    try {
+      new uCharts({
+        $this: this,
+        canvasId: 'majorPieChart',
+        context: ctx,
+        type: 'pie',
+        pixelRatio: 1,
+        width: canvasWidth,
+        height: canvasHeight,
+        animation: true,
+        series: chart.data,
+        padding: [10, 10, 10, 10],
+        legend: {
+          show: true,
+          position: 'bottom'
+        },
+        extra: {
+          pie: {
+            labelWidth: 15
+          }
+        }
+      })
+      console.log('[计划-饼图] 绘制完成')
+    } catch (err) {
+      console.error('[计划-饼图] 绘制失败:', err)
+    }
+  },
+
+  onYearChange(e) {
+    const yearIndex = parseInt(e.detail.value)
+    const years = this.data.yearLabels.map(label => parseInt(label.replace('年', '')))
+    const selectedYear = years[yearIndex] || ''
+    
+    this.setData({
+      filterValues: {
+        yearIndex: yearIndex,
+        selectedYear: selectedYear
+      }
+    })
+
+    this.renderMajorPieChart()
   }
 })
