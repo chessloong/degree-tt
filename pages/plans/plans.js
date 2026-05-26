@@ -26,6 +26,13 @@ Page({
       height: 0
     },
     majorPieTableData: [],
+    schoolBarChart: {
+      data: [],
+      visible: false,
+      width: 0,
+      height: 0
+    },
+    schoolBarTableData: [],
     yearLabels: [],
     filterValues: {
       yearIndex: 0,
@@ -105,6 +112,7 @@ Page({
 
       this.renderAdmissionChart()
       this.renderMajorPieChart()
+      this.renderSchoolBarChart()
 
     } catch (err) {
       console.error('[计划] 加载失败:', err)
@@ -446,6 +454,126 @@ Page({
     }
   },
 
+  renderSchoolBarChart() {
+    const { rawPlansData, filterValues, schools } = this.data
+    const { selectedYear } = filterValues
+    const schoolTotalMap = {}
+    const schoolLevelMap = {}
+
+    if (schools && schools.length > 0) {
+      schools.forEach(school => {
+        schoolLevelMap[school.school_name] = school.level || '其他'
+      })
+    }
+
+    console.log(`[计划-院校柱状图] 选中年份: ${selectedYear}, 原始数据条数: ${rawPlansData.length}`)
+
+    rawPlansData.forEach(plan => {
+      if (selectedYear && plan.year !== selectedYear) {
+        return
+      }
+      const schoolName = plan.school_name || '未知院校'
+      const total = parseInt(plan.total) || 0
+      if (!schoolTotalMap[schoolName]) {
+        schoolTotalMap[schoolName] = 0
+      }
+      schoolTotalMap[schoolName] += total
+    })
+
+    console.log(`[计划-院校柱状图] 统计结果:`, schoolTotalMap)
+
+    let barData = Object.keys(schoolTotalMap).map(school => ({
+      name: school,
+      data: schoolTotalMap[school],
+      level: schoolLevelMap[school] || '其他'
+    }))
+
+    if (barData.length === 0) {
+      barData = [
+        { name: '暂无数据', data: 1, level: '其他' }
+      ]
+    }
+
+    barData.sort((a, b) => b.data - a.data)
+
+    console.log('[计划-院校柱状图] 院校招生人数数据:', barData)
+
+    const total = barData.reduce((sum, item) => sum + item.data, 0)
+    const tableData = barData.map(item => ({
+      name: item.name,
+      level: item.level,
+      count: item.data,
+      ratio: total > 0 ? Math.round((item.data / total) * 100) : 0
+    }))
+
+    this.setData({
+      'schoolBarChart.data': barData,
+      'schoolBarChart.visible': barData.length > 0,
+      'schoolBarTableData': tableData
+    })
+
+    setTimeout(() => {
+      this.drawSchoolBarChart()
+    }, 200)
+  },
+
+  async drawSchoolBarChart() {
+    const chart = this.data.schoolBarChart
+    if (!chart.visible || !chart.data || chart.data.length === 0) {
+      return
+    }
+
+    const rect = await this.waitForCanvas('#schoolBarChart', 50, 40)
+    if (!rect) {
+      console.error('[计划-院校饼图] 获取 canvas 失败')
+      return
+    }
+
+    const canvasWidth = rect.width
+    const canvasHeight = Math.round(rect.width * 0.8)
+
+    this.setData({
+      'schoolBarChart.width': canvasWidth,
+      'schoolBarChart.height': canvasHeight
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const ctx = tt.createCanvasContext('schoolBarChart', this)
+
+    const series = chart.data.map(item => ({
+      name: item.name,
+      data: item.data
+    }))
+
+    try {
+      new uCharts({
+        $this: this,
+        canvasId: 'schoolBarChart',
+        context: ctx,
+        type: 'pie',
+        pixelRatio: 1,
+        width: canvasWidth,
+        height: canvasHeight,
+        animation: true,
+        series: series,
+        padding: [10, 10, 10, 10],
+        legend: {
+          show: true,
+          position: 'bottom'
+        },
+        extra: {
+          pie: {
+            labelWidth: 15
+          }
+        }
+      })
+      console.log('[计划-院校饼图] 绘制完成')
+    } catch (err) {
+      console.error('[计划-院校饼图] 绘制失败:', err)
+    }
+  },
+
   onYearChange(e) {
     const yearIndex = parseInt(e.detail.value)
     const years = this.data.yearLabels.map(label => parseInt(label.replace('年', '')))
@@ -459,5 +587,6 @@ Page({
     })
 
     this.renderMajorPieChart()
+    this.renderSchoolBarChart()
   }
 })
