@@ -22,7 +22,13 @@ Page({
       width: 0,
       height: 0
     },
-    eduTableData: []
+    eduTableData: [],
+    queryData: {
+      scoreType: 'edu',
+      inputScore: '150',
+      results: []
+    },
+    hasMajData: false
   },
 
   onLoad: function(options) {
@@ -58,11 +64,13 @@ Page({
       const cachedData = app.getArrayCacheItem('score_segments', 'class_name', className)
       if (cachedData) {
         console.log(`[分段] 使用缓存数据，共 ${cachedData.length} 条`)
+        const hasMajData = cachedData.some(item => item.score_type === 'maj')
         this.setData({
           scoreSegments: cachedData,
           currentClassName: className,
           loading: false,
-          loadingText: ''
+          loadingText: '',
+          hasMajData: hasMajData
         })
         this.renderCharts()
         return
@@ -75,12 +83,14 @@ Page({
       if (data && data.length > 0) {
         // 存入数组型缓存
         app.setArrayCacheItem('score_segments', 'class_name', className, data)
+        const hasMajData = data.some(item => item.score_type === 'maj')
         
         this.setData({
           scoreSegments: data,
           currentClassName: className,
           loading: false,
-          loadingText: ''
+          loadingText: '',
+          hasMajData: hasMajData
         })
         console.log(`[分段] 加载成功，共 ${data.length} 条`)
         this.renderCharts()
@@ -90,7 +100,8 @@ Page({
           scoreSegments: [],
           currentClassName: className,
           loading: false,
-          loadingText: ''
+          loadingText: '',
+          hasMajData: false
         })
       }
 
@@ -332,5 +343,114 @@ Page({
     } catch (err) {
       console.error(`[分段-${chartType}] 绘制失败:`, err)
     }
+  },
+
+  onScoreTypeToggle() {
+    const { scoreType } = this.data.queryData
+    const { hasMajData } = this.data
+    
+    if (scoreType === 'edu' && !hasMajData) {
+      tt.showToast({
+        title: '当前大类没有专业测试数据',
+        icon: 'none'
+      })
+      return
+    }
+    
+    const newScoreType = scoreType === 'edu' ? 'maj' : 'edu'
+    this.setData({
+      'queryData.scoreType': newScoreType,
+      'queryData.results': []
+    })
+  },
+
+  onScoreInput(e) {
+    this.setData({
+      'queryData.inputScore': e.detail.value
+    })
+  },
+
+  onQueryRank() {
+    const { scoreSegments, queryData } = this.data
+    const scoreType = queryData.scoreType
+    const inputScore = parseFloat(queryData.inputScore)
+    
+    if (isNaN(inputScore)) {
+      tt.showToast({
+        title: '请输入有效的分数',
+        icon: 'none'
+      })
+      return
+    }
+
+    const filteredData = scoreSegments.filter(item => item.score_type === scoreType)
+    
+    const yearMap = {}
+    filteredData.forEach(item => {
+      const year = item.year
+      const score = parseFloat(item.score) || 0
+      const count = parseInt(item.count) || 0
+      const cumulativeCount = parseInt(item.cumulative_count) || 0
+      
+      if (!yearMap[year]) {
+        yearMap[year] = []
+      }
+      yearMap[year].push({ score, count, cumulativeCount })
+    })
+
+    const years = Object.keys(yearMap).sort((a, b) => b - a)
+    const results = years.map(year => {
+      const yearData = yearMap[year]
+      const exactMatch = yearData.find(item => item.score === inputScore)
+      
+      if (exactMatch) {
+        const startRank = exactMatch.cumulativeCount - exactMatch.count + 1
+        const endRank = exactMatch.cumulativeCount
+        const rankRange = exactMatch.count === 1 ? `${startRank}` : `${startRank}-${endRank}`
+        return {
+          year: parseInt(year),
+          displayScore: inputScore,
+          isApproximate: false,
+          count: exactMatch.count,
+          rankRange: rankRange
+        }
+      } else {
+        let closestItem = null
+        let minDiff = Infinity
+        
+        yearData.forEach(item => {
+          const diff = Math.abs(item.score - inputScore)
+          if (diff < minDiff) {
+            minDiff = diff
+            closestItem = item
+          }
+        })
+        
+        if (closestItem) {
+          const startRank = closestItem.cumulativeCount - closestItem.count + 1
+          const endRank = closestItem.cumulativeCount
+          const rankRange = closestItem.count === 1 ? `${startRank}` : `${startRank}-${endRank}`
+          return {
+            year: parseInt(year),
+            displayScore: closestItem.score,
+            isApproximate: true,
+            count: closestItem.count,
+            rankRange: rankRange
+          }
+        }
+        
+        return {
+          year: parseInt(year),
+          displayScore: '-',
+          isApproximate: false,
+          count: 0,
+          rankRange: '-'
+        }
+      }
+    })
+
+    this.setData({
+      'queryData.results': results
+    })
   }
 })

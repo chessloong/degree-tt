@@ -49,3 +49,52 @@
 .de-table-cell-number {
   font-family: monospace;
 }
+
+.query-input-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx 0;
+}
+
+.type-toggle-btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 16rpx 24rpx;
+  background-color: #f5f5f5;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #333;
+  min-width: 120rpx;
+}
+
+.toggle-arrow {
+  margin-left: 8rpx;
+  font-size: 18rpx;
+  color: #999;
+}
+
+.score-input {
+  flex: 1;
+  padding: 16rpx 20rpx;
+  background-color: #f5f5f5;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.query-btn {
+  padding: 16rpx 32rpx;
+  background-color: #0081ff;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #fff;
+  text-align: center;
+}
+
+.approximate-score {
+  color: #ff0000;
+}

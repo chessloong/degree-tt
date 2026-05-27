@@ -11,6 +11,50 @@
 
   <!-- 内容区域 -->
   <view wx:else class="content-area">
+    <!-- 查询历年排名卡片 -->
+    <view class="de-card">
+      <view class="de-card-header">
+        <view class="de-card-title-left">
+          <view class="de-card-dot"></view>
+          <text class="de-card-title">查询历年排名</text>
+        </view>
+      </view>
+      <view class="de-card-content">
+        <view class="query-input-row">
+          <view class="type-toggle-btn" bindtap="onScoreTypeToggle">
+            <text>{{queryData.scoreType === 'edu' ? '文化分' : '专测分'}}</text>
+            <text class="toggle-arrow">▼</text>
+          </view>
+          <input 
+            class="score-input" 
+            type="number" 
+            value="{{queryData.inputScore}}" 
+            bindinput="onScoreInput"
+            placeholder="请输入分数"
+          />
+          <view class="query-btn" bindtap="onQueryRank">
+            <text>查询</text>
+          </view>
+        </view>
+        <view wx:if="{{queryData.results.length > 0}}" class="de-table-wrapper">
+          <view class="de-table">
+            <view class="de-table-header">
+              <view class="de-table-cell" style="flex: 1;">年份</view>
+              <view class="de-table-cell de-table-cell-center" style="flex: 1;">分数</view>
+              <view class="de-table-cell de-table-cell-center" style="flex: 1;">人数</view>
+              <view class="de-table-cell de-table-cell-center" style="flex: 2;">排名区间</view>
+            </view>
+            <view wx:for="{{queryData.results}}" wx:key="year" class="de-table-row">
+              <view class="de-table-cell" style="flex: 1;">{{item.year}}</view>
+              <view class="de-table-cell de-table-cell-center {{item.isApproximate ? 'approximate-score' : ''}}" style="flex: 1;">{{item.displayScore}}</view>
+              <view class="de-table-cell de-table-cell-center de-table-cell-number" style="flex: 1;">{{item.count}}</view>
+              <view class="de-table-cell de-table-cell-center" style="flex: 2;">{{item.rankRange}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
     <!-- 专业测试分数统计卡片 -->
     <view wx:if="{{majChart.visible}}" class="de-card">
       <view class="de-card-header">
