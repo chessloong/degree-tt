@@ -2,10 +2,50 @@
   padding: 20rpx;
 }
 
-.placeholder-text {
+.header-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.class-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 60rpx 0;
+}
+
+.loading-text {
   font-size: 28rpx;
   color: #999;
+}
+
+.content-area {
+  margin-top: 20rpx;
+}
+
+.de-chart-wrapper {
+  padding: 8rpx 0;
+}
+
+.de-table-wrapper {
+  padding: 20rpx 10rpx;
+  margin-top: 10rpx;
+  overflow-x: auto;
+}
+
+.de-table-cell-center {
   text-align: center;
-  display: block;
-  padding: 60rpx 0;
+}
+
+.de-table-cell-number {
+  font-family: monospace;
 }

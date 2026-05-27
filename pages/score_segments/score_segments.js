@@ -1,4 +1,5 @@
 const app = getApp()
+import uCharts from '../../common/u-charts.min.js'
 
 Page({
   data: {
@@ -6,7 +7,22 @@ Page({
     scoreSegments: [],     // 一分一段数据列表
     currentClassName: '',  // 当前专业大类
     loading: true,
-    loadingText: '加载中...'
+    loadingText: '加载中...',
+
+    majChart: {
+      data: null,
+      visible: false,
+      width: 0,
+      height: 0
+    },
+    majTableData: [],
+    eduChart: {
+      data: null,
+      visible: false,
+      width: 0,
+      height: 0
+    },
+    eduTableData: []
   },
 
   onLoad: function(options) {
@@ -48,6 +64,7 @@ Page({
           loading: false,
           loadingText: ''
         })
+        this.renderCharts()
         return
       }
 
@@ -66,6 +83,7 @@ Page({
           loadingText: ''
         })
         console.log(`[分段] 加载成功，共 ${data.length} 条`)
+        this.renderCharts()
       } else {
         console.log(`[分段] 未找到 ${className} 的一分一段数据`)
         this.setData({
@@ -87,6 +105,232 @@ Page({
         loadingText: '',
         scoreSegments: []
       })
+    }
+  },
+
+  renderCharts() {
+    this.renderMajChart()
+    this.renderEduChart()
+  },
+
+  renderMajChart() {
+    const { scoreSegments } = this.data
+    const majData = scoreSegments.filter(item => item.score_type === 'maj')
+    
+    console.log(`[分段-专业测试] 筛选后数据条数: ${majData.length}`)
+
+    const yearMap = {}
+    majData.forEach(item => {
+      const year = item.year
+      const score = parseFloat(item.score) || 0
+      const count = parseInt(item.count) || 0
+      
+      if (!yearMap[year]) {
+        yearMap[year] = { scores: [], counts: [] }
+      }
+      yearMap[year].scores.push(score)
+      yearMap[year].counts.push(count)
+    })
+
+    const years = Object.keys(yearMap).sort((a, b) => b - a)
+    const tableData = years.map(year => {
+      const scores = yearMap[year].scores
+      const counts = yearMap[year].counts
+      const maxScore = scores.length > 0 ? Math.max(...scores) : 0
+      
+      const totalScore = scores.reduce((sum, score, index) => sum + score * (counts[index] || 0), 0)
+      const totalCount = counts.reduce((sum, count) => sum + count, 0)
+      const avgScore = totalCount > 0 ? Math.round(totalScore / totalCount) : 0
+      
+      return {
+        year: parseInt(year),
+        avgScore,
+        maxScore
+      }
+    })
+
+    const categories = years.reverse()
+    const series = [
+      {
+        name: '平均分',
+        data: [...tableData.map(item => item.avgScore)].reverse(),
+        color: '#FF8C00'
+      },
+      {
+        name: '最高分',
+        data: [...tableData.map(item => item.maxScore)].reverse(),
+        color: '#0081ff'
+      }
+    ]
+
+    this.setData({
+      'majChart.data': series,
+      'majChart.visible': tableData.length > 0,
+      'majTableData': tableData
+    })
+
+    setTimeout(() => {
+      this.drawChart('majChart', categories, 'maj')
+    }, 200)
+  },
+
+  renderEduChart() {
+    const { scoreSegments } = this.data
+    const eduData = scoreSegments.filter(item => item.score_type === 'edu')
+    
+    console.log(`[分段-文化考试] 筛选后数据条数: ${eduData.length}`)
+
+    const yearMap = {}
+    eduData.forEach(item => {
+      const year = item.year
+      const score = parseFloat(item.score) || 0
+      const count = parseInt(item.count) || 0
+      
+      if (!yearMap[year]) {
+        yearMap[year] = { scores: [], counts: [] }
+      }
+      yearMap[year].scores.push(score)
+      yearMap[year].counts.push(count)
+    })
+
+    const years = Object.keys(yearMap).sort((a, b) => b - a)
+    const tableData = years.map(year => {
+      const scores = yearMap[year].scores
+      const counts = yearMap[year].counts
+      const maxScore = scores.length > 0 ? Math.max(...scores) : 0
+      
+      const totalScore = scores.reduce((sum, score, index) => sum + score * (counts[index] || 0), 0)
+      const totalCount = counts.reduce((sum, count) => sum + count, 0)
+      const avgScore = totalCount > 0 ? Math.round(totalScore / totalCount) : 0
+      
+      return {
+        year: parseInt(year),
+        avgScore,
+        maxScore
+      }
+    })
+
+    const categories = years.reverse()
+    const series = [
+      {
+        name: '平均分',
+        data: [...tableData.map(item => item.avgScore)].reverse(),
+        color: '#39b54a'
+      },
+      {
+        name: '最高分',
+        data: [...tableData.map(item => item.maxScore)].reverse(),
+        color: '#8B4513'
+      }
+    ]
+
+    this.setData({
+      'eduChart.data': series,
+      'eduChart.visible': tableData.length > 0,
+      'eduTableData': tableData
+    })
+
+    setTimeout(() => {
+      this.drawChart('eduChart', categories, 'edu')
+    }, 200)
+  },
+
+  waitForCanvas(selector, interval = 50, maxRetries = 40) {
+    return new Promise((resolve) => {
+      let retries = 0
+      const check = () => {
+        tt.createSelectorQuery()
+          .select(selector)
+          .boundingClientRect((rect) => {
+            if (rect) {
+              resolve(rect)
+            } else if (retries < maxRetries) {
+              retries++
+              setTimeout(check, interval)
+            } else {
+              resolve(null)
+            }
+          })
+          .exec()
+      }
+      check()
+    })
+  },
+
+  async drawChart(chartName, categories, chartType) {
+    const chart = this.data[chartName]
+    if (!chart.visible || !chart.data) {
+      return
+    }
+
+    const selector = `#${chartType}Chart`
+    const rect = await this.waitForCanvas(selector, 50, 40)
+    if (!rect) {
+      console.error(`[分段-${chartType}] 获取 canvas 失败`)
+      return
+    }
+
+    const canvasWidth = rect.width
+    const canvasHeight = Math.round(rect.width * 46 / 75)
+
+    this.setData({
+      [`${chartName}.width`]: canvasWidth,
+      [`${chartName}.height`]: canvasHeight
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const ctx = tt.createCanvasContext(`${chartType}Chart`, this)
+    const yMaxValue = chartType === 'maj' ? 100 : 300
+    console.log(`[分段-${chartType}] Y轴配置: minValue=0, maxValue=${yMaxValue}`)
+
+    try {
+      new uCharts({
+        $this: this,
+        canvasId: `${chartType}Chart`,
+        context: ctx,
+        type: 'line',
+        pixelRatio: 1,
+        width: canvasWidth,
+        height: canvasHeight,
+        animation: true,
+        timing: 'easeInOut',
+        duration: 1000,
+        categories: categories,
+        series: chart.data,
+        padding: [15, 20, 10, 15],
+        xAxis: {
+          disableGrid: true,
+          axisLine: true,
+          axisLabel: { fontSize: 10 }
+        },
+        yAxis: {
+          disableGrid: false,
+          gridType: 'dash',
+          dashLength: 2,
+          axisLabel: { fontSize: 10 },
+          data: [{
+            min: 0,
+            max: yMaxValue
+          }]
+        },
+        legend: {
+          show: true,
+          position: 'bottom',
+          lineHeight: 20,
+          fontSize: 10
+        },
+        extra: {
+          line: {
+            type: 'curve',
+            width: 3,
+            activeType: 'hilight'
+          }
+        }
+      })
+      console.log(`[分段-${chartType}] 绘制完成`)
+    } catch (err) {
+      console.error(`[分段-${chartType}] 绘制失败:`, err)
     }
   }
 })

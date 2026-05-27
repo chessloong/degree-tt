@@ -1,13 +1,82 @@
 <view class="container">
-  <view class="de-card">
-    <view class="de-card-header">
-      <view class="de-card-title-left">
-        <view class="de-card-dot"></view>
-        <text class="de-card-title">一分一段</text>
+  <!-- 顶部信息栏 -->
+  <view class="header-bar">
+    <text class="class-name">{{currentClassName}}</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <text class="loading-text">{{loadingText}}</text>
+  </view>
+
+  <!-- 内容区域 -->
+  <view wx:else class="content-area">
+    <!-- 专业测试分数统计卡片 -->
+    <view wx:if="{{majChart.visible}}" class="de-card">
+      <view class="de-card-header">
+        <view class="de-card-title-left">
+          <view class="de-card-dot"></view>
+          <text class="de-card-title">专业测试分数统计</text>
+        </view>
+      </view>
+      <view class="de-card-content">
+        <view class="de-chart-wrapper">
+          <canvas
+            id="majChart"
+            canvas-id="majChart"
+            style="width: {{majChart.width > 0 ? majChart.width + 'px' : '100%'}};
+                   height: {{majChart.height > 0 ? majChart.height + 'px' : '200px'}};">
+          </canvas>
+        </view>
+        <view class="de-table-wrapper">
+          <view class="de-table">
+            <view class="de-table-header">
+              <view class="de-table-cell">年份</view>
+              <view class="de-table-cell de-table-cell-center">平均分</view>
+              <view class="de-table-cell de-table-cell-center">最高分</view>
+            </view>
+            <view wx:for="{{majTableData}}" wx:key="year" class="de-table-row">
+              <view class="de-table-cell">{{item.year}}年</view>
+              <view class="de-table-cell de-table-cell-center de-table-cell-number">{{item.avgScore}}</view>
+              <view class="de-table-cell de-table-cell-center de-table-cell-number">{{item.maxScore}}</view>
+            </view>
+          </view>
+        </view>
       </view>
     </view>
-    <view class="de-card-content">
-      <text class="placeholder-text">一分一段页面开发中...</text>
+
+    <!-- 文化考试分数统计卡片 -->
+    <view wx:if="{{eduChart.visible}}" class="de-card">
+      <view class="de-card-header">
+        <view class="de-card-title-left">
+          <view class="de-card-dot"></view>
+          <text class="de-card-title">文化考试分数统计</text>
+        </view>
+      </view>
+      <view class="de-card-content">
+        <view class="de-chart-wrapper">
+          <canvas
+            id="eduChart"
+            canvas-id="eduChart"
+            style="width: {{eduChart.width > 0 ? eduChart.width + 'px' : '100%'}};
+                   height: {{eduChart.height > 0 ? eduChart.height + 'px' : '200px'}};">
+          </canvas>
+        </view>
+        <view class="de-table-wrapper">
+          <view class="de-table">
+            <view class="de-table-header">
+              <view class="de-table-cell">年份</view>
+              <view class="de-table-cell de-table-cell-center">平均分</view>
+              <view class="de-table-cell de-table-cell-center">最高分</view>
+            </view>
+            <view wx:for="{{eduTableData}}" wx:key="year" class="de-table-row">
+              <view class="de-table-cell">{{item.year}}年</view>
+              <view class="de-table-cell de-table-cell-center de-table-cell-number">{{item.avgScore}}</view>
+              <view class="de-table-cell de-table-cell-center de-table-cell-number">{{item.maxScore}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
     </view>
   </view>
 </view>
