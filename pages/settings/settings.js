@@ -298,6 +298,15 @@ Page({
         majorClasses: majorClasses
       })
     }
+    
+    // 如果需要自动打开选择器，延迟一段时间后打开（等待数据绑定完成）
+    const openPicker = tt.getStorageSync('openPicker')
+    if (openPicker === 'true') {
+      tt.removeStorageSync('openPicker')
+      setTimeout(() => {
+        this.openMajorClassPicker()
+      }, 300)
+    }
   },
   
   /**

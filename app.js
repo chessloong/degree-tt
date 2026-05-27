@@ -523,8 +523,9 @@ App({
    */
   setObjectCache(key, data) {
     try {
+      const cleanedData = this.cleanSystemFields(data, true)
       const cacheObject = {
-        data: data,
+        data: cleanedData,
         timestamp: Date.now()
       }
       tt.setStorageSync(key, JSON.stringify(cacheObject))
@@ -532,6 +533,119 @@ App({
     } catch (err) {
       console.error(`[对象缓存] 设置 ${key} 失败:`, err)
     }
+  },
+
+  /**
+   * 清理数据中的数据库系统字段（如 sync_timestamp, updated_at 等）
+   * @param {any} data - 原始数据
+   * @param {boolean} keepId - 是否保留 _id 字段（对象型缓存可能需要）
+   * @returns {any} 清理后的数据
+   */
+  cleanSystemFields(data, keepId = false) {
+    let systemFields = ['__v', 'sync_timestamp', 'updated_at', 'created_at', 'createdAt', 'updatedAt', '_openid']
+    if (!keepId) {
+      systemFields.push('_id')
+    }
+    
+    if (Array.isArray(data)) {
+      return data.map(item => this.cleanObjectFields(item, systemFields))
+    } else if (typeof data === 'object' && data !== null) {
+      return this.cleanObjectFields(data, systemFields)
+    }
+    return data
+  },
+
+  /**
+   * 清理单个对象的指定字段
+   * @param {Object} obj - 原始对象
+   * @param {Array} fields - 要删除的字段列表
+   * @returns {Object} 清理后的对象
+   */
+  cleanObjectFields(obj, fields) {
+    const cleaned = { ...obj }
+    for (const field of fields) {
+      if (field in cleaned) {
+        delete cleaned[field]
+      }
+    }
+    return cleaned
+  },
+
+  /**
+   * 尝试清理最早的缓存项
+   * @returns {boolean} 是否清理成功
+   */
+  tryCleanOldestCache() {
+    try {
+      const keys = tt.getStorageInfoSync().keys || []
+      if (keys.length === 0) {
+        console.log('[缓存清理] 没有缓存项可清理')
+        return false
+      }
+
+      let oldestKey = null
+      let oldestTimestamp = Date.now()
+
+      for (const key of keys) {
+        try {
+          const cached = tt.getStorageSync(key)
+          if (cached) {
+            const parsed = JSON.parse(cached)
+            if (parsed.timestamp && parsed.timestamp < oldestTimestamp) {
+              oldestTimestamp = parsed.timestamp
+              oldestKey = key
+            }
+          }
+        } catch (e) {
+          // 忽略解析失败的缓存项
+        }
+      }
+
+      if (oldestKey) {
+        tt.removeStorageSync(oldestKey)
+        const oldestDate = new Date(oldestTimestamp)
+        console.log(`[缓存清理] 已删除最早的缓存项: ${oldestKey} (创建于 ${oldestDate.toLocaleString()})`)
+        return true
+      } else {
+        console.log('[缓存清理] 未找到可清理的缓存项')
+        return false
+      }
+    } catch (err) {
+      console.error('[缓存清理] 清理失败:', err)
+      return false
+    }
+  },
+
+  /**
+   * 清理数组缓存中最早的项（用于单个缓存键内部的容量管理）
+   * @param {Array} cacheArray - 缓存数组
+   * @returns {boolean} 是否清理成功
+   */
+  tryCleanOldestInArrayCache(cacheArray) {
+    if (!Array.isArray(cacheArray) || cacheArray.length <= 1) {
+      console.log('[数组缓存清理] 数组长度不足，无法清理')
+      return false
+    }
+
+    let oldestIndex = 0
+    let oldestTimestamp = Date.now()
+
+    for (let i = 0; i < cacheArray.length; i++) {
+      const item = cacheArray[i]
+      if (item.timestamp && item.timestamp < oldestTimestamp) {
+        oldestTimestamp = item.timestamp
+        oldestIndex = i
+      }
+    }
+
+    if (oldestIndex >= 0 && cacheArray[oldestIndex]) {
+      const removedItem = cacheArray.splice(oldestIndex, 1)[0]
+      const oldestDate = new Date(oldestTimestamp)
+      console.log(`[数组缓存清理] 已删除最早的缓存项: ${removedItem.class_name || removedItem.key || 'unknown'} (创建于 ${oldestDate.toLocaleString()})`)
+      return true
+    }
+
+    return false
   },
 
   /**
@@ -638,9 +752,10 @@ App({
       }
 
       const index = cacheArray.findIndex(item => item[itemKey] === itemValue)
+      const cleanedData = this.cleanSystemFields(data)
       const newItem = {
         [itemKey]: itemValue,
-        data: data,
+        data: cleanedData,
         timestamp: Date.now()
       }
 
@@ -653,8 +768,29 @@ App({
       const cacheStr = JSON.stringify(cacheArray)
       
       if (cacheStr.length > 1024 * 1024) {
-        console.warn(`[数组缓存] ${cacheKey} 数据过大 (${cacheStr.length} 字节)，跳过缓存`)
-        return
+        console.warn(`[数组缓存] ${cacheKey} 数据过大 (${cacheStr.length} 字节)，尝试清理最早的缓存项`)
+        let cleaned = false
+        let attempts = 0
+        const maxAttempts = cacheArray.length - 1
+        
+        while (cacheStr.length > 1024 * 1024 && attempts < maxAttempts) {
+          if (this.tryCleanOldestInArrayCache(cacheArray)) {
+            cleaned = true
+            attempts++
+            cacheStr = JSON.stringify(cacheArray)
+            console.log(`[数组缓存] ${cacheKey} 清理第 ${attempts} 项后，当前大小: ${cacheStr.length} 字节`)
+          } else {
+            break
+          }
+        }
+        
+        if (cleaned && cacheStr.length <= 1024 * 1024) {
+          tt.setStorageSync(cacheKey, cacheStr)
+          console.log(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 已保存（清理了 ${attempts} 个旧项）`)
+        } else {
+          console.warn(`[数组缓存] ${cacheKey} 清理 ${attempts} 项后仍过大，跳过缓存`)
+          return
+        }
       }
 
       tt.setStorageSync(cacheKey, cacheStr)
@@ -662,6 +798,13 @@ App({
     } catch (err) {
       if (err && err.errMsg && err.errMsg.includes('exceed storage item max length')) {
         console.warn(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 数据过大，跳过缓存`)
+      } else if (err && err.errMsg && (err.errMsg.includes('exceed') || err.errMsg.includes('quota'))) {
+        console.warn(`[数组缓存] ${cacheKey} 存储容量不足，尝试清理最早的缓存项`)
+        if (this.tryCleanOldestCache()) {
+          this.setArrayCacheItem(cacheKey, itemKey, itemValue, data)
+        } else {
+          console.warn(`[数组缓存] ${cacheKey} 清理缓存后仍无法保存，跳过缓存`)
+        }
       } else {
         console.error(`[数组缓存] 设置 ${cacheKey} 中 ${itemKey}=${itemValue} 失败:`, err)
       }

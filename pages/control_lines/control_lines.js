@@ -646,5 +646,15 @@ Page({
       'collectVolunteerTableData.tables': tables
     })
     console.log('[省控线-征集志愿] 表格数据生成完成')
+  },
+
+  /**
+   * 跳转到设置页面并打开专业大类选择器
+   */
+  goToSettings() {
+    tt.setStorageSync('openPicker', 'true')
+    tt.switchTab({
+      url: '/pages/settings/settings'
+    })
   }
 })

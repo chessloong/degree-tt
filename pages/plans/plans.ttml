@@ -1,7 +1,8 @@
 <view class="container">
   <!-- 顶部信息栏 -->
   <view class="header-bar">
-    <text class="class-name">{{currentClassName}}</text>
+    <text class="class-name" bindtap="goToSettings">{{currentClassName}}</text>
+    <image class="arrow-icon" src="/assets/svg/arrow-right.svg" mode="aspectFit"></image>
   </view>
 
   <!-- 加载状态 -->

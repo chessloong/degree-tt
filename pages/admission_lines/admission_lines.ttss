@@ -17,6 +17,11 @@
   color: #333;
 }
 
+.arrow-icon {
+  width: 40rpx;
+  height: 40rpx;
+}
+
 .help-icon {
   width: 48rpx;
   height: 48rpx;

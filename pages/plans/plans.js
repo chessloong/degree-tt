@@ -588,5 +588,15 @@ Page({
 
     this.renderMajorPieChart()
     this.renderSchoolBarChart()
+  },
+
+  /**
+   * 跳转到设置页面并打开专业大类选择器
+   */
+  goToSettings() {
+    tt.setStorageSync('openPicker', 'true')
+    tt.switchTab({
+      url: '/pages/settings/settings'
+    })
   }
 })

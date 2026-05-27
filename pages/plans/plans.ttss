@@ -5,6 +5,7 @@
 .header-bar {
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
   align-items: center;
   padding: 20rpx 0;
 }
@@ -13,6 +14,11 @@
   font-size: 32rpx;
   font-weight: bold;
   color: #333;
+}
+
+.arrow-icon {
+  width: 40rpx;
+  height: 40rpx;
 }
 
 .loading-container {

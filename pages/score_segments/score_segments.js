@@ -452,5 +452,15 @@ Page({
     this.setData({
       'queryData.results': results
     })
+  },
+
+  /**
+   * 跳转到设置页面并打开专业大类选择器
+   */
+  goToSettings() {
+    tt.setStorageSync('openPicker', 'true')
+    tt.switchTab({
+      url: '/pages/settings/settings'
+    })
   }
 })
