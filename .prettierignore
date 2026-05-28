@@ -1,0 +1,5 @@
+node_modules/
+miniprogram_npm/
+cloudfunctions/
+*.min.js
+package-lock.json

@@ -36,7 +36,7 @@ function pinyinSort(arr, field) {
   if (!Array.isArray(arr) || arr.length === 0) {
     return arr
   }
-  
+
   return [...arr].sort((a, b) => {
     const pinyinA = getPinyin(a[field])
     const pinyinB = getPinyin(b[field])

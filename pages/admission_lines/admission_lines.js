@@ -45,19 +45,19 @@ Page({
     }
   },
 
-  onLoad: function(options) {
+  onLoad: function (_options) {
     console.log('[投档线] 页面加载')
   },
 
-  onReady: function() {},
+  onReady: function () {},
 
-  onShow: function() {
+  onShow: function () {
     this.loadAdmissionLinesData()
   },
 
-  onHide: function() {},
+  onHide: function () {},
 
-  onUnload: function() {},
+  onUnload: function () {},
 
   waitForCanvas(selector, interval = 50, maxTimes = 40) {
     return new Promise((resolve) => {
@@ -127,7 +127,6 @@ Page({
 
       this.generateFilterOptions(batchData.admission_lines, schools)
       this.renderAdmissionChart(batchData.admission_lines, schools)
-
     } catch (err) {
       console.error('[投档线] 加载失败:', err)
       tt.showToast({
@@ -196,14 +195,14 @@ Page({
 
       series.push({
         name: type + '院校',
-        data: data,
-        color: color,
+        data,
+        color,
         lineType: 'straight',
         width: 3,
         showPoint: true,
         pointShape: 'circle',
         pointSize: 6,
-        label: { show: true, fontSize: 10, fontWeight: 'bold', color: color }
+        label: { show: true, fontSize: 10, fontWeight: 'bold', color }
       })
     })
 
@@ -218,7 +217,7 @@ Page({
     })
 
     const tableData = allYears.sort((a, b) => b - a).map(year => {
-      const row = { year: year }
+      const row = { year }
       tableTypes.forEach(type => {
         row[type] = typeMap[type][year] || '-'
       })
@@ -269,8 +268,8 @@ Page({
         width: canvasWidth,
         height: canvasHeight,
         animation: true,
-        categories: categories,
-        series: series,
+        categories,
+        series,
         xAxis: {
           disableGrid: true,
           axisLine: true,
@@ -333,8 +332,8 @@ Page({
     this.setData({
       'filterOptions.years': yearOptions,
       'filterOptions.batches': batchOptions,
-      yearLabels: yearLabels,
-      batchLabels: batchLabels,
+      yearLabels,
+      batchLabels,
       'filterValues.yearIndex': 1,
       'filterValues.batchIndex': 1,
       fullAdmissionData: fullData

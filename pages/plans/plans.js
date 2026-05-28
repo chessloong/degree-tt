@@ -1,5 +1,5 @@
-const app = getApp()
 import uCharts from '../../common/u-charts.min.js'
+const app = getApp()
 
 Page({
   data: {
@@ -40,19 +40,19 @@ Page({
     }
   },
 
-  onLoad: function(options) {
+  onLoad: function (_options) {
     console.log('[计划] 页面加载')
   },
 
-  onReady: function() {},
+  onReady: function () {},
 
-  onShow: function() {
+  onShow: function () {
     this.loadData()
   },
 
-  onHide: function() {},
+  onHide: function () {},
 
-  onUnload: function() {},
+  onUnload: function () {},
 
   async loadData() {
     this.setData({
@@ -93,13 +93,13 @@ Page({
 
       const years = [...new Set((data.plans || []).map(plan => plan.year).filter(Boolean))].sort((a, b) => b - a)
       const yearLabels = years.map(y => `${y}年`)
-      
+
       this.setData({
         currentClassName: className,
         rawPlansData: data.plans || [],
         rawScoreSegmentsData: data.score_segments || [],
         schools: data.schools || [],
-        yearLabels: yearLabels,
+        yearLabels,
         filterValues: {
           yearIndex: 0,
           selectedYear: years[0] || ''
@@ -113,7 +113,6 @@ Page({
       this.renderAdmissionChart()
       this.renderMajorPieChart()
       this.renderSchoolBarChart()
-
     } catch (err) {
       console.error('[计划] 加载失败:', err)
       tt.showToast({
@@ -268,7 +267,7 @@ Page({
     this.setData({
       'admissionChart.data': series,
       'admissionChart.visible': true,
-      tableData: tableData
+      tableData
     })
 
     setTimeout(() => {
@@ -312,7 +311,7 @@ Page({
         animation: true,
         timing: 'easeInOut',
         duration: 1000,
-        categories: categories,
+        categories,
         series: chart.data,
         padding: [15, 20, 10, 15],
         xAxis: {
@@ -366,7 +365,7 @@ Page({
       majorTotalMap[majorName] += total
     })
 
-    console.log(`[计划-饼图] 统计结果:`, majorTotalMap)
+    console.log('[计划-饼图] 统计结果:', majorTotalMap)
 
     let pieData = Object.keys(majorTotalMap).map(major => ({
       name: major,
@@ -394,7 +393,7 @@ Page({
     this.setData({
       'majorPieChart.data': pieData,
       'majorPieChart.visible': pieData.length > 0,
-      'majorPieTableData': tableData
+      majorPieTableData: tableData
     })
 
     setTimeout(() => {
@@ -480,7 +479,7 @@ Page({
       schoolTotalMap[schoolName] += total
     })
 
-    console.log(`[计划-院校柱状图] 统计结果:`, schoolTotalMap)
+    console.log('[计划-院校柱状图] 统计结果:', schoolTotalMap)
 
     let barData = Object.keys(schoolTotalMap).map(school => ({
       name: school,
@@ -509,7 +508,7 @@ Page({
     this.setData({
       'schoolBarChart.data': barData,
       'schoolBarChart.visible': barData.length > 0,
-      'schoolBarTableData': tableData
+      schoolBarTableData: tableData
     })
 
     setTimeout(() => {
@@ -556,7 +555,7 @@ Page({
         width: canvasWidth,
         height: canvasHeight,
         animation: true,
-        series: series,
+        series,
         padding: [10, 10, 10, 10],
         legend: {
           show: true,
@@ -578,11 +577,11 @@ Page({
     const yearIndex = parseInt(e.detail.value)
     const years = this.data.yearLabels.map(label => parseInt(label.replace('年', '')))
     const selectedYear = years[yearIndex] || ''
-    
+
     this.setData({
       filterValues: {
-        yearIndex: yearIndex,
-        selectedYear: selectedYear
+        yearIndex,
+        selectedYear
       }
     })
 

@@ -1,4 +1,6 @@
-const config = require('./config.js')
+const { cloudService, initCloud } = require('./utils/cloud.js')
+const { authService, login } = require('./utils/auth.js')
+const { getObjectCache, setObjectCache, getArrayCacheItem, setArrayCacheItem } = require('./utils/cache.js')
 
 App({
   globalData: {
@@ -6,1120 +8,297 @@ App({
     openId: '',
     unionId: '',
     isLogin: false,
-    appConfig: {}, // 存储从云端拉取的配置对象
-    schools: [],        // 存储院校信息
-    majorClasses: [],   // 存储专业大类信息
-    userInfo: {}        // 存储用户信息（级别、昵称等）
+    appConfig: {},
+    schools: [],
+    majorClasses: [],
+    userInfo: {}
   },
-  
+
   onLaunch: async function () {
-    // 1. 初始化抖音云
-    const cloud = tt.createCloud({
-      envID: config.env,
-      serviceID: config.serviceId,
-    })
-    
-    // 2. 检查登录状态
-    let isLogin = false
+    console.log('[App] 启动开始')
+    const startTime = Date.now()
+
     try {
-      await this.handleCheckSession()
-      isLogin = true
-      console.log('[启动] Session 有效')
+      await this.initCloudService()
+      await this.handleLogin()
+      await this.loadAppConfig()
+      await this.loadSchoolsData()
+      await this.loadMajorClassesData()
+
+      const elapsed = Date.now() - startTime
+      console.log(`[App] 启动完成，耗时 ${elapsed}ms`)
     } catch (err) {
-      console.log('[启动] Session 过期，重新登录')
-      const res = await this.handleLogin()
-      isLogin = res.isLogin
+      console.error('[App] 启动异常:', err)
     }
-    
-    // 3. 保存全局数据
-    this.globalData.cloud = cloud
-    this.globalData.isLogin = isLogin
-    
-    // 4. 如果登录成功，获取用户openid并处理用户信息
-    if (isLogin) {
-      await this.getUserOpenId()
+  },
+
+  async initCloudService() {
+    try {
+      await initCloud()
+      this.globalData.cloud = cloudService.getCloudInstance()
+      console.log('[App] 云服务初始化完成')
+    } catch (err) {
+      console.error('[App] 云服务初始化失败:', err)
     }
-    
-    // 5. 拉取云端配置（无论登录状态都执行）
-    await this.loadAppConfig()
-    
-    // 6. 加载院校信息（依赖配置加载完成，以获取缓存有效期）
-    await this.loadSchoolsData()
-    
-    // 7. 加载专业大类信息
-    await this.loadMajorClassesData()
   },
-  
-  // 登录方法（Promise封装）
-  handleLogin() {
-    return new Promise((resolve) => {
-      tt.login({
-        success: (res) => {
-          resolve(res)
-        },
-        fail: (err) => {
-          console.error('[登录] 失败:', err.errMsg)
-          resolve({
-            isLogin: false,
-            errMsg: err.errMsg
-          })
-        }
-      })
-    })
+
+  async handleLogin() {
+    try {
+      const isLogin = await login()
+      this.globalData.isLogin = isLogin
+      this.globalData.openId = authService.getOpenId()
+      this.globalData.unionId = authService.getUnionId()
+      this.globalData.userInfo = authService.getUserInfoData()
+      console.log(`[App] 登录状态: ${isLogin}`)
+    } catch (err) {
+      console.error('[App] 登录失败:', err)
+    }
   },
-  
-  // 检查session（Promise封装）
-  handleCheckSession() {
-    return new Promise((resolve, reject) => {
-      tt.checkSession({
-        success: (res) => {
-          resolve(res)
-        },
-        fail: (err) => {
-          reject(err)
-        }
-      })
-    })
-  },
-  
-  // 获取用户openid
-  async getUserOpenId() {
-    return new Promise((resolve) => {
-      this.globalData.cloud.callContainer({
-        path: '/getOpenid',
-        init: {
-          method: 'GET',
-          timeout: 60000
-        },
-        success: ({ statusCode, data }) => {
-          if (statusCode === 200) {
-            const result = typeof data === 'string' ? JSON.parse(data) : data
-            if (result && result.code === 0) {
-              // 保存到全局变量
-              this.globalData.openId = result.data.openId || ''
-              this.globalData.unionId = result.data.unionId || ''
-              console.log('[OpenID] 获取成功')
-              
-              // 尝试从本地缓存恢复用户信息
-              try {
-                const cachedUserInfo = tt.getStorageSync('userInfo')
-                if (cachedUserInfo) {
-                  this.globalData.userInfo = JSON.parse(cachedUserInfo)
-                  console.log('[OpenID] 从缓存恢复用户信息')
-                }
-              } catch (err) {
-                console.error('[OpenID] 恢复缓存用户信息失败:', err)
-              }
-              
-              // 获取openid后，调用getUser云函数获取或创建用户信息
-              this.getUserInfo(this.globalData.openId).then(() => {
-                resolve()
-              }).catch(() => {
-                resolve()
-              })
-            } else {
-              console.error('[OpenID] 获取失败:', result?.message || '未知错误')
-              resolve()
-            }
-          } else {
-            console.error('[OpenID] 云函数调用失败，状态码:', statusCode)
-            resolve()
-          }
-        },
-        fail: (err) => {
-          console.error('[OpenID] 云函数调用异常:', err)
-          resolve()
-        }
-      })
-    })
-  },
-  
-  // 获取或创建用户信息（支持传入抖音用户信息）
-  async getUserInfo(openid, douyinInfo = {}) {
-    return new Promise((resolve) => {
-      if (!openid) {
-        console.error('openid为空，无法获取用户信息')
-        resolve(null)
-        return
-      }
-      
-      const cloud = this.globalData.cloud
-      if (!cloud) {
-        console.error('cloud实例未初始化')
-        resolve(null)
-        return
-      }
-      
-      // 构建请求参数，包含抖音用户信息
-      const requestBody = {
-        openid: openid
-      }
-      
-      // 如果有抖音头像或昵称，添加到请求中
-      if (douyinInfo.avatarUrl) {
-        requestBody.avatarUrl = douyinInfo.avatarUrl
-      }
-      if (douyinInfo.nickName) {
-        requestBody.nickName = douyinInfo.nickName
-      }
-      
-      console.log('[用户信息] 请求参数:', requestBody)
-      
-      cloud.callContainer({
-        path: '/getUser',
-        init: {
-          method: 'POST',
-          timeout: 60000,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(requestBody)
-        },
-        success: ({ statusCode, data }) => {
-          if (statusCode === 200) {
-            const result = typeof data === 'string' ? JSON.parse(data) : data
-            if (result && result.code === 0 && result.data) {
-              let userInfo = result.data
-              
-              // 如果请求中包含抖音头像昵称，确保返回的数据也包含这些信息
-              // 防止云函数更新失败导致数据回退
-              if (douyinInfo.avatarUrl && !userInfo.avatarUrl) {
-                userInfo.avatarUrl = douyinInfo.avatarUrl
-              }
-              if (douyinInfo.nickName && !userInfo.nickname) {
-                userInfo.nickname = douyinInfo.nickName
-              }
-              
-              // 更新全局变量
-              this.globalData.userInfo = userInfo
-              console.log('[用户信息] 获取成功，数据:', userInfo)
-              
-              // 更新storage
-              tt.setStorageSync('userInfo', JSON.stringify(userInfo))
-              
-              resolve(userInfo)
-            } else {
-              console.error('[用户信息] 获取失败:', result?.message || '未知错误')
-              resolve(null)
-            }
-          } else {
-            console.error('[用户信息] 云函数调用失败，状态码:', statusCode)
-            resolve(null)
-          }
-        },
-        fail: (err) => {
-          console.error('[用户信息] 云函数调用异常:', err)
-          resolve(null)
-        }
-      })
-    })
-  },
-  
-  // 从云端拉取配置并序列化存储
+
   async loadAppConfig() {
-    return new Promise((resolve) => {
-      // 使用已初始化的 cloud 实例
-      const cloud = this.globalData.cloud
-      
-      if (!cloud) {
-        console.error('cloud 实例未初始化')
-        this.loadConfigFromStorage()
-        resolve(null)
-        return
+    try {
+      const result = await cloudService.get('/loadConfig')
+      if (result && result.data) {
+        this.globalData.appConfig = result.data
+        tt.setStorageSync('appConfig', JSON.stringify(result.data))
+        console.log('[App] 云端配置加载成功')
       }
-      
-      cloud.callContainer({
-        path: '/loadConfig',
-        init: {
-          method: 'GET',
-          timeout: 60000
-        },
-        success: ({ statusCode, data }) => {
-          if (statusCode === 200) {
-            try {
-              const result = typeof data === 'string' ? JSON.parse(data) : data
-              if (result && result.code === 0 && result.data) {
-                // 云函数已返回序列化好的配置对象，直接使用
-                const configObject = result.data
-                
-                // 存入全局变量
-                this.globalData.appConfig = configObject
-                
-                // 存入本地storage
-                tt.setStorageSync('appConfig', JSON.stringify(configObject))
-                
-                console.log('[配置] 加载成功')
-                resolve(configObject)
-              } else {
-                console.error('[配置] 数据格式错误')
-                resolve(null)
-              }
-            } catch (err) {
-              console.error('[配置] 解析失败:', err)
-              resolve(null)
-            }
-          } else {
-            console.error('[配置] 接口调用失败，状态码:', statusCode)
-            // 尝试从本地storage读取缓存
-            this.loadConfigFromStorage()
-            resolve(null)
-          }
-        },
-        fail: (err) => {
-          console.error('[配置] 接口调用异常:', err)
-          // 尝试从本地storage读取缓存
-          this.loadConfigFromStorage()
-          resolve(null)
-        }
-      })
-    })
+    } catch (err) {
+      console.error('[App] 云端配置加载失败:', err)
+      this.loadConfigFromStorage()
+    }
   },
-  
-  // 从本地storage加载配置缓存
+
   loadConfigFromStorage() {
     try {
       const cachedConfig = tt.getStorageSync('appConfig')
       if (cachedConfig) {
         this.globalData.appConfig = JSON.parse(cachedConfig)
+        console.log('[App] 从缓存加载配置')
       }
     } catch (err) {
-      console.error('[配置缓存] 读取失败:', err)
+      console.error('[App] 读取缓存配置失败:', err)
     }
   },
-  
-  // 获取配置值
+
   getConfig(key, defaultValue = null) {
-    // 如果 globalData 中没有配置，尝试从缓存读取
     if (!this.globalData.appConfig || Object.keys(this.globalData.appConfig).length === 0) {
       this.loadConfigFromStorage()
     }
     return this.globalData.appConfig[key] ?? defaultValue
   },
 
-  /**
-   * 加载院校数据
-   * 优先从 storage 缓存加载，有效期内使用缓存，否则从云端拉取
-   * @returns {Promise<Array>} 院校数据数组
-   */
-  async loadSchoolsData() {
-    return new Promise((resolve) => {
-      // 尝试从缓存加载（使用统一的对象型缓存方法）
-      const cachedData = this.getObjectCache('schools')
-      if (cachedData) {
-        console.log('[院校] 使用缓存数据')
-        this.globalData.schools = cachedData
-        resolve(cachedData)
-        return
-      }
-
-      // 缓存无效或不存在，从云端拉取
-      console.log('[院校] 从云端加载')
-      this.loadDataFromCloud('degree_schools').then((data) => {
-        if (data) {
-          this.globalData.schools = data
-          this.setObjectCache('schools', data)
-          resolve(data)
-        } else {
-          resolve([])
-        }
-      }).catch(() => {
-        resolve([])
-      })
-    })
-  },
-
-  /**
-   * 加载专业大类数据
-   * 优先从 storage 缓存加载，有效期内使用缓存，否则从云端拉取
-   * @returns {Promise<Array>} 专业大类数据数组
-   */
-  async loadMajorClassesData() {
-    return new Promise((resolve) => {
-      // 尝试从缓存加载（使用统一的对象型缓存方法）
-      const cachedData = this.getObjectCache('major_classes')
-      if (cachedData) {
-        console.log('[专业大类] 使用缓存数据')
-        this.globalData.majorClasses = cachedData
-        resolve(cachedData)
-        return
-      }
-
-      // 缓存无效或不存在，从云端拉取
-      console.log('[专业大类] 从云端加载')
-      this.loadDataFromCloud('degree_major_classes').then((data) => {
-        if (data) {
-          this.globalData.majorClasses = data
-          this.setObjectCache('major_classes', data)
-          resolve(data)
-        } else {
-          resolve([])
-        }
-      }).catch(() => {
-        resolve([])
-      })
-    })
-  },
-
-  /**
-   * 从云端加载数据的通用方法（仅负责获取数据，不处理缓存）
-   * @param {string} collectionName - 表名
-   * @param {Object} filter - 筛选条件对象（可选，如 { year: "2024" } 或 { majorCategory: "工学" }）
-   * @returns {Promise<Array|null>} 数据数组
-   */
-  async loadDataFromCloud(collectionName, filter = {}) {
-    return new Promise((resolve) => {
-      const cloud = this.globalData.cloud
-
-      if (!cloud) {
-        console.error('cloud 实例未初始化')
-        resolve(null)
-        return
-      }
-
-      cloud.callContainer({
-        path: '/queryDegrees',
-        init: {
-          method: 'POST',
-          timeout: 60000,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            collectionName: collectionName,
-            limit: 1000,
-            filter: filter
-          })
-        },
-        success: ({ statusCode, data }) => {
-          if (statusCode === 200) {
-            try {
-              const result = typeof data === 'string' ? JSON.parse(data) : data
-              if (result && result.code === 0 && result.data) {
-                console.log(`[云端] ${collectionName} 拉取成功，共 ${result.data.length} 条`)
-                resolve(result.data)
-              } else {
-                console.error(`[数据] ${collectionName} 格式错误`)
-                resolve(null)
-              }
-            } catch (err) {
-              console.error(`[数据] ${collectionName} 解析失败:`, err)
-              resolve(null)
-            }
-          } else {
-            console.error(`[数据] ${collectionName} 接口失败，状态码:`, statusCode)
-            resolve(null)
-          }
-        },
-        fail: (err) => {
-          console.error(`[数据] ${collectionName} 接口异常:`, err)
-          resolve(null)
-        }
-      })
-    })
-  },
-
-  /**
-   * 获取指定数据类型的缓存有效期（分钟）
-   * @param {string} cacheKey - 缓存键名
-   * @returns {number} 有效期（分钟）
-   */
   getExpireMinutes(cacheKey) {
-    // 从配置中获取对应数据类型的缓存有效期
     const expireConfig = this.getConfig('expireMinute', {})
-    const expireMinutes = expireConfig[cacheKey] || expireConfig['default'] || 10
-    return expireMinutes
+    return expireConfig[cacheKey] || expireConfig.default || 10
   },
 
-  /**
-   * 获取院校数据
-   * @returns {Array} 院校数据数组
-   */
+  async loadSchoolsData() {
+    const cachedData = getObjectCache('schools', this.globalData.appConfig)
+    if (cachedData) {
+      console.log('[App] 院校数据使用缓存')
+      this.globalData.schools = cachedData
+      return cachedData
+    }
+
+    try {
+      const data = await cloudService.post('/queryDegrees', {
+        collectionName: 'degree_schools',
+        limit: 1000
+      })
+      if (data && data.data) {
+        this.globalData.schools = data.data
+        setObjectCache('schools', data.data, true)
+        console.log('[App] 院校数据从云端加载成功')
+        return data.data
+      }
+    } catch (err) {
+      console.error('[App] 加载院校数据失败:', err)
+    }
+    return []
+  },
+
+  async loadMajorClassesData() {
+    const cachedData = getObjectCache('major_classes', this.globalData.appConfig)
+    if (cachedData) {
+      console.log('[App] 专业大类数据使用缓存')
+      this.globalData.majorClasses = cachedData
+      return cachedData
+    }
+
+    try {
+      const data = await cloudService.post('/queryDegrees', {
+        collectionName: 'degree_major_classes',
+        limit: 1000
+      })
+      if (data && data.data) {
+        this.globalData.majorClasses = data.data
+        setObjectCache('major_classes', data.data, true)
+        console.log('[App] 专业大类数据从云端加载成功')
+        return data.data
+      }
+    } catch (err) {
+      console.error('[App] 加载专业大类数据失败:', err)
+    }
+    return []
+  },
+
   getSchools() {
     return this.globalData.schools
   },
-  
-  /**
-   * 获取专业大类数据
-   * @returns {Array} 专业大类数据数组
-   */
+
   getMajorClasses() {
     return this.globalData.majorClasses
   },
-  
-  /**
-   * 获取用户的大类名称
-   * 优先从全局变量获取，其次从 storage 获取
-   * @returns {string|null} 用户大类名称
-   */
+
   getUserClassName() {
-    // 1. 优先从全局变量获取
-    if (this.globalData.userInfo && this.globalData.userInfo.userClassName) {
-      return this.globalData.userInfo.userClassName
-    }
-    
-    // 2. 从 storage 获取
-    try {
-      const userInfoStr = tt.getStorageSync('userInfo')
-      if (userInfoStr) {
-        const userInfo = JSON.parse(userInfoStr)
-        if (userInfo.userClassName) {
-          return userInfo.userClassName
-        }
-      }
-    } catch (err) {
-      console.error('读取用户信息失败:', err)
-    }
-    
-    return null
-  },
-  
-  // ============================================
-  // 对象型缓存方法（适用于单一数据集，如院校、专业大类、用户信息）
-  // ============================================
-  
-  /**
-   * 获取对象型缓存数据（自动验证过期）
-   * @param {string} key - 缓存键名
-   * @returns {any|null} 缓存数据（过期或不存在返回 null）
-   */
-  getObjectCache(key) {
-    try {
-      const cached = tt.getStorageSync(key)
-      if (!cached) {
-        console.log(`[对象缓存] ${key} 不存在`)
-        return null
-      }
-
-      const parsed = JSON.parse(cached)
-      const now = Date.now()
-      const expireMinutes = this.getExpireMinutes(key)
-      
-      if (!parsed.timestamp) {
-        console.log(`[对象缓存] ${key} 无时间戳，视为无效`)
-        tt.removeStorageSync(key)
-        return null
-      }
-
-      const elapsedMinutes = Math.floor((now - parsed.timestamp) / 60000)
-      
-      if (elapsedMinutes < expireMinutes) {
-        console.log(`[对象缓存] ${key} 命中 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-        return parsed.data
-      }
-
-      console.log(`[对象缓存] ${key} 已过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-      tt.removeStorageSync(key)
-      return null
-    } catch (err) {
-      console.error(`[对象缓存] 读取 ${key} 失败:`, err)
-      return null
-    }
+    return authService.getUserClassName()
   },
 
-  /**
-   * 设置对象型缓存数据
-   * @param {string} key - 缓存键名
-   * @param {any} data - 要缓存的数据
-   */
-  setObjectCache(key, data) {
-    try {
-      const cleanedData = this.cleanSystemFields(data, true)
-      const cacheObject = {
-        data: cleanedData,
-        timestamp: Date.now()
-      }
-      tt.setStorageSync(key, JSON.stringify(cacheObject))
-      console.log(`[对象缓存] ${key} 已保存`)
-    } catch (err) {
-      console.error(`[对象缓存] 设置 ${key} 失败:`, err)
-    }
-  },
-
-  /**
-   * 清理数据中的数据库系统字段（如 sync_timestamp, updated_at 等）
-   * @param {any} data - 原始数据
-   * @param {boolean} keepId - 是否保留 _id 字段（对象型缓存可能需要）
-   * @returns {any} 清理后的数据
-   */
-  cleanSystemFields(data, keepId = false) {
-    let systemFields = ['__v', 'sync_timestamp', 'updated_at', 'created_at', 'createdAt', 'updatedAt', '_openid']
-    if (!keepId) {
-      systemFields.push('_id')
-    }
-    
-    if (Array.isArray(data)) {
-      return data.map(item => this.cleanObjectFields(item, systemFields))
-    } else if (typeof data === 'object' && data !== null) {
-      return this.cleanObjectFields(data, systemFields)
-    }
-    return data
-  },
-
-  /**
-   * 清理单个对象的指定字段
-   * @param {Object} obj - 原始对象
-   * @param {Array} fields - 要删除的字段列表
-   * @returns {Object} 清理后的对象
-   */
-  cleanObjectFields(obj, fields) {
-    const cleaned = { ...obj }
-    for (const field of fields) {
-      if (field in cleaned) {
-        delete cleaned[field]
-      }
-    }
-    return cleaned
-  },
-
-  /**
-   * 尝试清理最早的缓存项
-   * @returns {boolean} 是否清理成功
-   */
-  tryCleanOldestCache() {
-    try {
-      const keys = tt.getStorageInfoSync().keys || []
-      if (keys.length === 0) {
-        console.log('[缓存清理] 没有缓存项可清理')
-        return false
-      }
-
-      let oldestKey = null
-      let oldestTimestamp = Date.now()
-
-      for (const key of keys) {
-        try {
-          const cached = tt.getStorageSync(key)
-          if (cached) {
-            const parsed = JSON.parse(cached)
-            if (parsed.timestamp && parsed.timestamp < oldestTimestamp) {
-              oldestTimestamp = parsed.timestamp
-              oldestKey = key
-            }
-          }
-        } catch (e) {
-          // 忽略解析失败的缓存项
-        }
-      }
-
-      if (oldestKey) {
-        tt.removeStorageSync(oldestKey)
-        const oldestDate = new Date(oldestTimestamp)
-        console.log(`[缓存清理] 已删除最早的缓存项: ${oldestKey} (创建于 ${oldestDate.toLocaleString()})`)
-        return true
-      } else {
-        console.log('[缓存清理] 未找到可清理的缓存项')
-        return false
-      }
-    } catch (err) {
-      console.error('[缓存清理] 清理失败:', err)
-      return false
-    }
-  },
-
-  /**
-   * 清理数组缓存中最早的项（用于单个缓存键内部的容量管理）
-   * @param {Array} cacheArray - 缓存数组
-   * @returns {boolean} 是否清理成功
-   */
-  tryCleanOldestInArrayCache(cacheArray) {
-    if (!Array.isArray(cacheArray) || cacheArray.length <= 1) {
-      console.log('[数组缓存清理] 数组长度不足，无法清理')
-      return false
-    }
-
-    let oldestIndex = 0
-    let oldestTimestamp = Date.now()
-
-    for (let i = 0; i < cacheArray.length; i++) {
-      const item = cacheArray[i]
-      if (item.timestamp && item.timestamp < oldestTimestamp) {
-        oldestTimestamp = item.timestamp
-        oldestIndex = i
-      }
-    }
-
-    if (oldestIndex >= 0 && cacheArray[oldestIndex]) {
-      const removedItem = cacheArray.splice(oldestIndex, 1)[0]
-      const oldestDate = new Date(oldestTimestamp)
-      console.log(`[数组缓存清理] 已删除最早的缓存项: ${removedItem.class_name || removedItem.key || 'unknown'} (创建于 ${oldestDate.toLocaleString()})`)
-      return true
-    }
-
-    return false
-  },
-
-  /**
-   * 判断对象型缓存是否有效（未过期）
-   * @param {string} key - 缓存键名
-   * @returns {boolean} 是否有效
-   */
-  isObjectCacheValid(key) {
-    try {
-      const cached = tt.getStorageSync(key)
-      if (!cached) {
-        console.log(`[对象缓存验证] ${key} 不存在`)
-        return false
-      }
-
-      const parsed = JSON.parse(cached)
-      if (!parsed.timestamp) {
-        console.log(`[对象缓存验证] ${key} 无时间戳，视为无效`)
-        return false
-      }
-
-      const expireMinutes = this.getExpireMinutes(key)
-      const now = Date.now()
-      const elapsedMinutes = Math.floor((now - parsed.timestamp) / 60000)
-      const isExpired = elapsedMinutes >= expireMinutes
-
-      if (isExpired) {
-        console.log(`[对象缓存验证] ${key} 已过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-      } else {
-        console.log(`[对象缓存验证] ${key} 未过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-      }
-
-      return !isExpired
-    } catch (err) {
-      console.error(`[对象缓存验证] 判断 ${key} 有效性失败:`, err)
-      return false
-    }
-  },
-  
-  // ============================================
-  // 数组型缓存方法（适用于按分类存储的数据集，如招生计划按大类存储）
-  // ============================================
-  
-  /**
-   * 获取数组型缓存中的指定数据项（自动验证过期）
-   * @param {string} cacheKey - 缓存键名（如 'plans'）
-   * @param {string} itemKey - 数组元素的唯一标识键名（如 'class_name'）
-   * @param {string} itemValue - 唯一标识值
-   * @returns {any|null} 缓存数据（过期或不存在返回 null）
-   */
-  getArrayCacheItem(cacheKey, itemKey, itemValue) {
-    try {
-      const cached = tt.getStorageSync(cacheKey)
-      if (!cached) {
-        console.log(`[数组缓存] ${cacheKey} 不存在`)
-        return null
-      }
-
-      const cacheArray = JSON.parse(cached)
-      if (!Array.isArray(cacheArray)) {
-        console.log(`[数组缓存] ${cacheKey} 不是数组格式`)
-        return null
-      }
-
-      const cachedItem = cacheArray.find(item => item[itemKey] === itemValue)
-      if (!cachedItem) {
-        console.log(`[数组缓存] ${cacheKey} 中未找到 ${itemKey}=${itemValue}`)
-        return null
-      }
-
-      const expireMinutes = this.getExpireMinutes(cacheKey)
-      const now = Date.now()
-      const elapsedMinutes = Math.floor((now - cachedItem.timestamp) / 60000)
-
-      if (elapsedMinutes < expireMinutes) {
-        console.log(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 命中 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-        return cachedItem.data
-      }
-
-      console.log(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 已过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-      return null
-    } catch (err) {
-      console.error(`[数组缓存] 获取 ${cacheKey} 中 ${itemKey}=${itemValue} 失败:`, err)
-      return null
-    }
-  },
-
-  /**
-   * 设置数组型缓存中的数据项（存在则替换，不存在则新增）
-   * @param {string} cacheKey - 缓存键名（如 'plans'）
-   * @param {string} itemKey - 数组元素的唯一标识键名（如 'class_name'）
-   * @param {string} itemValue - 唯一标识值
-   * @param {any} data - 要缓存的数据
-   */
-  setArrayCacheItem(cacheKey, itemKey, itemValue, data) {
-    try {
-      let cacheArray = []
-      const cached = tt.getStorageSync(cacheKey)
-      if (cached) {
-        cacheArray = JSON.parse(cached)
-        if (!Array.isArray(cacheArray)) {
-          cacheArray = []
-        }
-      }
-
-      const index = cacheArray.findIndex(item => item[itemKey] === itemValue)
-      const cleanedData = this.cleanSystemFields(data)
-      const newItem = {
-        [itemKey]: itemValue,
-        data: cleanedData,
-        timestamp: Date.now()
-      }
-
-      if (index >= 0) {
-        cacheArray[index] = newItem
-      } else {
-        cacheArray.push(newItem)
-      }
-
-      const cacheStr = JSON.stringify(cacheArray)
-      
-      if (cacheStr.length > 1024 * 1024) {
-        console.warn(`[数组缓存] ${cacheKey} 数据过大 (${cacheStr.length} 字节)，尝试清理最早的缓存项`)
-        let cleaned = false
-        let attempts = 0
-        const maxAttempts = cacheArray.length - 1
-        
-        while (cacheStr.length > 1024 * 1024 && attempts < maxAttempts) {
-          if (this.tryCleanOldestInArrayCache(cacheArray)) {
-            cleaned = true
-            attempts++
-            cacheStr = JSON.stringify(cacheArray)
-            console.log(`[数组缓存] ${cacheKey} 清理第 ${attempts} 项后，当前大小: ${cacheStr.length} 字节`)
-          } else {
-            break
-          }
-        }
-        
-        if (cleaned && cacheStr.length <= 1024 * 1024) {
-          tt.setStorageSync(cacheKey, cacheStr)
-          console.log(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 已保存（清理了 ${attempts} 个旧项）`)
-        } else {
-          console.warn(`[数组缓存] ${cacheKey} 清理 ${attempts} 项后仍过大，跳过缓存`)
-          return
-        }
-      }
-
-      tt.setStorageSync(cacheKey, cacheStr)
-      console.log(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 已保存`)
-    } catch (err) {
-      if (err && err.errMsg && err.errMsg.includes('exceed storage item max length')) {
-        console.warn(`[数组缓存] ${cacheKey} 中 ${itemKey}=${itemValue} 数据过大，跳过缓存`)
-      } else if (err && err.errMsg && (err.errMsg.includes('exceed') || err.errMsg.includes('quota'))) {
-        console.warn(`[数组缓存] ${cacheKey} 存储容量不足，尝试清理最早的缓存项`)
-        if (this.tryCleanOldestCache()) {
-          this.setArrayCacheItem(cacheKey, itemKey, itemValue, data)
-        } else {
-          console.warn(`[数组缓存] ${cacheKey} 清理缓存后仍无法保存，跳过缓存`)
-        }
-      } else {
-        console.error(`[数组缓存] 设置 ${cacheKey} 中 ${itemKey}=${itemValue} 失败:`, err)
-      }
-    }
-  },
-
-  /**
-   * 判断数组型缓存项是否有效（未过期）
-   * @param {Object} cachedItem - 缓存项（需包含 timestamp 字段）
-   * @param {string} expireKey - 配置中的过期时间键名
-   * @returns {boolean} 是否有效
-   */
-  isArrayCacheItemValid(cachedItem, expireKey) {
-    if (!cachedItem || !cachedItem.timestamp) {
-      console.log('[数组缓存验证] 缓存项不存在或缺少时间戳')
-      return false
-    }
-
-    const expireMinutes = this.getExpireMinutes(expireKey)
-    const now = Date.now()
-    const elapsedMinutes = Math.floor((now - cachedItem.timestamp) / 60000)
-    const isExpired = elapsedMinutes >= expireMinutes
-
-    if (isExpired) {
-      console.log(`[数组缓存验证] 已过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-    } else {
-      console.log(`[数组缓存验证] 未过期 - 存在 ${elapsedMinutes} 分钟，有效期 ${expireMinutes} 分钟`)
-    }
-
-    return !isExpired
-  },
-
-  // ============================================
-  // 统一登录状态管理方法
-  // ============================================
-
-  /**
-   * 统一登录方法（封装了checkSession、login、获取openid和用户信息的完整流程）
-   * @returns {Promise<boolean>} 返回登录是否成功
-   */
-  async doLogin() {
-    console.log('[登录] 开始统一登录流程')
-
-    try {
-      // 1. 先检查Session是否有效
-      await this.handleCheckSession()
-      console.log('[登录] Session有效')
-    } catch {
-      console.log('[登录] Session过期，重新登录')
-      const loginRes = await this.handleLogin()
-      if (loginRes.isLogin === false) {
-        console.error('[登录] 登录失败')
-        return false
-      }
-      console.log('[登录] 重新登录成功')
-    }
-
-    // 2. 获取OpenId
-    if (!this.globalData.openId) {
-      console.log('[登录] OpenId不存在，开始获取')
-      await this.getUserOpenId()
-    }
-
-    // 3. 获取用户信息（不自动获取抖音信息，因为需要用户主动授权）
-    if (this.globalData.openId) {
-      console.log('[登录] 获取用户信息')
-      await this.getUserInfo(this.globalData.openId)
-    }
-
-    // 5. 设置登录状态
-    this.globalData.isLogin = !!(this.globalData.openId && this.globalData.userInfo)
-    console.log(`[登录] 登录完成，状态: ${this.globalData.isLogin}`)
-
-    return this.globalData.isLogin
-  },
-
-  /**
-   * 退出登录方法
-   * 清除全局状态和本地缓存
-   */
-  logout() {
-    console.log('[登录] 开始退出登录')
-
-    // 1. 清除全局状态
-    this.globalData.isLogin = false
-    this.globalData.userInfo = {}
-    this.globalData.openId = ''
-    this.globalData.unionId = ''
-
-    // 2. 清除本地缓存
-    try {
-      tt.removeStorageSync('userInfo')
-      // 清除openid相关缓存
-      tt.removeStorageSync('openId')
-      tt.removeStorageSync('unionId')
-      console.log('[登录] 用户缓存已清除')
-    } catch (err) {
-      console.error('[登录] 清除用户缓存失败:', err)
-    }
-
-    console.log('[登录] 退出登录完成')
-  },
-
-  /**
-   * 获取当前登录状态
-   * @returns {boolean} 是否已登录
-   */
-  isLoggedIn() {
-    return this.globalData.isLogin && !!(this.globalData.openId && this.globalData.userInfo)
-  },
-
-  /**
-   * 获取用户昵称
-   * @returns {string} 用户昵称
-   */
-  getUserNickname() {
-    if (this.globalData.userInfo && this.globalData.userInfo.nickname) {
-      return this.globalData.userInfo.nickname
-    }
-    try {
-      const userInfoStr = tt.getStorageSync('userInfo')
-      if (userInfoStr) {
-        const userInfo = JSON.parse(userInfoStr)
-        return userInfo.nickname || '未登录'
-      }
-    } catch (err) {
-      console.error('[用户] 读取昵称失败:', err)
-    }
-    return '未登录'
-  },
-
-  /**
-   * 获取用户等级
-   * @returns {number} 用户等级
-   */
-  getUserLevel() {
-    if (this.globalData.userInfo && this.globalData.userInfo.level) {
-      return this.globalData.userInfo.level
-    }
-    try {
-      const userInfoStr = tt.getStorageSync('userInfo')
-      if (userInfoStr) {
-        const userInfo = JSON.parse(userInfoStr)
-        return userInfo.level || 0
-      }
-    } catch (err) {
-      console.error('[用户] 读取等级失败:', err)
-    }
-    return 0
-  },
-
-  /**
-   * 获取用户头像URL
-   * @returns {string} 用户头像URL
-   */
-  getUserAvatar() {
-    if (this.globalData.userInfo && this.globalData.userInfo.avatarUrl) {
-      return this.globalData.userInfo.avatarUrl
-    }
-    try {
-      const userInfoStr = tt.getStorageSync('userInfo')
-      if (userInfoStr) {
-        const userInfo = JSON.parse(userInfoStr)
-        return userInfo.avatarUrl || ''
-      }
-    } catch (err) {
-      console.error('[用户] 读取头像失败:', err)
-    }
-    return ''
-  },
-
-  /**
-   * 获取抖音用户信息（头像、昵称）
-   * @returns {Promise<Object>} 用户信息 {avatarUrl, nickName}
-   */
-  getDouyinUserProfile() {
-    return new Promise((resolve) => {
-      tt.getUserProfile({
-        desc: '用于完善用户资料',
-        success: (res) => {
-          console.log('[抖音] 获取用户信息成功:', res.userInfo)
-          resolve({
-            avatarUrl: res.userInfo.avatarUrl || '',
-            nickName: res.userInfo.nickName || ''
-          })
-        },
-        fail: (err) => {
-          console.error('[抖音] 获取用户信息失败:', err)
-          // 获取失败也继续，使用默认信息
-          resolve({
-            avatarUrl: '',
-            nickName: ''
-          })
-        }
-      })
-    })
-  },
-
-  /**
-   * 批量加载页面数据（支持数组型和对象型缓存）
-   * @param {Array} dataConfigs - 数据配置数组
-   * @param {Object} options - 可选配置
-   * @returns {Object} 加载结果 { cacheKey: data }
-   */
   async loadPageDataBatch(dataConfigs, options = {}) {
-    const { 
-      parallel = true,           // 是否并行加载
-      onError = 'continue'       // 错误策略: 'continue' | 'abort'
-    } = options
-    
-    console.log(`[批量加载] 开始加载 ${dataConfigs.length} 个数据项`)
+    const { parallel = true, onError = 'continue' } = options
+    console.log(`[App] 开始批量加载 ${dataConfigs.length} 个数据项`)
     const startTime = Date.now()
-    
+
     const results = {}
-    
-    if (parallel) {
-      // 并行加载所有数据
-      const promises = dataConfigs.map(async (config) => {
-        try {
-          const data = await this._loadSingleData(config)
-          results[config.cacheKey] = data
-        } catch (err) {
-          console.error(`[批量加载] ${config.cacheKey} 失败:`, err)
-          if (onError === 'abort') {
-            throw err
-          }
-          results[config.cacheKey] = config.defaultValue || null
+
+    const loadSingle = async (config) => {
+      try {
+        const data = await this._loadSingleData(config)
+        results[config.cacheKey] = data
+      } catch (err) {
+        console.error(`[App] 批量加载 ${config.cacheKey} 失败:`, err)
+        if (onError === 'abort') {
+          throw err
         }
-      })
-      
-      await Promise.all(promises)
-    } else {
-      // 串行加载
-      for (const config of dataConfigs) {
-        try {
-          const data = await this._loadSingleData(config)
-          results[config.cacheKey] = data
-        } catch (err) {
-          console.error(`[批量加载] ${config.cacheKey} 失败:`, err)
-          if (onError === 'abort') {
-            throw err
-          }
-          results[config.cacheKey] = config.defaultValue || null
-        }
+        results[config.cacheKey] = config.defaultValue || null
       }
     }
-    
+
+    if (parallel) {
+      await Promise.all(dataConfigs.map(loadSingle))
+    } else {
+      for (const config of dataConfigs) {
+        await loadSingle(config)
+      }
+    }
+
     const elapsed = Date.now() - startTime
-    console.log(`[批量加载] 完成，耗时 ${elapsed}ms`)
-    
+    console.log(`[App] 批量加载完成，耗时 ${elapsed}ms`)
+
     return results
   },
 
-  /**
-   * 加载单个数据项（内部方法，支持数组型和对象型）
-   */
   async _loadSingleData(config) {
-    const { 
-      cacheKey,           // 缓存键名（也是 expireMinute 的配置键）
-      collection,         // 云端集合名
-      filter = {},        // 过滤条件
-      type = 'array',     // 缓存类型: 'array' | 'object'
-      itemKey,            // 数组型缓存的索引键（如 'class_name'）
-      itemValue,          // 数组型缓存的索引值（如 '管理类'）
-      defaultValue = null // 默认值
+    const {
+      cacheKey,
+      collection,
+      filter = {},
+      type = 'array',
+      itemKey,
+      itemValue,
+      defaultValue = null
     } = config
-    
-    console.log(`[数据加载] 开始: ${cacheKey} (类型: ${type})`)
-    
+
+    console.log(`[App] 开始加载: ${cacheKey} (类型: ${type})`)
+
     let cachedData = null
-    let isCacheValid = false
-    
-    // 1. 检查缓存（根据类型选择不同的验证方法）
-    if (type === 'array') {
-      // 数组型缓存：getArrayCacheItem 已内置过期验证，直接返回 data 或 null
-      if (itemKey && itemValue) {
-        cachedData = this.getArrayCacheItem(cacheKey, itemKey, itemValue)
-        isCacheValid = (cachedData !== null)
-      }
+
+    if (type === 'array' && itemKey && itemValue) {
+      cachedData = getArrayCacheItem(cacheKey, itemKey, itemValue, this.globalData.appConfig)
     } else if (type === 'object') {
-      // 对象型缓存：getObjectCache 已内置过期验证，直接返回 data 或 null
-      cachedData = this.getObjectCache(cacheKey)
-      isCacheValid = (cachedData !== null)
+      cachedData = getObjectCache(cacheKey, this.globalData.appConfig)
     }
-    
-    // 2. 缓存命中且有效
-    if (isCacheValid && cachedData !== null) {
-      console.log(`[数据加载] ${cacheKey} 使用缓存 (${type})`)
+
+    if (cachedData !== null) {
+      console.log(`[App] ${cacheKey} 使用缓存`)
       return cachedData
     }
-    
-    // 3. 缓存无效或不存在，从云端加载
-    console.log(`[数据加载] ${cacheKey} 从云端加载`)
-    const cloudData = await this.loadDataFromCloud(collection, filter)
-    
-    // 4. 处理结果
-    const finalData = cloudData !== null ? cloudData : defaultValue
-    
-    // 5. 保存缓存（包括空数据/空对象）
-    if (cloudData !== null) {
-      if (type === 'array') {
-        // 数组型：保存到数组缓存
-        if (itemKey && itemValue) {
-          this.setArrayCacheItem(cacheKey, itemKey, itemValue, finalData || [])
-          console.log(`[数据加载] ${cacheKey} 已保存到数组缓存`)
+
+    try {
+      console.log(`[App] ${cacheKey} 从云端加载`)
+      const data = await cloudService.post('/queryDegrees', {
+        collectionName: collection,
+        limit: 1000,
+        filter
+      })
+
+      const finalData = data && data.data ? data.data : defaultValue
+
+      if (data && data.data) {
+        if (type === 'array' && itemKey && itemValue) {
+          setArrayCacheItem(cacheKey, itemKey, itemValue, finalData || [])
+        } else if (type === 'object') {
+          setObjectCache(cacheKey, finalData || {}, true)
         }
-      } else if (type === 'object') {
-        // 对象型：保存到对象缓存
-        this.setObjectCache(cacheKey, finalData || {})
-        console.log(`[数据加载] ${cacheKey} 已保存到对象缓存`)
       }
-    } else {
-      console.warn(`[数据加载] ${cacheKey} 云端查询失败`)
+
+      return finalData
+    } catch (err) {
+      console.error(`[App] 加载 ${cacheKey} 失败:`, err)
+      return defaultValue
     }
-    
-    return finalData
+  },
+
+  getObjectCache(key) {
+    return getObjectCache(key, this.globalData.appConfig)
+  },
+
+  setObjectCache(key, data) {
+    setObjectCache(key, data, true)
+  },
+
+  getArrayCacheItem(cacheKey, itemKey, itemValue) {
+    return getArrayCacheItem(cacheKey, itemKey, itemValue, this.globalData.appConfig)
+  },
+
+  setArrayCacheItem(cacheKey, itemKey, itemValue, data) {
+    setArrayCacheItem(cacheKey, itemKey, itemValue, data)
+  },
+
+  isLoggedIn() {
+    return authService.isLoggedIn()
+  },
+
+  doLogin() {
+    return authService.doLogin()
+  },
+
+  logout() {
+    return authService.logout()
+  },
+
+  getUserInfo(openid, douyinInfo) {
+    return authService.getUserInfo(openid, douyinInfo)
+  },
+
+  getUserNickname() {
+    return authService.getUserNickname()
+  },
+
+  getUserLevel() {
+    return authService.getUserLevel()
+  },
+
+  getUserAvatar() {
+    return authService.getUserAvatar()
+  },
+
+  async loadDataFromCloud(collectionName, filter = {}, limit = 1000) {
+    try {
+      const data = await cloudService.post('/queryDegrees', {
+        collectionName,
+        limit,
+        filter
+      })
+      return data && data.data ? data.data : null
+    } catch (err) {
+      console.error(`[App] loadDataFromCloud ${collectionName} 失败:`, err)
+      return null
+    }
+  },
+
+  getDouyinUserProfile() {
+    return authService.getDouyinUserProfile()
   }
 })

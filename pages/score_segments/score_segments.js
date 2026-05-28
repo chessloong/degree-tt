@@ -1,11 +1,11 @@
-const app = getApp()
 import uCharts from '../../common/u-charts.min.js'
+const app = getApp()
 
 Page({
   data: {
     title: '一分一段',
-    scoreSegments: [],     // 一分一段数据列表
-    currentClassName: '',  // 当前专业大类
+    scoreSegments: [], // 一分一段数据列表
+    currentClassName: '', // 当前专业大类
     loading: true,
     loadingText: '加载中...',
 
@@ -31,20 +31,20 @@ Page({
     hasMajData: false
   },
 
-  onLoad: function(options) {
+  onLoad: function (_options) {
     console.log('[分段] 页面加载')
   },
 
-  onReady: function() {},
+  onReady: function () {},
 
-  onShow: function() {
+  onShow: function () {
     // 每次显示时加载/刷新数据（内部已有缓存保护）
     this.loadScoreSegmentsData()
   },
 
-  onHide: function() {},
+  onHide: function () {},
 
-  onUnload: function() {},
+  onUnload: function () {},
 
   /**
    * 加载一分一段数据
@@ -70,7 +70,7 @@ Page({
           currentClassName: className,
           loading: false,
           loadingText: '',
-          hasMajData: hasMajData
+          hasMajData
         })
         this.renderCharts()
         return
@@ -84,13 +84,13 @@ Page({
         // 存入数组型缓存
         app.setArrayCacheItem('score_segments', 'class_name', className, data)
         const hasMajData = data.some(item => item.score_type === 'maj')
-        
+
         this.setData({
           scoreSegments: data,
           currentClassName: className,
           loading: false,
           loadingText: '',
-          hasMajData: hasMajData
+          hasMajData
         })
         console.log(`[分段] 加载成功，共 ${data.length} 条`)
         this.renderCharts()
@@ -104,7 +104,6 @@ Page({
           hasMajData: false
         })
       }
-
     } catch (err) {
       console.error('[分段] 加载失败:', err)
       tt.showToast({
@@ -127,7 +126,7 @@ Page({
   renderMajChart() {
     const { scoreSegments } = this.data
     const majData = scoreSegments.filter(item => item.score_type === 'maj')
-    
+
     console.log(`[分段-专业测试] 筛选后数据条数: ${majData.length}`)
 
     const yearMap = {}
@@ -135,7 +134,7 @@ Page({
       const year = item.year
       const score = parseFloat(item.score) || 0
       const count = parseInt(item.count) || 0
-      
+
       if (!yearMap[year]) {
         yearMap[year] = { scores: [], counts: [] }
       }
@@ -148,11 +147,11 @@ Page({
       const scores = yearMap[year].scores
       const counts = yearMap[year].counts
       const maxScore = scores.length > 0 ? Math.max(...scores) : 0
-      
+
       const totalScore = scores.reduce((sum, score, index) => sum + score * (counts[index] || 0), 0)
       const totalCount = counts.reduce((sum, count) => sum + count, 0)
       const avgScore = totalCount > 0 ? Math.round(totalScore / totalCount) : 0
-      
+
       return {
         year: parseInt(year),
         avgScore,
@@ -177,7 +176,7 @@ Page({
     this.setData({
       'majChart.data': series,
       'majChart.visible': tableData.length > 0,
-      'majTableData': tableData
+      majTableData: tableData
     })
 
     setTimeout(() => {
@@ -188,7 +187,7 @@ Page({
   renderEduChart() {
     const { scoreSegments } = this.data
     const eduData = scoreSegments.filter(item => item.score_type === 'edu')
-    
+
     console.log(`[分段-文化考试] 筛选后数据条数: ${eduData.length}`)
 
     const yearMap = {}
@@ -196,7 +195,7 @@ Page({
       const year = item.year
       const score = parseFloat(item.score) || 0
       const count = parseInt(item.count) || 0
-      
+
       if (!yearMap[year]) {
         yearMap[year] = { scores: [], counts: [] }
       }
@@ -209,11 +208,11 @@ Page({
       const scores = yearMap[year].scores
       const counts = yearMap[year].counts
       const maxScore = scores.length > 0 ? Math.max(...scores) : 0
-      
+
       const totalScore = scores.reduce((sum, score, index) => sum + score * (counts[index] || 0), 0)
       const totalCount = counts.reduce((sum, count) => sum + count, 0)
       const avgScore = totalCount > 0 ? Math.round(totalScore / totalCount) : 0
-      
+
       return {
         year: parseInt(year),
         avgScore,
@@ -238,7 +237,7 @@ Page({
     this.setData({
       'eduChart.data': series,
       'eduChart.visible': tableData.length > 0,
-      'eduTableData': tableData
+      eduTableData: tableData
     })
 
     setTimeout(() => {
@@ -307,7 +306,7 @@ Page({
         animation: true,
         timing: 'easeInOut',
         duration: 1000,
-        categories: categories,
+        categories,
         series: chart.data,
         padding: [15, 20, 10, 15],
         xAxis: {
@@ -348,7 +347,7 @@ Page({
   onScoreTypeToggle() {
     const { scoreType } = this.data.queryData
     const { hasMajData } = this.data
-    
+
     if (scoreType === 'edu' && !hasMajData) {
       tt.showToast({
         title: '当前大类没有专业测试数据',
@@ -356,7 +355,7 @@ Page({
       })
       return
     }
-    
+
     const newScoreType = scoreType === 'edu' ? 'maj' : 'edu'
     this.setData({
       'queryData.scoreType': newScoreType,
@@ -374,7 +373,7 @@ Page({
     const { scoreSegments, queryData } = this.data
     const scoreType = queryData.scoreType
     const inputScore = parseFloat(queryData.inputScore)
-    
+
     if (isNaN(inputScore)) {
       tt.showToast({
         title: '请输入有效的分数',
@@ -384,14 +383,14 @@ Page({
     }
 
     const filteredData = scoreSegments.filter(item => item.score_type === scoreType)
-    
+
     const yearMap = {}
     filteredData.forEach(item => {
       const year = item.year
       const score = parseFloat(item.score) || 0
       const count = parseInt(item.count) || 0
       const cumulativeCount = parseInt(item.cumulative_count) || 0
-      
+
       if (!yearMap[year]) {
         yearMap[year] = []
       }
@@ -402,7 +401,7 @@ Page({
     const results = years.map(year => {
       const yearData = yearMap[year]
       const exactMatch = yearData.find(item => item.score === inputScore)
-      
+
       if (exactMatch) {
         const startRank = exactMatch.cumulativeCount - exactMatch.count + 1
         const endRank = exactMatch.cumulativeCount
@@ -412,12 +411,12 @@ Page({
           displayScore: inputScore,
           isApproximate: false,
           count: exactMatch.count,
-          rankRange: rankRange
+          rankRange
         }
       } else {
         let closestItem = null
         let minDiff = Infinity
-        
+
         yearData.forEach(item => {
           const diff = Math.abs(item.score - inputScore)
           if (diff < minDiff) {
@@ -425,7 +424,7 @@ Page({
             closestItem = item
           }
         })
-        
+
         if (closestItem) {
           const startRank = closestItem.cumulativeCount - closestItem.count + 1
           const endRank = closestItem.cumulativeCount
@@ -435,10 +434,10 @@ Page({
             displayScore: closestItem.score,
             isApproximate: true,
             count: closestItem.count,
-            rankRange: rankRange
+            rankRange
           }
         }
-        
+
         return {
           year: parseInt(year),
           displayScore: '-',

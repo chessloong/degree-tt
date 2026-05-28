@@ -1,5 +1,5 @@
-const app = getApp()
 import uCharts from '../../common/u-charts.min.js'
+const app = getApp()
 
 Page({
   data: {
@@ -25,19 +25,19 @@ Page({
     }
   },
 
-  onLoad: function(options) {
+  onLoad: function (_options) {
     console.log('[招生专业] 页面加载')
   },
 
-  onReady: function() {},
+  onReady: function () {},
 
-  onShow: function() {
+  onShow: function () {
     this.loadData()
   },
 
-  onHide: function() {},
+  onHide: function () {},
 
-  onUnload: function() {},
+  onUnload: function () {},
 
   async loadData() {
     this.setData({
@@ -72,19 +72,19 @@ Page({
       const maxCount = Math.max(maxSchoolCount, maxMajorCount, 1)
 
       this.setData({
-        previewPlans: previewPlans,
+        previewPlans,
         currentClassName: className,
-        years: years,
-        year1: year1,
-        year2: year2,
-        year1Options: year1Options,
-        year2Options: year2Options,
-        compareTable: compareTable,
-        filteredTable: filteredTable,
-        yearStats: yearStats,
-        maxSchoolCount: maxSchoolCount,
-        maxMajorCount: maxMajorCount,
-        maxCount: maxCount,
+        years,
+        year1,
+        year2,
+        year1Options,
+        year2Options,
+        compareTable,
+        filteredTable,
+        yearStats,
+        maxSchoolCount,
+        maxMajorCount,
+        maxCount,
         loading: false,
         loadingText: ''
       })
@@ -92,7 +92,6 @@ Page({
       console.log(`[招生专业] 加载完成，预告计划 ${previewPlans.length} 条，年份 ${years.join(', ')}`)
 
       this.renderTrendChart()
-
     } catch (err) {
       console.error('[招生专业] 加载失败:', err)
       tt.showToast({
@@ -178,8 +177,8 @@ Page({
       table.push({
         schoolName: data.schoolName,
         majorName: data.majorName,
-        inYear1: inYear1,
-        inYear2: inYear2
+        inYear1,
+        inYear2
       })
     })
 
@@ -209,12 +208,12 @@ Page({
     }
 
     const yearMap = {}
-    
+
     previewPlans.forEach(item => {
       const year = item.year
       if (!yearMap[year]) {
         yearMap[year] = {
-          year: year,
+          year,
           schools: new Set(),
           majors: new Set()
         }
@@ -234,7 +233,7 @@ Page({
     }))
 
     stats.sort((a, b) => b.year - a.year)
-    
+
     return stats
   },
 
@@ -295,14 +294,14 @@ Page({
     const allValues = yearStats.flatMap(s => [s.schoolCount, s.majorCount])
     const minValue = Math.min(...allValues)
     const maxValue = Math.max(...allValues)
-    
+
     // 最大值+5，最小值-5
     const yAxisMin = Math.max(0, minValue - 5)
     const yAxisMax = maxValue + 5
 
     // 图表使用升序排列，复制数据并排序
     const chartYearStats = [...yearStats].sort((a, b) => a.year - b.year)
-    
+
     const categories = chartYearStats.map(s => s.year)
 
     console.log('[招生专业] categories:', categories)
@@ -353,8 +352,8 @@ Page({
         animation: true,
         timing: 'easeInOut',
         duration: 1000,
-        categories: categories,
-        series: series,
+        categories,
+        series,
         padding: [15, 20, 10, 15],
         xAxis: {
           disableGrid: true,
@@ -410,8 +409,8 @@ Page({
     this.setData({
       year1: newYear1,
       year2: newYear2,
-      compareTable: compareTable,
-      filteredTable: filteredTable
+      compareTable,
+      filteredTable
     })
 
     console.log(`[招生专业] 年份1切换为 ${newYear1}，年份2为 ${newYear2}`)
@@ -435,8 +434,8 @@ Page({
     this.setData({
       year1: newYear1,
       year2: newYear2,
-      compareTable: compareTable,
-      filteredTable: filteredTable
+      compareTable,
+      filteredTable
     })
 
     console.log(`[招生专业] 年份2切换为 ${newYear2}，年份1为 ${newYear1}`)
@@ -447,8 +446,8 @@ Page({
     const filteredTable = this.filterTable(this.data.compareTable, showChangedOnly)
 
     this.setData({
-      showChangedOnly: showChangedOnly,
-      filteredTable: filteredTable
+      showChangedOnly,
+      filteredTable
     })
     console.log(`[招生专业] 显示模式切换为: ${showChangedOnly ? '仅变动' : '全部'}`)
   },

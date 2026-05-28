@@ -1,12 +1,12 @@
-const app = getApp()
 import uCharts from '../../common/u-charts.min.js'
+const app = getApp()
 
 Page({
   data: {
     title: '省控线',
-    controlLines: [],       // 省控线数据列表
-    collectVolunteers: [],  // 征集志愿数据列表
-    currentClassName: '',   // 当前专业大类
+    controlLines: [], // 省控线数据列表
+    collectVolunteers: [], // 征集志愿数据列表
+    currentClassName: '', // 当前专业大类
     loading: true,
     loadingText: '加载中...',
     // 文化分趋势图表
@@ -44,20 +44,20 @@ Page({
     }
   },
 
-  onLoad: function(options) {
+  onLoad: function (_options) {
     console.log('[省控线] 页面加载')
   },
 
-  onReady: function() {},
+  onReady: function () {},
 
-  onShow: function() {
+  onShow: function () {
     // 每次显示时加载/刷新数据（内部已有缓存保护）
     this.loadControlLinesData()
   },
 
-  onHide: function() {},
+  onHide: function () {},
 
-  onUnload: function() {},
+  onUnload: function () {},
 
   /**
    * 加载省控线数据
@@ -111,7 +111,6 @@ Page({
 
       // 生成征集志愿表格
       this.generateCollectVolunteerTable(data.collect_volunteer, data.control_lines)
-
     } catch (err) {
       console.error('[省控线] 加载失败:', err)
       tt.showToast({
@@ -176,7 +175,7 @@ Page({
       if (!batchMap[batch]) {
         batchMap[batch] = {}
       }
-      
+
       const year = item.year
       if (!batchMap[batch][year] || item.min_score < batchMap[batch][year]) {
         batchMap[batch][year] = item.min_score
@@ -194,11 +193,11 @@ Page({
     // 构建系列数据
     const series = []
     const batchColors = {
-      '普通批': '#0081ff',              // 蓝色
-      '建档立卡专项批': '#00C853',      // 绿色
-      '专升本': '#0081ff',              // 蓝色
-      '专接本': '#00C853',              // 绿色
-      '专转本': '#0081ff'               // 蓝色
+      普通批: '#0081ff', // 蓝色
+      建档立卡专项批: '#00C853', // 绿色
+      专升本: '#0081ff', // 蓝色
+      专接本: '#00C853', // 绿色
+      专转本: '#0081ff' // 蓝色
     }
 
     Object.keys(batchMap).forEach(batch => {
@@ -212,15 +211,15 @@ Page({
       console.log(`[省控线-文化分] 批次: ${batch}, 颜色: ${color}`)
 
       series.push({
-        name: batch,  // 直接使用批次名称，不添加"批次"二字
-        data: data,
-        color: color,
-        lineType: 'straight',  // 直线，不平滑
+        name: batch, // 直接使用批次名称，不添加"批次"二字
+        data,
+        color,
+        lineType: 'straight', // 直线，不平滑
         width: 3,
         showPoint: true,
         pointShape: 'circle',
         pointSize: 6,
-        label: { show: true, fontSize: 10, fontWeight: 'bold', color: color }
+        label: { show: true, fontSize: 10, fontWeight: 'bold', color }
       })
     })
 
@@ -261,7 +260,7 @@ Page({
     const allScores = series.flatMap(s => s.data.filter(v => v !== null))
     const minScore = Math.min(...allScores)
     const maxScore = Math.max(...allScores)
-    
+
     // 最小值：比最小分数小20的整10倍数
     const yAxisMin = Math.floor((minScore - 20) / 10) * 10
     // 最大值：比最大分数大20的整10倍数
@@ -279,8 +278,8 @@ Page({
         animation: true,
         timing: 'easeInOut',
         duration: 1000,
-        categories: categories,
-        series: series,
+        categories,
+        series,
         padding: [15, 20, 10, 15],
         xAxis: {
           disableGrid: true,
@@ -306,14 +305,14 @@ Page({
         },
         extra: {
           line: {
-            type: 'straight',  // 直线类型
+            type: 'straight', // 直线类型
             width: 3,
             activeType: 'hilight'
           }
         }
       })
       console.log(`[省控线-文化分] 绘制完成，共 ${series.length} 条曲线`)
-      
+
       // 生成表格数据
       this.generateCultureTable(cultureData)
     } catch (err) {
@@ -327,21 +326,21 @@ Page({
   generateCultureTable(cultureData) {
     // 获取所有年份并按降序排序
     const years = [...new Set(cultureData.map(item => item.year))].sort((a, b) => b - a)
-    
+
     // 获取所有批次
     const batches = [...new Set(cultureData.map(item => item.batch || '普通'))]
-    
+
     // 按年份和批次组织数据
     const tableData = []
     years.forEach(year => {
-      const row = { year: year }
+      const row = { year }
       batches.forEach(batch => {
         const item = cultureData.find(d => d.year === year && d.batch === batch)
         row[batch] = item ? item.min_score : '-'
       })
       tableData.push(row)
     })
-    
+
     this.setData({
       'cultureTableData.visible': true,
       'cultureTableData.years': years,
@@ -378,7 +377,7 @@ Page({
       if (!batchMap[batch]) {
         batchMap[batch] = {}
       }
-      
+
       const year = item.year
       if (!batchMap[batch][year] || item.min_score < batchMap[batch][year]) {
         batchMap[batch][year] = item.min_score
@@ -392,11 +391,11 @@ Page({
     // 构建系列数据
     const series = []
     const batchColors = {
-      '普通批': '#FF8C00',              // 橙色
-      '建档立卡专项批': '#9370DB',      // 紫色
-      '专升本': '#FF8C00',              // 橙色
-      '专接本': '#9370DB',              // 紫色
-      '专转本': '#FF8C00'               // 橙色
+      普通批: '#FF8C00', // 橙色
+      建档立卡专项批: '#9370DB', // 紫色
+      专升本: '#FF8C00', // 橙色
+      专接本: '#9370DB', // 紫色
+      专转本: '#FF8C00' // 橙色
     }
 
     Object.keys(batchMap).forEach(batch => {
@@ -410,15 +409,15 @@ Page({
       console.log(`[省控线-专业测试] 批次: ${batch}, 颜色: ${color}`)
 
       series.push({
-        name: batch,  // 直接使用批次名称，不添加"批次"二字
-        data: data,
-        color: color,
-        lineType: 'straight',  // 直线，不平滑
+        name: batch, // 直接使用批次名称，不添加"批次"二字
+        data,
+        color,
+        lineType: 'straight', // 直线，不平滑
         width: 3,
         showPoint: true,
         pointShape: 'circle',
         pointSize: 6,
-        label: { show: true, fontSize: 10, fontWeight: 'bold', color: color }
+        label: { show: true, fontSize: 10, fontWeight: 'bold', color }
       })
     })
 
@@ -459,7 +458,7 @@ Page({
     const allScores = series.flatMap(s => s.data.filter(v => v !== null))
     const minScore = Math.min(...allScores)
     const maxScore = Math.max(...allScores)
-    
+
     // 最小值：比最小分数小10的整10倍数
     const yAxisMin = Math.floor((minScore - 10) / 10) * 10
     // 最大值：比最大分数大10的整10倍数
@@ -477,8 +476,8 @@ Page({
         animation: true,
         timing: 'easeInOut',
         duration: 1000,
-        categories: categories,
-        series: series,
+        categories,
+        series,
         padding: [15, 20, 10, 15],
         xAxis: {
           disableGrid: true,
@@ -504,14 +503,14 @@ Page({
         },
         extra: {
           line: {
-            type: 'straight',  // 直线类型
+            type: 'straight', // 直线类型
             width: 3,
             activeType: 'hilight'
           }
         }
       })
       console.log(`[省控线-专业测试] 绘制完成，共 ${series.length} 条曲线`)
-      
+
       // 生成表格数据
       this.generateMajorTable(majorData)
     } catch (err) {
@@ -525,21 +524,21 @@ Page({
   generateMajorTable(majorData) {
     // 获取所有年份并按降序排序
     const years = [...new Set(majorData.map(item => item.year))].sort((a, b) => b - a)
-    
+
     // 获取所有批次
     const batches = [...new Set(majorData.map(item => item.batch || '普通'))]
-    
+
     // 按年份和批次组织数据
     const tableData = []
     years.forEach(year => {
-      const row = { year: year }
+      const row = { year }
       batches.forEach(batch => {
         const item = majorData.find(d => d.year === year && d.batch === batch)
         row[batch] = item ? item.min_score : '-'
       })
       tableData.push(row)
     })
-    
+
     this.setData({
       'majorTableData.visible': true,
       'majorTableData.years': years,
@@ -576,24 +575,23 @@ Page({
 
       // 构建表格数据：每行为一个年份+轮次组合
       const tableData = []
-      let lastYear = null
       years.forEach(year => {
         // 查找当前年份、当前批次的省控线数据
-        const majorControlItems = controlLines.filter(mc => 
+        const majorControlItems = controlLines.filter(mc =>
           mc.year === year && mc.batch === batch
         )
         const cultureScoreItem = majorControlItems.find(mc => mc.score_type === 'culture')
         const majorScoreItem = majorControlItems.find(mc => mc.score_type === 'major')
-        
+
         // 每年第一行显示省控线
         tableData.push({
-          year: year,
+          year,
           showYear: true,
           round: '省控线',
           cultureScore: cultureScoreItem ? cultureScoreItem.min_score : '-',
           majorScore: majorScoreItem ? majorScoreItem.min_score : '-'
         })
-        
+
         // 再处理征集轮次数据
         rounds.forEach(round => {
           // 检查该年份+轮次是否有数据
@@ -621,21 +619,20 @@ Page({
           }
 
           tableData.push({
-            year: year,
+            year,
             showYear: false,
             round: round === 0 ? '征集' : (round === 99 ? '最后' : `征集${round}`),
             cultureScore: minCulture,
             majorScore: minMajor,
-            cultureLower: cultureLower,
-            majorLower: majorLower
+            cultureLower,
+            majorLower
           })
-          lastYear = year
         })
       })
 
       if (tableData.length > 0) {
         tables.push({
-          batch: batch,
+          batch,
           data: tableData
         })
       }

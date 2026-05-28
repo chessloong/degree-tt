@@ -1,6 +1,32 @@
 {
+  "name": "degree-tt",
+  "version": "1.0.0",
+  "description": "字节跳动/抖音小程序 - 高考志愿填报助手",
+  "main": "app.js",
+  "scripts": {
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write \"**/*.{js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,json,md}\"",
+    "precommit": "npm run lint && npm run format:check"
+  },
   "dependencies": {
     "@visactor/tt-vchart": "^0.1.0-alpha.0",
     "pinyin-pro": "^3.28.1"
-  }
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "prettier": "^3.2.5"
+  },
+  "keywords": [
+    "抖音小程序",
+    "高考志愿",
+    "教育"
+  ],
+  "author": "",
+  "license": "MIT"
 }

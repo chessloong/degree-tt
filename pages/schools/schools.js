@@ -19,20 +19,20 @@ Page({
     sortOrder: 'asc' // 排序顺序：asc升序，desc降序
   },
 
-  onLoad: function(options) {
+  onLoad: function (_options) {
     console.log('[院校] 页面加载')
   },
 
-  onReady: function() {},
+  onReady: function () {},
 
-  onShow: function() {
+  onShow: function () {
     // 每次显示时加载/刷新数据（内部已有缓存保护）
     this.loadSchoolsData()
   },
 
-  onHide: function() {},
+  onHide: function () {},
 
-  onUnload: function() {},
+  onUnload: function () {},
 
   /**
    * 加载院校数据
@@ -47,7 +47,7 @@ Page({
     try {
       // 优先从全局变量读取（app.js onLaunch 时已加载）
       let schools = app.getSchools()
-      
+
       // 如果全局数据为空，才重新加载
       if (!schools || schools.length === 0) {
         console.log('[院校] 全局数据为空，从云端加载')
@@ -67,7 +67,7 @@ Page({
       }
 
       this.setData({
-        schools: schools,
+        schools,
         loading: false,
         loadingText: '',
         markers: this.generateMarkers(schools),
@@ -80,7 +80,6 @@ Page({
       }
 
       console.log(`[院校] 加载完成，共 ${schools.length} 条`)
-
     } catch (err) {
       console.error('[院校] 加载失败:', err)
       tt.showToast({
@@ -98,11 +97,11 @@ Page({
   /**
    * 下拉刷新
    */
-  onPullDownRefresh: function() {
+  onPullDownRefresh: function () {
     // 清除缓存
     tt.removeStorageSync('schools')
     app.globalData.schools = []
-    
+
     // 重新加载
     this.loadSchoolsData().then(() => {
       tt.stopPullDownRefresh()
@@ -112,7 +111,7 @@ Page({
   /**
    * 切换卡片展开/折叠状态
    */
-  toggleCard: function() {
+  toggleCard: function () {
     this.setData({
       isCardExpanded: !this.data.isCardExpanded
     })
@@ -121,7 +120,7 @@ Page({
   /**
    * 按字段排序
    */
-  sortByField: function(e) {
+  sortByField: function (e) {
     const field = e.currentTarget.dataset.field
     console.log('[院校] 点击排序字段:', field)
 
@@ -165,22 +164,22 @@ Page({
   /**
    * 生成地图标记点
    */
-  generateMarkers: function(schools) {
+  generateMarkers: function (schools) {
     return schools
       .filter(school => school.latitude && school.longitude)
       .map((school, index) => {
         // 根据院校层次确定颜色方案
         const isLevel2B = school.level === '2B'
         const iconPath = isLevel2B ? '/assets/school_marker.svg' : '/assets/school_marker_green.svg'
-        const calloutBgColor = isLevel2B ? '#cce6ff' : '#d7f0db'  // 2B浅蓝色，2C浅绿色
-        const calloutColor = isLevel2B ? '#0081ff' : '#39b54a'  // 2B蓝色，2C绿色
+        const calloutBgColor = isLevel2B ? '#cce6ff' : '#d7f0db' // 2B浅蓝色，2C浅绿色
+        const calloutColor = isLevel2B ? '#0081ff' : '#39b54a' // 2B蓝色，2C绿色
 
         return {
           id: index + 1,
           latitude: parseFloat(school.latitude),
           longitude: parseFloat(school.longitude),
           title: school.school_name,
-          iconPath: iconPath,
+          iconPath,
           width: 30,
           height: 30,
           // 使用 callout 始终显示学校名称（比 label 效果更好）
@@ -191,7 +190,7 @@ Page({
             borderRadius: 5,
             bgColor: calloutBgColor,
             padding: 5,
-            display: 'ALWAYS',  // 始终显示，不需要点击
+            display: 'ALWAYS', // 始终显示，不需要点击
             textAlign: 'center'
           }
         }
@@ -203,7 +202,7 @@ Page({
    * 注意：使用 include-points 属性后，地图会自动调整视野以包含所有标记点
    * 这里只计算中心点作为初始位置
    */
-  calculateMapCenter: function(markers) {
+  calculateMapCenter: function (markers) {
     if (!markers || markers.length === 0) return
 
     // 计算所有标记点的边界
@@ -236,7 +235,7 @@ Page({
     this.setData({
       mapLatitude: centerLat,
       mapLongitude: centerLng,
-      mapScale: 10  // 默认缩放级别，include-points 会自动调整
+      mapScale: 10 // 默认缩放级别，include-points 会自动调整
     })
 
     console.log(`[地图] 中心点: (${centerLat.toFixed(4)}, ${centerLng.toFixed(4)})，使用 include-points 自动调整视野`)
@@ -245,9 +244,9 @@ Page({
   /**
    * 重置地图视野到初始状态
    */
-  resetMapView: function() {
+  resetMapView: function () {
     console.log('[地图] 点击重置视野按钮')
-    
+
     if (this.data.markers.length > 0) {
       // 计算中心点
       let minLat = this.data.markers[0].latitude
@@ -276,8 +275,7 @@ Page({
       const centerLng = (minLng + maxLng) / 2
 
       // 获取地图上下文
-      const mapCtx = tt.createMapContext('schoolMap', this)
-      
+
       // 使用 moveToLocation 或直接设置经纬度
       // 由于抖音小程序可能不支持某些方法，我们直接更新数据
       this.setData({
@@ -312,28 +310,28 @@ Page({
   /**
    * 点击地图标记点
    */
-  onMarkerTap: function(e) {
+  onMarkerTap: function (e) {
     this.handleMapItemClick(e, '标记点')
   },
 
   /**
    * 点击地图标记点的 callout 标签
    */
-  onCalloutTap: function(e) {
+  onCalloutTap: function (e) {
     this.handleMapItemClick(e, 'callout标签')
   },
 
   /**
    * 点击院校列表行
    */
-  onSchoolRowTap: function(e) {
+  onSchoolRowTap: function (e) {
     const index = e.currentTarget.dataset.index
     console.log('[院校] 点击列表行, index:', index)
-    
+
     if (index !== undefined && this.data.schools[index]) {
       const school = this.data.schools[index]
       console.log('[院校] 打开学校详情:', school.school_name)
-      
+
       // 直接显示模态框，不需要延迟
       this.setData({
         showSchoolModal: true,
@@ -345,34 +343,34 @@ Page({
   /**
    * 处理地图项点击（标记点或标签）
    */
-  handleMapItemClick: function(e, itemType) {
+  handleMapItemClick: function (e, itemType) {
     console.log(`[地图] 点击${itemType}:`, e)
-    
+
     // 尝试获取 markerId
     let markerId = null
-    
+
     if (e.detail && e.detail.markerId) {
       markerId = parseInt(e.detail.markerId)
     }
-    
+
     console.log(`[地图] ${itemType} markerId:`, markerId)
-    
+
     if (!markerId) {
       console.log('[地图] 无法获取 markerId')
       return
     }
-    
+
     // 直接通过 markerId 找到对应的标记点
     const marker = this.data.markers.find(m => m.id === markerId)
-    
+
     if (!marker) {
       console.log('[地图] 未找到标记点, markerId:', markerId)
       return
     }
-    
+
     // 通过经纬度找到对应的学校
-    const school = this.data.schools.find(s => 
-      parseFloat(s.latitude) === marker.latitude && 
+    const school = this.data.schools.find(s =>
+      parseFloat(s.latitude) === marker.latitude &&
       parseFloat(s.longitude) === marker.longitude
     )
 
@@ -393,7 +391,7 @@ Page({
   /**
    * 关闭院校详情模态框
    */
-  closeSchoolModal: function() {
+  closeSchoolModal: function () {
     console.log('[地图] 关闭模态框')
     this.setData({
       showSchoolModal: false,
@@ -404,7 +402,7 @@ Page({
   /**
    * 阻止事件冒泡（用于模态框内容）
    */
-  stopPropagation: function() {
+  stopPropagation: function () {
     // 空方法，仅用于阻止事件冒泡
   }
 })
