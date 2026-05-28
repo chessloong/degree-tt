@@ -1,13 +1,139 @@
 <view class="container">
-  <view class="de-card">
-    <view class="de-card-header">
-      <view class="de-card-title-left">
-        <view class="de-card-dot"></view>
-        <text class="de-card-title">招生专业</text>
+  <!-- 顶部信息栏 -->
+  <view class="header-bar">
+    <text class="class-name" bindtap="goToSettings">{{currentClassName}}</text>
+    <image class="arrow-icon" src="/assets/svg/arrow-right.svg" mode="aspectFit"></image>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <text class="loading-text">{{loadingText}}</text>
+  </view>
+
+  <!-- 内容区域 -->
+  <view wx:else class="content-area">
+    <!-- 历年统计卡片 -->
+    <view class="de-card">
+      <view class="de-card-header">
+        <view class="de-card-title-left">
+          <view class="de-card-dot"></view>
+          <text class="de-card-title">历年招生院校和招生专业变化情况</text>
+        </view>
+      </view>
+      <view class="de-card-content">
+        <!-- 图表区域 -->
+        <view wx:if="{{trendChart.visible}}" class="de-chart-wrapper">
+          <canvas 
+            id="trendChart" 
+            canvas-id="trendChart"
+            style="width: {{trendChart.width > 0 ? trendChart.width + 'px' : '100%'}}; 
+                   height: {{trendChart.height > 0 ? trendChart.height + 'px' : '200px'}};">
+          </canvas>
+        </view>
+
+        <!-- 统计表格 -->
+        <view wx:if="{{yearStats.length > 0}}" class="de-table-wrapper">
+          <view class="de-table">
+            <view class="de-table-header">
+              <view class="de-table-cell">年份</view>
+              <view class="de-table-cell de-table-cell-center">招生院校数</view>
+              <view class="de-table-cell de-table-cell-center">招生专业数</view>
+            </view>
+            <view wx:for="{{yearStats}}" wx:key="year" class="de-table-row">
+              <view class="de-table-cell">{{item.year}}</view>
+              <view class="de-table-cell de-table-cell-center">{{item.schoolCount}}</view>
+              <view class="de-table-cell de-table-cell-center">{{item.majorCount}}</view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 数据不足提示 -->
+        <view wx:else class="no-data-tip">
+          <text>暂无数据</text>
+        </view>
       </view>
     </view>
-    <view class="de-card-content">
-      <text class="placeholder-text">招生专业页面开发中...</text>
+
+    <!-- 年份对照卡片 -->
+    <view class="de-card">
+      <view class="de-card-header">
+        <view class="de-card-title-left">
+          <view class="de-card-dot"></view>
+          <text class="de-card-title">招生专业变化情况</text>
+        </view>
+        <view class="de-card-header-right">
+          <view class="custom-switch {{showChangedOnly ? 'right' : 'left'}}" bindtap="onToggleShowMode">
+            <text class="switch-text-left {{!showChangedOnly ? 'active' : ''}}">全部</text>
+            <text class="switch-text-right {{showChangedOnly ? 'active' : ''}}">变动</text>
+            <view class="switch-slider"></view>
+          </view>
+        </view>
+      </view>
+      <view class="de-card-content">
+        <!-- 年份选择器 -->
+        <view wx:if="{{years.length >= 2}}" class="year-selector-container">
+          <view class="year-selector-row">
+            <view class="year-selector-item">
+              <picker 
+                mode="selector" 
+                range="{{year1Options}}" 
+                value="{{year1Options.indexOf(year1)}}"
+                bindchange="onYear1Change"
+              >
+                <view class="year-picker">
+                  <text class="year-value">{{year1}}</text>
+                  <text class="picker-arrow">▼</text>
+                </view>
+              </picker>
+            </view>
+            
+            <view class="year-vs">
+              <text>VS</text>
+            </view>
+            
+            <view class="year-selector-item">
+              <picker 
+                mode="selector" 
+                range="{{year2Options}}" 
+                value="{{year2Options.indexOf(year2)}}"
+                bindchange="onYear2Change"
+              >
+                <view class="year-picker">
+                  <text class="year-value">{{year2}}</text>
+                  <text class="picker-arrow">▼</text>
+                </view>
+              </picker>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 数据不足提示 -->
+        <view wx:else class="no-data-tip">
+          <text>暂无足够的年份数据进行对照</text>
+        </view>
+
+        <!-- 对照表格 -->
+        <view wx:if="{{filteredTable.length > 0}}" class="de-table-wrapper">
+          <view class="de-table">
+            <view class="de-table-header">
+              <view class="de-table-cell" style="flex: 2;">学校</view>
+              <view class="de-table-cell" style="flex: 2;">专业</view>
+              <view class="de-table-cell de-table-cell-center">{{year1}}</view>
+              <view class="de-table-cell de-table-cell-center">{{year2}}</view>
+            </view>
+            <view wx:for="{{filteredTable}}" wx:key="majorName" class="de-table-row">
+              <view class="de-table-cell" style="flex: 2;">{{item.schoolName}}</view>
+              <view class="de-table-cell" style="flex: 2;">{{item.majorName}}</view>
+              <view class="de-table-cell de-table-cell-center">
+                <text class="icon-{{item.inYear1 ? 'check' : 'cross'}}">{{item.inYear1 ? '✓' : '✗'}}</text>
+              </view>
+              <view class="de-table-cell de-table-cell-center">
+                <text class="icon-{{item.inYear2 ? 'check' : 'cross'}}">{{item.inYear2 ? '✓' : '✗'}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
     </view>
   </view>
 </view>

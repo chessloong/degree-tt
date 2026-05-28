@@ -3,7 +3,6 @@
   <view class="header-bar">
     <text class="class-name" bindtap="goToSettings">{{currentClassName}}</text>
     <image class="arrow-icon" src="/assets/svg/arrow-right.svg" mode="aspectFit"></image>
-    <image class="help-icon" src="/assets/svg/caution.svg" mode="aspectFit"></image>
   </view>
 
   <!-- 专业测试趋势图表和表格卡片 -->

@@ -1,23 +1,37 @@
 const app = getApp()
+import uCharts from '../../common/u-charts.min.js'
 
 Page({
   data: {
     title: '招生专业',
-    majorClasses: [],  // 专业大类列表
-    majors: [],        // 当前大类的专业列表
-    currentClassName: '',  // 当前选中的专业大类名称
+    currentClassName: '',
     loading: true,
-    loadingText: '加载中...'
+    loadingText: '加载中...',
+    previewPlans: [],
+    years: [],
+    year1: null,
+    year2: null,
+    year1Options: [],
+    year2Options: [],
+    compareTable: [],
+    showChangedOnly: false,
+    filteredTable: [],
+    yearStats: [],
+    trendChart: {
+      width: 0,
+      height: 0,
+      visible: false,
+      data: null
+    }
   },
 
   onLoad: function(options) {
-    console.log('[招生专业页] 页面加载')
+    console.log('[招生专业] 页面加载')
   },
 
   onReady: function() {},
 
   onShow: function() {
-    // 每次显示时加载/刷新数据（内部已有缓存保护）
     this.loadData()
   },
 
@@ -25,9 +39,6 @@ Page({
 
   onUnload: function() {},
 
-  /**
-   * 并行加载专业大类和专业列表数据
-   */
   async loadData() {
     this.setData({
       loading: true,
@@ -35,28 +46,55 @@ Page({
     })
 
     try {
-      // 获取用户的专业大类
       const className = app.getUserClassName() || '管理类'
-      console.log(`[专业列表] 当前用户大类: ${className}`)
+      console.log(`[招生专业] 当前用户大类: ${className}`)
 
-      // 并行加载专业大类和专业列表
-      const [majorClasses, majors] = await Promise.all([
-        this.loadMajorClassesData(),
-        this.loadMajorsData(className)
+      const data = await app.loadPageDataBatch([
+        {
+          cacheKey: 'preview_plans',
+          collection: 'degree_preview_plans',
+          filter: { class_name: className },
+          type: 'array',
+          itemKey: 'class_name',
+          itemValue: className,
+          defaultValue: []
+        }
       ])
 
+      const previewPlans = data.preview_plans || []
+      const years = this.extractYears(previewPlans)
+      const { year1, year2, year1Options, year2Options } = this.initYearSelectors(years)
+      const compareTable = this.generateCompareTable(previewPlans, year1, year2)
+      const filteredTable = this.filterTable(compareTable, false)
+      const yearStats = this.generateYearStats(previewPlans)
+      const maxSchoolCount = yearStats.length > 0 ? Math.max(...yearStats.map(s => s.schoolCount)) : 1
+      const maxMajorCount = yearStats.length > 0 ? Math.max(...yearStats.map(s => s.majorCount)) : 1
+      const maxCount = Math.max(maxSchoolCount, maxMajorCount, 1)
+
       this.setData({
-        majorClasses: majorClasses,
-        majors: majors,
+        previewPlans: previewPlans,
         currentClassName: className,
+        years: years,
+        year1: year1,
+        year2: year2,
+        year1Options: year1Options,
+        year2Options: year2Options,
+        compareTable: compareTable,
+        filteredTable: filteredTable,
+        yearStats: yearStats,
+        maxSchoolCount: maxSchoolCount,
+        maxMajorCount: maxMajorCount,
+        maxCount: maxCount,
         loading: false,
         loadingText: ''
       })
 
-      console.log(`[专业列表] 加载完成 - 大类: ${majorClasses.length} 条, 专业: ${majors.length} 条`)
+      console.log(`[招生专业] 加载完成，预告计划 ${previewPlans.length} 条，年份 ${years.join(', ')}`)
+
+      this.renderTrendChart()
 
     } catch (err) {
-      console.error('[专业列表] 加载失败:', err)
+      console.error('[招生专业] 加载失败:', err)
       tt.showToast({
         title: '加载失败，请重试',
         icon: 'none'
@@ -64,94 +102,361 @@ Page({
       this.setData({
         loading: false,
         loadingText: '',
-        majorClasses: [],
-        majors: []
+        previewPlans: [],
+        years: [],
+        compareTable: [],
+        filteredTable: []
       })
     }
   },
 
-  /**
-   * 加载专业大类数据
-   */
-  async loadMajorClassesData() {
-    // 优先从全局变量读取（app.js onLaunch 时已加载）
-    let majorClasses = app.getMajorClasses()
-    
-    // 如果全局数据为空，才重新加载
-    if (!majorClasses || majorClasses.length === 0) {
-      console.log('[专业大类] 全局数据为空，从云端加载')
-      majorClasses = await app.loadMajorClassesData()
-    } else {
-      console.log(`[专业大类] 使用全局缓存，共 ${majorClasses.length} 条`)
-    }
-
-    return majorClasses
+  extractYears(plans) {
+    const yearSet = new Set()
+    plans.forEach(item => {
+      if (item.year) {
+        yearSet.add(item.year)
+      }
+    })
+    return Array.from(yearSet).sort((a, b) => a - b)
   },
 
-  /**
-   * 加载指定大类的专业列表
-   * @param {string} className - 专业大类名称
-   */
-  async loadMajorsData(className) {
-    console.log(`[专业列表] 加载: ${className}`)
-
-    // 检查缓存
-    const cachedData = app.getArrayCacheItem('majors', 'class_name', className)
-    if (cachedData) {
-      console.log(`[专业列表] 使用缓存，共 ${cachedData.length} 条`)
-      return cachedData
+  initYearSelectors(years) {
+    if (years.length < 2) {
+      return {
+        year1: null,
+        year2: null,
+        year1Options: [],
+        year2Options: []
+      }
     }
 
-    // 缓存无效或不存在，从云端拉取
-    console.log('[专业列表] 缓存无效，从云端加载')
-    
-    try {
-      const data = await app.loadDataFromCloud('degree_majors', { class_name: className })
-      
-      if (data && data.length > 0) {
-        // 存入数组型缓存
-        app.setArrayCacheItem('majors', 'class_name', className, data)
-        console.log(`[专业列表] 加载成功，共 ${data.length} 条`)
-        return data
-      } else {
-        console.log(`[专业列表] 未找到 ${className} 的数据`)
-        return []
-      }
-    } catch (err) {
-      console.error('[专业列表] 加载失败:', err)
+    const minYear = years[0]
+    const maxYear = years[years.length - 1]
+
+    const year1Options = years.filter(y => y !== maxYear)
+    const year2Options = years.filter(y => y !== minYear)
+
+    const year1 = year1Options[year1Options.length - 1]
+    const year2 = year2Options[year2Options.length - 1]
+
+    return { year1, year2, year1Options, year2Options }
+  },
+
+  generateCompareTable(plans, year1, year2) {
+    if (!year1 || !year2 || !plans || plans.length === 0) {
       return []
     }
-  },
 
-  /**
-   * 切换专业大类
-   * @param {object} e - 事件对象
-   */
-  onClassChange(e) {
-    const className = e.detail.value
-    console.log(`[专业列表] 切换到大类: ${className}`)
+    const year1Data = new Map()
+    const year2Data = new Map()
 
-    this.setData({
-      currentClassName: className,
-      loading: true,
-      loadingText: '加载中...'
+    plans.forEach(item => {
+      if (item.year === year1 && item.major_name && item.school_name) {
+        const key = `${item.school_name}_${item.major_name}`
+        year1Data.set(key, {
+          schoolName: item.school_name,
+          majorName: item.major_name
+        })
+      }
+      if (item.year === year2 && item.major_name && item.school_name) {
+        const key = `${item.school_name}_${item.major_name}`
+        year2Data.set(key, {
+          schoolName: item.school_name,
+          majorName: item.major_name
+        })
+      }
     })
 
-    // 加载对应大类的专业列表
-    this.loadMajorsData(className).then(majors => {
-      this.setData({
-        majors: majors,
-        loading: false,
-        loadingText: ''
+    const allKeys = new Set([...year1Data.keys(), ...year2Data.keys()])
+    const table = []
+
+    allKeys.forEach(key => {
+      const inYear1 = year1Data.has(key)
+      const inYear2 = year2Data.has(key)
+      const data = year1Data.get(key) || year2Data.get(key)
+
+      table.push({
+        schoolName: data.schoolName,
+        majorName: data.majorName,
+        inYear1: inYear1,
+        inYear2: inYear2
       })
-      console.log(`[专业列表] 已切换到 ${className}，共 ${majors.length} 个专业`)
-    }).catch(err => {
-      console.error('[专业列表] 切换大类失败:', err)
-      this.setData({
-        loading: false,
-        loadingText: '',
-        majors: []
+    })
+
+    table.sort((a, b) => {
+      if (a.schoolName !== b.schoolName) {
+        return a.schoolName.localeCompare(b.schoolName, 'zh-CN')
+      }
+      return a.majorName.localeCompare(b.majorName, 'zh-CN')
+    })
+
+    return table
+  },
+
+  filterTable(table, showChangedOnly) {
+    if (!table || table.length === 0) {
+      return []
+    }
+    if (!showChangedOnly) {
+      return table
+    }
+    return table.filter(item => item.inYear1 !== item.inYear2)
+  },
+
+  generateYearStats(previewPlans) {
+    if (!previewPlans || previewPlans.length === 0) {
+      return []
+    }
+
+    const yearMap = {}
+    
+    previewPlans.forEach(item => {
+      const year = item.year
+      if (!yearMap[year]) {
+        yearMap[year] = {
+          year: year,
+          schools: new Set(),
+          majors: new Set()
+        }
+      }
+      if (item.school_name) {
+        yearMap[year].schools.add(item.school_name)
+      }
+      if (item.major_name) {
+        yearMap[year].majors.add(item.major_name)
+      }
+    })
+
+    const stats = Object.values(yearMap).map(item => ({
+      year: item.year,
+      schoolCount: item.schools.size,
+      majorCount: item.majors.size
+    }))
+
+    stats.sort((a, b) => b.year - a.year)
+    
+    return stats
+  },
+
+  waitForCanvas(selector, maxRetries = 50, interval = 40) {
+    return new Promise((resolve) => {
+      let retries = 0
+      const check = () => {
+        tt.createSelectorQuery()
+          .select(selector)
+          .boundingClientRect()
+          .exec((res) => {
+            if (res && res[0] && res[0].width > 0) {
+              resolve(res[0])
+            } else if (retries < maxRetries) {
+              retries++
+              setTimeout(check, interval)
+            } else {
+              resolve(null)
+            }
+          })
+      }
+      check()
+    })
+  },
+
+  async renderTrendChart() {
+    const { yearStats } = this.data
+    if (!yearStats || yearStats.length === 0) {
+      console.log('[招生专业] 统计数据为空，不渲染图表')
+      return
+    }
+
+    // 先显示图表容器
+    this.setData({
+      'trendChart.visible': true
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 200))
+
+    const rect = await this.waitForCanvas('#trendChart', 50, 40)
+    if (!rect) {
+      console.error('[招生专业] 获取 canvas 失败')
+      return
+    }
+
+    const canvasWidth = rect.width
+    const canvasHeight = Math.round(rect.width * 46 / 75)
+
+    this.setData({
+      'trendChart.width': canvasWidth,
+      'trendChart.height': canvasHeight
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    const ctx = tt.createCanvasContext('trendChart', this)
+
+    const allValues = yearStats.flatMap(s => [s.schoolCount, s.majorCount])
+    const minValue = Math.min(...allValues)
+    const maxValue = Math.max(...allValues)
+    
+    // 最大值+5，最小值-5
+    const yAxisMin = Math.max(0, minValue - 5)
+    const yAxisMax = maxValue + 5
+
+    // 图表使用升序排列，复制数据并排序
+    const chartYearStats = [...yearStats].sort((a, b) => a.year - b.year)
+    
+    const categories = chartYearStats.map(s => s.year)
+
+    console.log('[招生专业] categories:', categories)
+    console.log('[招生专业] yearStats:', yearStats)
+
+    const schoolData = chartYearStats.map(s => s.schoolCount)
+    const majorData = chartYearStats.map(s => s.majorCount)
+
+    console.log('[招生专业] schoolData:', schoolData)
+    console.log('[招生专业] majorData:', majorData)
+
+    const series = [
+      {
+        name: '院校数',
+        data: schoolData,
+        color: '#0081ff',
+        lineType: 'straight',
+        width: 3,
+        showPoint: true,
+        pointShape: 'circle',
+        pointSize: 6,
+        label: { show: true, fontSize: 10, fontWeight: 'bold', color: '#0081ff' }
+      },
+      {
+        name: '专业数',
+        data: majorData,
+        color: '#52c41a',
+        lineType: 'straight',
+        width: 3,
+        showPoint: true,
+        pointShape: 'circle',
+        pointSize: 6,
+        label: { show: true, fontSize: 10, fontWeight: 'bold', color: '#52c41a' }
+      }
+    ]
+
+    console.log('[招生专业] series:', JSON.stringify(series))
+
+    try {
+      new uCharts({
+        $this: this,
+        canvasId: 'trendChart',
+        context: ctx,
+        type: 'line',
+        pixelRatio: 1,
+        width: canvasWidth,
+        height: canvasHeight,
+        animation: true,
+        timing: 'easeInOut',
+        duration: 1000,
+        categories: categories,
+        series: series,
+        padding: [15, 20, 10, 15],
+        xAxis: {
+          disableGrid: true,
+          axisLine: true,
+          axisLabel: { fontSize: 10 }
+        },
+        yAxis: {
+          disableGrid: true,
+          disabled: true,
+          gridType: 'dash',
+          dashLength: 2,
+          axisLabel: { show: false },
+          data: [{
+            min: yAxisMin,
+            max: yAxisMax
+          }]
+        },
+        legend: {
+          show: true,
+          position: 'bottom',
+          lineHeight: 20,
+          fontSize: 10
+        },
+        extra: {
+          line: {
+            type: 'straight',
+            width: 3,
+            activeType: 'hilight'
+          }
+        }
       })
+      console.log('[招生专业] 图表绘制完成')
+    } catch (err) {
+      console.error('[招生专业] 图表绘制失败:', err)
+    }
+  },
+
+  onYear1Change(e) {
+    const index = e.detail.value
+    const newYear1 = this.data.year1Options[index]
+    let newYear2 = this.data.year2
+
+    if (newYear2 <= newYear1) {
+      const year2Options = this.data.year2Options.filter(y => y > newYear1)
+      if (year2Options.length > 0) {
+        newYear2 = year2Options[0]
+      }
+    }
+
+    const compareTable = this.generateCompareTable(this.data.previewPlans, newYear1, newYear2)
+    const filteredTable = this.filterTable(compareTable, this.data.showChangedOnly)
+
+    this.setData({
+      year1: newYear1,
+      year2: newYear2,
+      compareTable: compareTable,
+      filteredTable: filteredTable
+    })
+
+    console.log(`[招生专业] 年份1切换为 ${newYear1}，年份2为 ${newYear2}`)
+  },
+
+  onYear2Change(e) {
+    const index = e.detail.value
+    const newYear2 = this.data.year2Options[index]
+    let newYear1 = this.data.year1
+
+    if (newYear1 >= newYear2) {
+      const year1Options = this.data.year1Options.filter(y => y < newYear2)
+      if (year1Options.length > 0) {
+        newYear1 = year1Options[year1Options.length - 1]
+      }
+    }
+
+    const compareTable = this.generateCompareTable(this.data.previewPlans, newYear1, newYear2)
+    const filteredTable = this.filterTable(compareTable, this.data.showChangedOnly)
+
+    this.setData({
+      year1: newYear1,
+      year2: newYear2,
+      compareTable: compareTable,
+      filteredTable: filteredTable
+    })
+
+    console.log(`[招生专业] 年份2切换为 ${newYear2}，年份1为 ${newYear1}`)
+  },
+
+  onToggleShowMode() {
+    const showChangedOnly = !this.data.showChangedOnly
+    const filteredTable = this.filterTable(this.data.compareTable, showChangedOnly)
+
+    this.setData({
+      showChangedOnly: showChangedOnly,
+      filteredTable: filteredTable
+    })
+    console.log(`[招生专业] 显示模式切换为: ${showChangedOnly ? '仅变动' : '全部'}`)
+  },
+
+  goToSettings() {
+    tt.setStorageSync('openPicker', 'true')
+    tt.switchTab({
+      url: '/pages/settings/settings'
     })
   }
 })
