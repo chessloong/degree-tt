@@ -19,18 +19,11 @@
         <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
-    <view class="de-list-item de-list-item-clickable">
+    <view class="de-list-item de-list-item-last de-list-item-clickable">
       <image class="de-list-icon" src="/assets/svg/money.svg" mode="aspectFit" />
       <text class="de-list-title">学点余额</text>
       <view class="de-list-content">
         <text class="de-list-text">0 学点</text>
-        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
-      </view>
-    </view>
-    <view class="de-list-item de-list-item-last de-list-item-clickable">
-      <image class="de-list-icon" src="/assets/svg/free.svg" mode="aspectFit" />
-      <text class="de-list-title">免费获取学点</text>
-      <view class="de-list-content">
         <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
@@ -45,12 +38,12 @@
         <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
-    <view class="de-list-item de-list-item-last de-list-item-clickable">
+    <view class="de-list-item de-list-item-last de-list-item-clickable" bindtap="openScoreModal">
       <image class="de-list-icon" src="/assets/svg/score.svg" mode="aspectFit" />
       <text class="de-list-title">考试分数</text>
       <view class="de-list-content">
-        <text class="de-list-text">查看成绩</text>
-        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
+        <text class="de-list-text">{{scoreDisplay}}</text>
+      </view>  <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
   </view>
@@ -68,18 +61,12 @@
   </view>
 
   <view class="de-list-group" style="margin-top: 16rpx;">
-    <view class="de-list-item de-list-item-clickable">
+    <view class="de-list-item de-list-item-clickable" bindtap="clearCache">
       <image class="de-list-icon" src="/assets/svg/clear.svg" mode="aspectFit" />
       <text class="de-list-title">清除缓存</text>
       <view class="de-list-content">
-        <text class="de-list-text">128MB</text>
-      </view>
-    </view>
-    <view class="de-list-item">
-      <image class="de-list-icon" src="/assets/svg/更多.svg" mode="aspectFit" />
-      <text class="de-list-title">音效开关</text>
-      <view class="de-list-content">
-        <switch checked color="#0081ff" />
+        <text class="de-list-text">{{cacheSize}}</text>
+        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
     <view class="de-list-item">
@@ -133,4 +120,68 @@
 
   <!-- 遮罩层 -->
   <view wx:if="{{showPicker}}" class="picker-mask"></view>
+
+  <!-- 考试分数设置弹窗 -->
+  <view wx:if="{{showScoreModal}}" class="modal-container">
+    <view class="modal-mask" bindtap="closeScoreModal"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">设置考试分数</text>
+        <view class="modal-close" bindtap="closeScoreModal">×</view>
+      </view>
+      <view class="modal-body">
+        <!-- 专业测试分数（仅当需要专业测试时显示） -->
+        <view wx:if="{{needMajorTest}}" class="score-row">
+          <view class="score-label">
+            <text class="score-label-text">专业测试分数</text>
+            <text class="score-label-hint">（满分100）</text>
+          </view>
+          <input 
+            class="score-input" 
+            type="digit" 
+            placeholder="请输入分数" 
+            value="{{majorTestScore}}" 
+            bindinput="onMajorTestScoreInput"
+            maxlength="5"
+          />
+        </view>
+        
+        <!-- 专业基础分数 -->
+        <view class="score-row">
+          <view class="score-label">
+            <text class="score-label-text">专业基础分数</text>
+            <text class="score-label-hint">（满分150）</text>
+          </view>
+          <input 
+            class="score-input" 
+            type="number" 
+            placeholder="请输入分数" 
+            value="{{majorBasicScore}}" 
+            bindinput="onMajorBasicScoreInput"
+            maxlength="3"
+          />
+        </view>
+        
+        <!-- 公共基础分数 -->
+        <view class="score-row">
+          <view class="score-label">
+            <text class="score-label-text">公共基础分数</text>
+            <text class="score-label-hint">（满分150）</text>
+          </view>
+          <input 
+            class="score-input" 
+            type="number" 
+            placeholder="请输入分数" 
+            value="{{eduScore}}" 
+            bindinput="onEduScoreInput"
+            maxlength="3"
+          />
+        </view>
+      </view>
+      <view class="modal-footer">
+        <view class="modal-btn modal-btn-cancel" bindtap="closeScoreModal">取消</view>
+        <view class="modal-btn modal-btn-confirm" bindtap="saveScores">保存</view>
+      </view>
+    </view>
+  </view>
 </view>

@@ -14,7 +14,16 @@ Page({
     level: 0, // 用户等级
     avatarUrl: '', // 用户头像URL
     beian: '', // 备案号
-    version: 'v1.0.0' // 版本号
+    version: 'v1.0.0', // 版本号
+    cacheSize: '0KB', // 缓存大小
+    
+    // 考试分数相关
+    showScoreModal: false, // 是否显示分数设置弹窗
+    needMajorTest: false, // 当前专业大类是否需要专业测试
+    eduScore: '', // 公共基础分数（满分150）
+    majorBasicScore: '', // 专业基础分数（满分150）
+    majorTestScore: '', // 专业测试分数（满分100，仅当needMajorTest为true时显示）
+    scoreDisplay: '设置成绩' // 格式化后的分数显示
   },
 
   onLoad: function () {
@@ -22,14 +31,56 @@ Page({
     this.loadUserInfo()
     this.loadLoginStatus()
     this.loadConfig()
+    this.loadCacheSize()
   },
 
-  onShow: function () {
+  async onShow() {
     // 每次显示时刷新用户信息和专业大类数据
     this.loadUserInfo()
     this.loadLoginStatus()
-    this.ensureMajorClassesData()
+    // 等待专业大类数据加载完成
+    await this.ensureMajorClassesData()
     this.loadConfig()
+    this.loadCacheSize()
+    // 更新 needMajorTest 状态和分数显示
+    this.loadMajorTestConfigSync()
+    this.formatScoreDisplay()
+  },
+
+  /**
+   * 获取并显示实际缓存大小
+   * 注意：tt.getStorageInfo 返回的 currentSize 单位是 KB，不是字节！
+   */
+  loadCacheSize() {
+    tt.getStorageInfo({
+      success: (res) => {
+        // currentSize 的单位是 KB，需要转换为字节
+        const sizeInKB = res.currentSize || 0
+        const sizeInBytes = sizeInKB * 1024
+        const formattedSize = this.formatFileSize(sizeInBytes)
+        this.setData({
+          cacheSize: formattedSize
+        })
+        console.log(`[设置] 缓存大小: ${formattedSize} (原始值: ${sizeInKB} KB)`)
+      },
+      fail: (err) => {
+        console.error('[设置] 获取缓存大小失败:', err)
+        this.setData({
+          cacheSize: '未知'
+        })
+      }
+    })
+  },
+
+  /**
+   * 格式化文件大小（输入为字节）
+   */
+  formatFileSize(bytes) {
+    if (bytes === 0) return '0KB'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + sizes[i]
   },
 
   /**
@@ -188,8 +239,69 @@ Page({
       })
     }
 
+    // 格式化分数显示
+    this.formatScoreDisplay()
+
     // 检查是否为管理员
     this.checkAdminPermission()
+  },
+
+  /**
+   * 格式化分数显示
+   * 不需要专业测试：基础总分.专业基础(3位补0)公共基础(3位补0) → 如 195.115080
+   * 需要专业测试：专业测试(2位小数)基础总分(3位补0)专业基础(3位补0) → 如 85.20095045
+   */
+  formatScoreDisplay() {
+    const userInfo = app.globalData.userInfo || {}
+    const { eduScore, majorBasicScore, majorTestScore } = userInfo
+    
+    // 先确保 needMajorTest 已正确设置
+    this.loadMajorTestConfigSync()
+    
+    const needMajorTest = this.data.needMajorTest
+    
+    // 检查是否已设置分数（公共基础和专业基础都必须设置）
+    if (!eduScore || !majorBasicScore) {
+      this.setData({ scoreDisplay: '设置成绩' })
+      return
+    }
+    
+    const edu = parseInt(eduScore) || 0
+    const majorBasic = parseInt(majorBasicScore) || 0
+    const total = edu + majorBasic
+    
+    if (needMajorTest) {
+      // 需要专业测试：专业测试(2位小数)基础总分(3位补0)专业基础(3位补0)
+      const majorTest = parseFloat(majorTestScore) || 0
+      const formatted = `${majorTest.toFixed(2)}${String(total).padStart(3, '0')}${String(majorBasic).padStart(3, '0')}`
+      this.setData({ scoreDisplay: formatted })
+    } else {
+      // 不需要专业测试：基础总分.专业基础(3位补0)公共基础(3位补0)
+      const formatted = `${total}.${String(majorBasic).padStart(3, '0')}${String(edu).padStart(3, '0')}`
+      this.setData({ scoreDisplay: formatted })
+    }
+  },
+
+  /**
+   * 同步加载专业测试配置（用于格式化显示）
+   */
+  loadMajorTestConfigSync() {
+    const className = this.data.userClassName
+    if (!className || className === '未选择') {
+      this.setData({ needMajorTest: false })
+      return
+    }
+    
+    const majorClasses = this.data.majorClasses || app.globalData.majorClasses || []
+    if (!majorClasses || majorClasses.length === 0) {
+      this.setData({ needMajorTest: false })
+      return
+    }
+    
+    const currentClass = majorClasses.find(item => item.class_name === className)
+    const needMajorTest = currentClass && currentClass.major_test === true
+    
+    this.setData({ needMajorTest })
   },
 
   /**
@@ -468,7 +580,8 @@ Page({
    * 1. 更新本地显示
    * 2. 更新全局变量
    * 3. 更新缓存
-   * 4. 同步到云端
+   * 4. 更新 needMajorTest 状态和分数显示
+   * 5. 同步到云端
    */
   updateUserClassName(className) {
     console.log(`[设置] 开始更新用户专业大类为: ${className}`)
@@ -495,7 +608,11 @@ Page({
       console.error('[设置] 更新缓存失败:', err)
     }
 
-    // 4. 同步到云端
+    // 4. 更新 needMajorTest 状态和分数显示
+    this.loadMajorTestConfigSync()
+    this.formatScoreDisplay()
+
+    // 5. 同步到云端
     this.syncUserClassNameToCloud(className)
 
     tt.showToast({
@@ -588,5 +705,397 @@ Page({
 
     // 过滤掉空的分组
     return groups.filter(g => g.classes.length > 0)
+  },
+
+  /**
+   * 清除缓存并重启应用
+   */
+  clearCache() {
+    tt.showModal({
+      title: '清除缓存',
+      content: '清除缓存后将重新启动应用，加载最新数据，是否继续？',
+      success: (res) => {
+        if (res.confirm) {
+          tt.showLoading({ title: '清理中...' })
+
+          try {
+            // 1. 清除所有本地缓存
+            tt.clearStorageSync()
+            console.log('[设置] 本地缓存已清除')
+
+            // 更新缓存大小显示
+            this.setData({
+              cacheSize: '0KB'
+            })
+
+            // 2. 重置全局数据
+            const appInstance = getApp()
+            appInstance.globalData.schools = []
+            appInstance.globalData.majorClasses = []
+            appInstance.globalData.appConfig = {}
+            console.log('[设置] 全局数据已重置')
+
+            tt.hideLoading()
+
+            // 3. 显示清理成功提示
+            tt.showToast({
+              title: '缓存清理成功',
+              icon: 'success',
+              duration: 1500
+            })
+
+            // 4. 延迟后重启应用（重新加载首页）
+            setTimeout(() => {
+              // 使用 switchTab 跳转到首页，触发 app.js 的重新初始化
+              tt.switchTab({
+                url: '/pages/index/index',
+                success: () => {
+                  console.log('[设置] 已跳转到首页，应用将重新初始化')
+                  // 触发 App 的 onLaunch 重新执行
+                  appInstance.onLaunch()
+                },
+                fail: (err) => {
+                  console.error('[设置] 跳转首页失败:', err)
+                }
+              })
+            }, 1500)
+
+          } catch (err) {
+            tt.hideLoading()
+            console.error('[设置] 清除缓存失败:', err)
+            tt.showToast({ title: '清理失败', icon: 'none' })
+          }
+        }
+      }
+    })
+  },
+
+  /**
+   * 点击考试分数选项，打开分数设置弹窗
+   */
+  openScoreModal() {
+    // 检查是否已选择专业大类
+    if (this.data.userClassName === '未选择') {
+      tt.showToast({
+        title: '请先选择专业大类',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 获取当前专业大类的 major_test 配置
+    this.loadMajorTestConfig()
+
+    // 加载用户已有分数
+    this.loadUserScores()
+
+    this.setData({
+      showScoreModal: true
+    })
+    console.log('[设置] 打开考试分数设置弹窗')
+  },
+
+  /**
+   * 关闭分数设置弹窗
+   */
+  closeScoreModal() {
+    this.setData({
+      showScoreModal: false
+    })
+    console.log('[设置] 关闭考试分数设置弹窗')
+  },
+
+  /**
+   * 加载当前专业大类的 major_test 配置
+   */
+  loadMajorTestConfig() {
+    const className = this.data.userClassName
+    const majorClasses = this.data.majorClasses
+
+    if (!majorClasses || majorClasses.length === 0) {
+      console.log('[设置] 专业大类数据为空，默认不需要专业测试')
+      this.setData({
+        needMajorTest: false
+      })
+      return
+    }
+
+    const currentClass = majorClasses.find(item => item.class_name === className)
+    const needMajorTest = currentClass && currentClass.major_test === true
+
+    console.log(`[设置] 当前专业大类 "${className}" 的 major_test: ${needMajorTest}`)
+
+    this.setData({
+      needMajorTest
+    })
+  },
+
+  /**
+   * 加载用户已有分数
+   */
+  loadUserScores() {
+    const userInfo = app.globalData.userInfo || {}
+    const eduScore = userInfo.eduScore || ''
+    const majorBasicScore = userInfo.majorBasicScore || ''
+    const majorTestScore = userInfo.majorTestScore || ''
+
+    console.log(`[设置] 加载用户分数: eduScore=${eduScore}, majorBasicScore=${majorBasicScore}, majorTestScore=${majorTestScore}`)
+
+    this.setData({
+      eduScore: eduScore.toString(),
+      majorBasicScore: majorBasicScore.toString(),
+      majorTestScore: majorTestScore.toString(),
+      // 保存原始分数用于比较是否有修改
+      originalEduScore: eduScore.toString(),
+      originalMajorBasicScore: majorBasicScore.toString(),
+      originalMajorTestScore: majorTestScore.toString()
+    })
+  },
+
+  /**
+   * 公共基础分数输入变化
+   */
+  onEduScoreInput(e) {
+    const value = e.detail.value
+    // 限制输入为数字，且不超过150
+    const numValue = parseInt(value) || 0
+    const validValue = Math.min(Math.max(0, numValue), 150)
+    this.setData({
+      eduScore: validValue.toString()
+    })
+  },
+
+  /**
+   * 专业基础分数输入变化
+   */
+  onMajorBasicScoreInput(e) {
+    const value = e.detail.value
+    const numValue = parseInt(value) || 0
+    const validValue = Math.min(Math.max(0, numValue), 150)
+    this.setData({
+      majorBasicScore: validValue.toString()
+    })
+  },
+
+  /**
+   * 专业测试分数输入变化（允许最多两位小数，满分100）
+   */
+  onMajorTestScoreInput(e) {
+    let value = e.detail.value
+    
+    // 只保留数字和小数点
+    value = value.replace(/[^\d.]/g, '')
+    
+    // 只保留第一个小数点
+    const parts = value.split('.')
+    if (parts.length > 2) {
+      value = parts[0] + '.' + parts.slice(1).join('')
+    }
+    
+    // 限制小数点后最多两位
+    if (parts.length === 2 && parts[1].length > 2) {
+      value = parts[0] + '.' + parts[1].substring(0, 2)
+    }
+    
+    // 转换为数字并限制范围
+    const numValue = parseFloat(value) || 0
+    const validValue = Math.min(Math.max(0, numValue), 100)
+    
+    // 保持原始输入格式（如果是小数则保留，否则转为整数）
+    let displayValue = value
+    if (!value.includes('.') && value !== '') {
+      displayValue = validValue.toString()
+    }
+    
+    this.setData({
+      majorTestScore: displayValue
+    })
+  },
+
+  /**
+   * 保存考试分数
+   */
+  saveScores() {
+    const { eduScore, majorBasicScore, majorTestScore, needMajorTest, 
+            originalEduScore, originalMajorBasicScore, originalMajorTestScore } = this.data
+
+    // 检查是否有修改
+    const hasChanges = eduScore !== originalEduScore ||
+                       majorBasicScore !== originalMajorBasicScore ||
+                       (needMajorTest && majorTestScore !== originalMajorTestScore)
+
+    if (!hasChanges) {
+      tt.showToast({ title: '未修改分数', icon: 'none' })
+      return
+    }
+
+    // 验证必填项
+    if (!eduScore || !majorBasicScore) {
+      tt.showToast({
+        title: '请填写公共基础和专业基础分数',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 如果需要专业测试，验证专业测试分数
+    if (needMajorTest && !majorTestScore) {
+      tt.showToast({
+        title: '请填写专业测试分数',
+        icon: 'none'
+      })
+      return
+    }
+
+    // 验证分数范围
+    const eduNum = parseInt(eduScore)
+    const majorBasicNum = parseInt(majorBasicScore)
+    const majorTestNum = parseFloat(majorTestScore) || 0
+
+    if (eduNum < 0 || eduNum > 150) {
+      tt.showToast({
+        title: '公共基础分数必须在0-150之间',
+        icon: 'none'
+      })
+      return
+    }
+
+    if (majorBasicNum < 0 || majorBasicNum > 150) {
+      tt.showToast({
+        title: '专业基础分数必须在0-150之间',
+        icon: 'none'
+      })
+      return
+    }
+
+    if (needMajorTest && (majorTestNum < 0 || majorTestNum > 100)) {
+      tt.showToast({
+        title: '专业测试分数必须在0-100之间',
+        icon: 'none'
+      })
+      return
+    }
+
+    tt.showLoading({ title: '保存中...' })
+
+    // 更新本地缓存
+    this.updateLocalScores(eduNum, majorBasicNum, majorTestNum)
+
+    // 同步到云端
+    this.syncScoresToCloud(eduNum, majorBasicNum, majorTestNum)
+  },
+
+  /**
+   * 更新本地缓存中的分数
+   */
+  updateLocalScores(eduScore, majorBasicScore, majorTestScore) {
+    try {
+      // 更新全局数据
+      if (!app.globalData.userInfo) {
+        app.globalData.userInfo = {}
+      }
+      app.globalData.userInfo.eduScore = eduScore
+      app.globalData.userInfo.majorBasicScore = majorBasicScore
+      app.globalData.userInfo.majorTestScore = majorTestScore
+
+      // 更新本地缓存
+      const userInfoStr = tt.getStorageSync('userInfo')
+      const userInfo = userInfoStr ? JSON.parse(userInfoStr) : {}
+      userInfo.eduScore = eduScore
+      userInfo.majorBasicScore = majorBasicScore
+      userInfo.majorTestScore = majorTestScore
+      tt.setStorageSync('userInfo', JSON.stringify(userInfo))
+
+      // 更新分数显示
+      this.formatScoreDisplay()
+
+      console.log('[设置] 本地分数缓存已更新:', { eduScore, majorBasicScore, majorTestScore })
+    } catch (err) {
+      console.error('[设置] 更新本地缓存失败:', err)
+    }
+  },
+
+  /**
+   * 同步分数到云端
+   */
+  syncScoresToCloud(eduScore, majorBasicScore, majorTestScore) {
+    const cloud = app.globalData.cloud
+    const openId = app.globalData.openId
+
+    if (!cloud || !openId) {
+      tt.hideLoading()
+      console.error('[设置] cloud 或 openId 未初始化')
+      tt.showToast({
+        title: '本地保存成功',
+        icon: 'success'
+      })
+      this.closeScoreModal()
+      return
+    }
+
+    console.log('[设置] 同步分数到云端...')
+
+    cloud.callContainer({
+      path: '/updateUserInfo',
+      init: {
+        method: 'POST',
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          openId,
+          userClassName: this.data.userClassName,
+          eduScore,
+          majorBasicScore,
+          majorTestScore
+        })
+      },
+      success: ({ statusCode, data }) => {
+        tt.hideLoading()
+        if (statusCode === 200) {
+          try {
+            const result = typeof data === 'string' ? JSON.parse(data) : data
+            if (result && result.code === 0) {
+              console.log('[设置] 分数云端同步成功')
+              tt.showToast({
+                title: '保存成功',
+                icon: 'success'
+              })
+              this.closeScoreModal()
+            } else {
+              console.error('[设置] 云端同步失败:', result.message)
+              tt.showToast({
+                title: '云端同步失败',
+                icon: 'none'
+              })
+            }
+          } catch (err) {
+            console.error('[设置] 解析云端响应失败:', err)
+            tt.showToast({
+              title: '保存成功',
+              icon: 'success'
+            })
+            this.closeScoreModal()
+          }
+        } else {
+          console.error('[设置] 云端接口失败，状态码:', statusCode)
+          tt.showToast({
+            title: '保存成功',
+            icon: 'success'
+          })
+          this.closeScoreModal()
+        }
+      },
+      fail: (err) => {
+        tt.hideLoading()
+        console.error('[设置] 云端同步异常:', err)
+        tt.showToast({
+          title: '本地保存成功',
+          icon: 'success'
+        })
+        this.closeScoreModal()
+      }
+    })
   }
 })

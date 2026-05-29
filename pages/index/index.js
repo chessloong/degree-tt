@@ -586,7 +586,7 @@ Page({
   },
 
   goToVolunteer: function () {
-    tt.navigateTo({
+    tt.switchTab({
       url: '/pages/volunteer_planning/volunteer_planning'
     })
   }
