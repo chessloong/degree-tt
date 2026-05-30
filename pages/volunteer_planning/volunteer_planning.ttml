@@ -1,6 +1,71 @@
-<!-- 志愿规划页 -->
 <view class="container">
-  <view class="intro">
-    <text class="intro-text">志愿规划功能开发中...</text>
+  <view class="header-bar">
+    <text class="class-name" bindtap="goToSettings">{{currentClassName}}</text>
+    <image class="arrow-icon" src="/assets/svg/arrow-right.svg" mode="aspectFit"></image>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-container">
+    <text class="loading-text">{{loadingText}}</text>
+  </view>
+
+  <view wx:elif="{{volunteerList.length === 0}}" class="de-card">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">志愿列表</text>
+      </view>
+    </view>
+    <view class="de-card-content">
+      <text class="placeholder-text">暂无志愿规划数据</text>
+    </view>
+  </view>
+
+  <view wx:else class="de-card">
+    <view class="de-card-header">
+      <view class="de-card-title-left">
+        <view class="de-card-dot"></view>
+        <text class="de-card-title">志愿列表</text>
+      </view>
+    </view>
+    <view class="de-card-content">
+      <view class="volunteer-list">
+        <view wx:for="{{volunteerList}}" wx:key="*this" class="volunteer-item">
+          <view class="volunteer-main">
+            <view class="volunteer-left">
+              <text class="level-tag level-{{item.level === '2B' ? '2B' : (item.level === '2C' ? '2C' : 'other')}}">{{item.level || '其他'}}</text>
+              <text class="school-name">{{item.schoolName}}</text>
+            </view>
+            <view class="volunteer-right">
+              <text class="major-name">{{item.majorName}}</text>
+            </view>
+          </view>
+          <view class="volunteer-bottom">
+            <view class="volunteer-tags-area">
+              <view class="tag-row">
+                <text class="tag">{{item.region}}</text>
+                <text class="tag">普通批 {{item.normalCount > 0 ? item.normalCount : '-'}}</text>
+                <text class="tag">建档立卡 {{item.jdCount > 0 ? item.jdCount : '-'}}</text>
+              </view>
+              <view class="tag-row">
+                <text class="tag tag-total">招生总数 {{item.totalCount}}</text>
+                <text class="tag tag-cumulative">累计人数 {{item.cumulativeCount}}</text>
+              </view>
+            </view>
+            <view class="volunteer-score-area">
+              <text class="score-value">{{item.minScore !== null ? item.minScore : '新增'}}</text>
+              <text wx:if="{{item.minScore !== null}}" class="score-label">上年投档分</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{volunteerList.length > 0}}" class="de-card">
+    <view class="de-card-content">
+      <view class="summary-row">
+        <text class="summary-text">共 {{volunteerList.length}} 个志愿项目，按层次优先、再按投档分降序排列</text>
+      </view>
+    </view>
   </view>
 </view>

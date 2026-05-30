@@ -11,19 +11,11 @@
   </view>
 
   <view class="de-list-group" style="margin-top: 16rpx;">
-    <view class="de-list-item de-list-item-clickable">
+    <view class="de-list-item de-list-item-last de-list-item-clickable">
       <image class="de-list-icon" src="/assets/svg/more.svg" mode="aspectFit" />
       <text class="de-list-title">我的等级</text>
       <view class="de-list-content">
         <text class="de-list-text">Lv.{{level}}</text>
-        <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
-      </view>
-    </view>
-    <view class="de-list-item de-list-item-last de-list-item-clickable">
-      <image class="de-list-icon" src="/assets/svg/money.svg" mode="aspectFit" />
-      <text class="de-list-title">学点余额</text>
-      <view class="de-list-content">
-        <text class="de-list-text">0 学点</text>
         <image class="de-list-arrow" src="/assets/svg/arrow-right.svg" mode="aspectFit" />
       </view>
     </view>
@@ -83,7 +75,7 @@
         <text class="de-list-text">{{beian || '暂无'}}</text>
       </view>
     </view>
-    <view class="de-list-item de-list-item-last de-list-item-clickable" bindtap="handleLogout">
+    <view wx:if="{{isLogin}}" class="de-list-item de-list-item-last de-list-item-clickable" bindtap="handleLogout">
       <text class="de-list-title de-logout-text">退出登录</text>
     </view>
   </view>
